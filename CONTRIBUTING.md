@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering a contribution to Tender.
+Thank you for considering a contribution to Trace.
 
 ## Before starting
 

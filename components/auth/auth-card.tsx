@@ -20,7 +20,7 @@ export function AuthCard({
         <Brand />
         <div className="auth-heading">
           <p className="eyebrow">
-            {creating ? "Start with Tender" : "Welcome back"}
+            {creating ? "Start with Trace" : "Welcome back"}
           </p>
           <h1 id="auth-heading">
             {creating ? "Create your account" : "Sign in"}
@@ -38,7 +38,7 @@ export function AuthCard({
         />
         {creating || signUpEnabled ? (
           <p className="auth-switch">
-            {creating ? "Already have an account?" : "New to Tender?"}{" "}
+            {creating ? "Already have an account?" : "New to Trace?"}{" "}
             <Link href={creating ? "/sign-in" : "/create-account"}>
               {creating ? "Sign in" : "Create account"}
             </Link>
@@ -58,7 +58,7 @@ export function AuthCard({
             One document. One decision rule. A clear record of what happened.
           </h2>
           <p>
-            Tender keeps preparation, approval and issuance distinct without
+            Trace keeps preparation, approval and issuance distinct without
             turning commercial work into a dashboard.
           </p>
         </div>

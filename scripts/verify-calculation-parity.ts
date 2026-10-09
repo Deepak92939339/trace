@@ -8,6 +8,7 @@ import {
   UNIT_CODES,
   type QuoteCalculationInput,
 } from "../lib/quotes/calculate.ts";
+import { allocateMilestoneAmounts } from "../lib/quotes/payment-schedule.ts";
 
 let state = 0x74e6d123;
 function random(max: number) {
@@ -143,4 +144,114 @@ for (let offset = 0; offset < inputs.length; offset += batchSize) {
 
 console.log(
   `PASS 5000 deterministic TypeScript/SQL quote calculation cases matched exactly.`,
+);
+
+// Payment milestone amounts: the TypeScript allocator and public.quote_milestone_amounts
+// must agree on every amount, and on which schedules are invalid.
+type MilestoneCase = { total: number; bps: number[] };
+
+function splitBasisPoints(parts: number) {
+  const cuts = new Set<number>();
+  while (cuts.size < parts - 1) cuts.add(1 + random(9_999));
+  const sorted = [0, ...[...cuts].sort((a, b) => a - b), 10_000];
+  return sorted.slice(1).map((cut, index) => cut - sorted[index]!);
+}
+
+const milestoneCases: MilestoneCase[] = [
+  { total: 832_572, bps: [5000, 3000, 2000] },
+  { total: 100, bps: [3333, 3333, 3334] },
+  { total: 1, bps: [5000, 5000] },
+  { total: 2, bps: [2500, 2500, 2500, 2500] },
+  { total: 0, bps: [10_000] },
+  { total: 1000, bps: [5000, 4000] },
+  { total: 1000, bps: [0, 10_000] },
+  { total: 1000, bps: Array.from({ length: 13 }, () => 1) },
+  { total: Number.MAX_SAFE_INTEGER, bps: [3333, 3333, 3334] },
+  { total: Number.MAX_SAFE_INTEGER, bps: [1].concat([9999]) },
+];
+for (let index = 0; index < 2_000; index += 1) {
+  const parts = 1 + random(index % 11 === 0 ? 12 : 6);
+  const totals = [random(60), random(10_000_000), 1 + random(2_000_000_000)];
+  milestoneCases.push({
+    total:
+      index % 17 === 0
+        ? Number.MAX_SAFE_INTEGER - random(1_000)
+        : totals[index % 3]!,
+    bps: splitBasisPoints(parts),
+  });
+}
+
+function allocateOrInvalid(total: number, bps: number[]) {
+  try {
+    return allocateMilestoneAmounts(total, bps);
+  } catch {
+    return "invalid";
+  }
+}
+
+const milestoneExpected = milestoneCases.map(({ total, bps }) =>
+  allocateOrInvalid(total, bps),
+);
+assert.deepStrictEqual(
+  milestoneExpected.slice(0, 3),
+  [
+    [416_286, 249_772, 166_514],
+    [33, 33, 34],
+    [1, 0],
+  ],
+  "required milestone examples",
+);
+for (let offset = 0; offset < milestoneCases.length; offset += batchSize) {
+  const batch = milestoneCases.slice(offset, offset + batchSize);
+  const sql = `
+    create function pg_temp.milestone_amounts(p_total bigint, p_bps integer[])
+    returns jsonb language plpgsql as $f$
+    begin
+      return to_jsonb(public.quote_milestone_amounts(p_total, p_bps));
+    exception when sqlstate '22023' then
+      return '"invalid"'::jsonb;
+    end;
+    $f$;
+    select coalesce(jsonb_agg(
+      pg_temp.milestone_amounts(
+        (source.value->>'total')::bigint,
+        array(select value::integer from jsonb_array_elements_text(source.value->'bps'))
+      ) order by source.ordinality
+    ), '[]'::jsonb)
+    from jsonb_array_elements(
+      $tender_parity$${JSON.stringify(batch)}$tender_parity$::jsonb
+    ) with ordinality source(value, ordinality);
+  `;
+  const result = spawnSync(
+    "docker",
+    [
+      "exec",
+      "-i",
+      "supabase_db_tender-local-visual-study",
+      "psql",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-AtX",
+      "-v",
+      "ON_ERROR_STOP=1",
+    ],
+    { input: sql, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+  );
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `Privileged local milestone parity failed at ${offset}: ${result.error?.message ?? result.stderr.trim()}`,
+    );
+  }
+  const lastLine = result.stdout.trim().split("\n").pop()!;
+  assert.deepStrictEqual(
+    JSON.parse(lastLine),
+    milestoneExpected.slice(offset, offset + batchSize),
+    `TypeScript/SQL milestone mismatch in group beginning ${offset}.`,
+  );
+}
+
+console.log(
+  `PASS ${milestoneCases.length} TypeScript/SQL payment milestone allocations matched exactly (including 832572 at 5000/3000/2000 -> 416286/249772/166514).`,
 );

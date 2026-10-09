@@ -1,4 +1,5 @@
 import { OrganizationSettingsForm } from "@/components/settings/organization-settings-form";
+import { ReadOnlyNotice } from "@/components/states";
 import { SettingsResultStatus } from "@/components/settings/settings-result-status";
 import { TaxProfileSettings } from "@/components/settings/tax-profile-settings";
 import { requireApplicationContext } from "@/lib/auth/context";
@@ -26,14 +27,15 @@ export default async function OrganizationSettingsPage({
             <p>Manage commercial defaults, seller identity and tax profiles.</p>
           </div>
         </header>
-        <p className="quiet-notice">
+        <ReadOnlyNotice>
           Your explicit capability map does not grant access to organization
           settings.
-        </p>
+        </ReadOnlyNotice>
       </section>
     );
   }
 
+  const canReadMargin = context.capabilities.includes("margin.read");
   const query = await searchParams;
   const result = Array.isArray(query.result) ? null : query.result;
   const statusMessage = organizationSettingsResultMessage(result);
@@ -41,28 +43,40 @@ export default async function OrganizationSettingsPage({
     ? organizationSettingsResultTone(result as OrganizationSettingsResultCode)
     : null;
   const supabase = await createClient();
-  const [{ data: organization, error: organizationError }, taxProfileResult] =
-    await Promise.all([
-      supabase
-        .from("organizations")
-        .select(
-          "name, default_currency_code, default_locale, timezone, approval_threshold_bps, version, seller_legal_name, seller_address_line1, seller_address_line2, seller_city, seller_region, seller_postal_code, seller_country_code, seller_tax_identifier, seller_contact_email, seller_contact_phone",
-        )
-        .eq("id", context.membership.organizationId)
-        .single(),
-      supabase
-        .from("tax_profiles")
-        .select(
-          "id, code, label, jurisdiction_country_code, rate_bps, treatment, active, version",
-        )
-        .eq("organization_id", context.membership.organizationId)
-        .order("active", { ascending: false })
-        .order("code"),
-    ]);
+  const [
+    { data: organization, error: organizationError },
+    taxProfileResult,
+    marginPolicyResult,
+  ] = await Promise.all([
+    supabase
+      .from("organizations")
+      .select(
+        "name, default_currency_code, default_locale, timezone, approval_threshold_bps, version, seller_legal_name, seller_address_line1, seller_address_line2, seller_city, seller_region, seller_postal_code, seller_country_code, seller_tax_identifier, seller_contact_email, seller_contact_phone",
+      )
+      .eq("id", context.membership.organizationId)
+      .single(),
+    supabase
+      .from("tax_profiles")
+      .select(
+        "id, code, label, jurisdiction_country_code, rate_bps, treatment, active, version",
+      )
+      .eq("organization_id", context.membership.organizationId)
+      .order("active", { ascending: false })
+      .order("code"),
+    canReadMargin
+      ? supabase
+          .from("organization_margin_policy")
+          .select("margin_floor_bps")
+          .eq("id", context.membership.organizationId)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
 
   if (organizationError || !organization || taxProfileResult.error) {
     throw new Error("Unable to load tenant-scoped organization settings.");
   }
+
+  const marginFloorBps = marginPolicyResult?.data?.margin_floor_bps ?? null;
 
   return (
     <section className="destination-page settings-page">
@@ -92,8 +106,10 @@ export default async function OrganizationSettingsPage({
           </div>
         </header>
         <OrganizationSettingsForm
+          canReadMargin={canReadMargin}
           organization={{
             approvalThresholdBps: organization.approval_threshold_bps,
+            marginFloorBps,
             defaultCurrencyCode: organization.default_currency_code,
             defaultLocale: organization.default_locale,
             name: organization.name,

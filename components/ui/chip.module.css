@@ -1,0 +1,46 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--r-ctl);
+  font-family: var(--sans);
+  font-size: var(--text-12);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.neutral {
+  background: var(--sunken);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+
+.amber {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber-line);
+}
+
+.red {
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red-line);
+}
+
+.green {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+}
+
+.rev {
+  font-family: var(--mono);
+  font-size: var(--text-11);
+  background: var(--sunken);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}

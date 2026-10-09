@@ -248,7 +248,7 @@ export function SampleQuoteBuilder() {
             </label>
             <small className="sample-derived">
               {market.currency} · configured specimen only · final amounts are
-              calculated with Tender’s shared money kernel.
+              calculated with Trace’s shared money kernel.
             </small>
           </fieldset>
           <fieldset>

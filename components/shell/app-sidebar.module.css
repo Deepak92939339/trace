@@ -1,0 +1,407 @@
+/* Desktop sidebar (>= 860px) */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 224px;
+  min-width: 224px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 10px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  font-family: var(--sans);
+  z-index: 30;
+}
+
+.brandWrap {
+  padding: 4px 8px;
+}
+
+.orgCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl, 6px);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--t, 150ms ease);
+}
+
+.orgCard:hover {
+  background: var(--sunken);
+}
+
+.orgIni {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.orgTxt {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.orgTxt b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orgTxt small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.orgArrow {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.sideNav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--r-ctl, 6px);
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background var(--t, 150ms ease), color var(--t, 150ms ease);
+}
+
+.navItem svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color var(--t, 150ms ease);
+}
+
+.navItem:hover {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.navItem:hover svg {
+  color: var(--ink);
+}
+
+.navItem.isActive {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.navItem.isActive svg {
+  color: var(--accent);
+}
+
+.navCount {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.navBadge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber-line);
+  font-size: 11px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+}
+
+.sideFoot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.supportNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.supportNav a,
+.utilityLink {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: color var(--t, 150ms ease);
+}
+
+.supportNav a:hover,
+.utilityLink:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.sideLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--r-ctl, 6px);
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background var(--t, 150ms ease), color var(--t, 150ms ease);
+}
+
+.sideLink svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.sideLink:hover {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.sideLink.isActive {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+  line-height: 1.2;
+}
+
+.meIni {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: var(--sunken);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.meTxt {
+  flex: 1;
+  min-width: 0;
+}
+
+.meTxt b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meTxt small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.signOutForm {
+  display: inline-flex;
+}
+
+.signOutBtn {
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--t, 150ms ease), background var(--t, 150ms ease);
+  white-space: nowrap;
+}
+
+.signOutBtn:hover {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.mobileOrg {
+  display: none;
+}
+
+.mobileRow1 {
+  display: contents;
+}
+
+/* Desktop: the utility links live in .sideFoot; this row is mobile-only. */
+.mobileRow3 {
+  display: none;
+}
+
+/* ==========================================================
+   Mobile (< 860px): Inline compact block at the top
+   Row 1: Brand + Org name
+   Row 2: "Application" nav (horizontally scrollable row)
+   Row 3: "Help", "What's new", "Organization settings", "Sign out"
+   ========================================================== */
+@media (max-width: 860px) {
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 14px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobileRow1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .brandWrap {
+    padding: 0;
+  }
+
+  /* Mobile: the org card shrinks to a single line (the name is rendered once, for tests and screen readers). */
+  .orgCard {
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .orgCard .orgIni,
+  .orgCard .orgArrow,
+  .orgCard small {
+    display: none;
+  }
+
+  .mobileOrg {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sideNav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+    padding: 2px 0 4px;
+    scrollbar-width: none;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sideNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navItem {
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .sideFoot {
+    margin-top: 0;
+    display: none;
+  }
+
+  .mobileRow3 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .mobileRow3 .utilityLink {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .mobileRow3 .signOutForm {
+    margin-left: auto;
+  }
+
+  .mobileRow3 .signOutBtn {
+    font-size: 12px;
+    padding: 2px 6px;
+    color: var(--ink-2);
+  }
+
+  .mobileRow3 .signOutBtn:hover {
+    color: var(--ink);
+    background: var(--sunken);
+  }
+}

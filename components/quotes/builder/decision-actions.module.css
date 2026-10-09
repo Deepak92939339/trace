@@ -1,0 +1,88 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.primaryButton {
+  width: 100% !important;
+  height: 38px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--r-ctl);
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.primaryButton:active:not(:disabled) {
+  background: var(--accent-press);
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  width: 100% !important;
+  height: 34px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--sunken);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kbd {
+  font-size: 11px;
+  padding: 2px 5px;
+  margin-left: 6px;
+  color: var(--muted);
+}
+
+.primaryButton .kbd {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.workflowMessage {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-ctl);
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber-line);
+  font-size: 12px;
+  line-height: 1.4;
+}

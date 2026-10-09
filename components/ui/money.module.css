@@ -1,0 +1,23 @@
+.money {
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.sm {
+  font-size: var(--text-12);
+}
+
+.md {
+  font-size: var(--text-13);
+}
+
+.lg {
+  font-size: var(--text-16);
+  font-weight: 600;
+}
+
+.negative {
+  color: inherit;
+}

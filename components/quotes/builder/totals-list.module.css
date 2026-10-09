@@ -1,0 +1,90 @@
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+.heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+
+.formError {
+  padding: 8px 12px;
+  border-radius: var(--r-ctl);
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red-line);
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+.list {
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+  font-size: 13px;
+}
+
+.dt {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.dd {
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: right;
+  margin: 0;
+}
+
+.totalRow {
+  gap: 12px;
+  border-top: 3px double var(--line-strong) !important;
+  margin-top: 8px !important;
+  padding-top: 10px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.totalDt {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.totalDd {
+  white-space: nowrap; /* the total must never break across lines */
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums !important;
+  text-align: right;
+  margin: 0;
+}
+
+.legalNote {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 10px;
+}

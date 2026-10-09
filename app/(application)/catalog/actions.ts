@@ -83,6 +83,34 @@ export async function createProduct(
       ),
     };
   }
+  const unitCostMinor =
+    parsed.data.unitCost === undefined
+      ? null
+      : parseDecimalMinor(parsed.data.unitCost, parsed.data.currencyCode);
+  if (unitCostMinor !== null) {
+    // Cost is internal: written through the margin.read-gated view with the
+    // version the create call returned. Never part of the product payload.
+    const version = typeof data.version === "number" ? data.version : null;
+    const { data: costRows, error: costError } = await supabase
+      .from("product_unit_costs")
+      .update({ unit_cost_minor: unitCostMinor })
+      .eq("id", data.id)
+      .eq("version", version ?? -1)
+      .select("version");
+    if (costError || !costRows || costRows.length !== 1) {
+      const reference = logMutationFailure(
+        "catalog.product_cost_set",
+        costError ?? undefined,
+      );
+      revalidatePath("/catalog");
+      return {
+        error: withReference(
+          `Product ${parsed.data.sku} was created, but its cost price was not saved. Your role may not manage cost prices. Nothing else changed.`,
+          reference,
+        ),
+      };
+    }
+  }
   revalidatePath("/catalog");
   return { message: `Product ${parsed.data.sku} was created.` };
 }

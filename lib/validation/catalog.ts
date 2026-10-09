@@ -20,6 +20,13 @@ export const productSchema = z
       .toUpperCase()
       .refine(isSupportedCurrency, "Unsupported currency."),
     taxProfileId: z.string().uuid(),
+    // Optional internal cost price, same decimal format as the unit price.
+    unitCost: z
+      .string()
+      .trim()
+      .regex(/^\d{1,15}(?:\.\d{1,3})?$/)
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
     active: z.enum(["true", "false"]).default("true"),
   })
   .superRefine((value, context) => {
@@ -31,6 +38,17 @@ export const productSchema = z
         code: "custom",
         path: ["unitPrice"],
         message: "Unit price does not match the currency precision.",
+      });
+    }
+    if (
+      value.unitCost !== undefined &&
+      isSupportedCurrency(value.currencyCode) &&
+      parseDecimalMinor(value.unitCost, value.currencyCode) === null
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["unitCost"],
+        message: "Unit cost does not match the currency precision.",
       });
     }
     if (

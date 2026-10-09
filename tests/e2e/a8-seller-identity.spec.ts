@@ -72,9 +72,9 @@ test("issued_print_contains_seller_and_customer", async ({ page }) => {
   const customer = printDocument.locator(".print-customer");
   await expect(seller).toHaveCount(1);
   await expect(customer).toHaveCount(1);
-  await expect(seller).toContainText("Tender Demonstration Company");
+  await expect(seller).toContainText("Trace Demo Industries");
   await expect(seller).toContainText("14 Commerce Avenue");
-  await expect(seller).toContainText("GSTIN-DEMO-TENDER");
+  await expect(seller).toContainText("GSTIN-DEMO-TRACE");
   await expect(customer).toContainText("Asha Engineering Works");
   await expect(seller).not.toContainText("Asha Engineering Works");
   await expect(customer).not.toContainText("14 Commerce Avenue");
@@ -99,9 +99,9 @@ test("issued_print_uses_snapshots_only", async ({ page }) => {
     await page.goto(quoteUrl);
     await page.emulateMedia({ media: "print" });
     const seller = page.locator(".print-document .print-seller").first();
-    await expect(seller).toContainText("Tender Demonstration Company");
+    await expect(seller).toContainText("Trace Demo Industries");
     await expect(seller).toContainText("14 Commerce Avenue");
-    await expect(seller).toContainText("GSTIN-DEMO-TENDER");
+    await expect(seller).toContainText("GSTIN-DEMO-TRACE");
     await expect(seller).not.toContainText("LIVE SELLER CHANGED");
     await expect(seller).not.toContainText("999 Live Record Road");
     await expect(seller).not.toContainText("LIVE-TAX-CHANGED");
@@ -109,10 +109,10 @@ test("issued_print_uses_snapshots_only", async ({ page }) => {
     runOwnerSql(`
       update public.organizations
       set
-        name = 'Tender Demonstration Company',
-        seller_legal_name = 'Tender Demonstration Company',
+        name = 'Trace Demo Industries',
+        seller_legal_name = 'Trace Demo Industries',
         seller_address_line1 = '14 Commerce Avenue',
-        seller_tax_identifier = 'GSTIN-DEMO-TENDER'
+        seller_tax_identifier = 'GSTIN-DEMO-TRACE'
       where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     `);
   }

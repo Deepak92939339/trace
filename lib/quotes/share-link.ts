@@ -101,7 +101,7 @@ export function recipientCapabilityUrl(selector: string, secret: string) {
 }
 
 export function capabilityUrlUsesFragment(url: string) {
-  const parsed = new URL(url, "https://tender.local");
+  const parsed = new URL(url, "https://trace.local");
   return (
     parsed.search === "" &&
     parsed.hash.startsWith("#secret=") &&

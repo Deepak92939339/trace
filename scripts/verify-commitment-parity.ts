@@ -3,9 +3,11 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   canonicalizeCalculationDocumentV1,
+  canonicalizeQuoteSnapshot,
   canonicalizeQuoteSnapshotV1,
 } from "../lib/quotes/canonical-snapshot.ts";
 import { canonicalV1Vectors } from "../tests/fixtures/canonical-v1-vectors.ts";
+import { canonicalV2Vectors } from "../tests/fixtures/canonical-v2-vectors.ts";
 
 const container = "supabase_db_tender-local-visual-study";
 const hash = (value: string) =>
@@ -119,4 +121,44 @@ for (const vector of canonicalV1Vectors) {
 
 console.log(
   `PASS ${canonicalV1Vectors.length} canonical v1 golden vectors are byte-identical in TypeScript and PostgreSQL.`,
+);
+
+for (const vector of canonicalV2Vectors) {
+  const snapshot = canonicalizeQuoteSnapshot(vector.snapshot);
+  const pgSnapshot = postgresCanonical({
+    ...vector.snapshot,
+    items: [...vector.snapshot.items].sort(
+      (left, right) => left.position - right.position,
+    ),
+    charges: [...vector.snapshot.charges].sort(
+      (left, right) => left.position - right.position,
+    ),
+    approval_policy: {
+      ...vector.snapshot.approval_policy,
+      reason_codes: [
+        ...new Set(
+          vector.snapshot.approval_policy.reason_codes.map((code) =>
+            code.normalize("NFC"),
+          ),
+        ),
+      ].sort((left, right) => Buffer.from(left).compare(Buffer.from(right))),
+    },
+    payment_schedule: [...vector.snapshot.payment_schedule].sort(
+      (left, right) => left.position - right.position,
+    ),
+  });
+  assert.deepEqual(
+    pgSnapshot,
+    Buffer.from(snapshot, "utf8"),
+    `${vector.name}: v2 snapshot bytes`,
+  );
+  assert.equal(
+    hash(snapshot),
+    vector.expectedSnapshotHash,
+    `${vector.name}: v2 snapshot hash`,
+  );
+}
+
+console.log(
+  `PASS ${canonicalV2Vectors.length} canonical v2 golden vectors are byte-identical in TypeScript and PostgreSQL.`,
 );

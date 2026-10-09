@@ -80,7 +80,7 @@ test("issuer issues, shares once, revokes, and sees acceptance evidence", async 
   await page.getByLabel("Recipient email").fill(firstEmail);
   await page.getByRole("button", { name: "Create recipient link" }).click();
   await expect(
-    page.getByText("Tender cannot show this secret again", { exact: false }),
+    page.getByText("Trace cannot show this secret again", { exact: false }),
   ).toBeVisible();
   const created = capabilityFromHref(
     await page.getByRole("link", { name: "Open link" }).getAttribute("href"),
@@ -190,7 +190,7 @@ test("draft quotes and other tenants cannot use recipient sharing", async ({
     await otherPage.goto(draftUrl);
     await expect(
       otherPage.getByRole("heading", {
-        name: "This page is not part of Tender.",
+        name: "This page is not part of Trace.",
       }),
     ).toBeVisible();
     await expect(

@@ -4,7 +4,11 @@ import {
   normalizeSupportedCurrency,
   SUPPORTED_CURRENCY_CODES,
 } from "@/lib/formatting/currency";
-import { formatMinor, parseDecimalMinor } from "@/lib/formatting/money";
+import {
+  formatMinor,
+  formatMinorNumber,
+  parseDecimalMinor,
+} from "@/lib/formatting/money";
 import {
   calculateQuote,
   type QuoteCalculationInput,
@@ -121,3 +125,27 @@ describe("supported currency minor-unit model", () => {
     ).toBe(true);
   });
 });
+
+describe("formatMinorNumber decimal formatting", () => {
+  it("formats USD with 2 decimal places and no currency code", () => {
+    expect(formatMinorNumber(125050, "USD", "en-US")).toBe("1,250.50");
+  });
+
+  it("formats JPY with 0 decimal places and no currency code", () => {
+    expect(formatMinorNumber(52000, "JPY", "en-US")).toBe("52,000");
+  });
+
+  it("formats KWD with 3 decimal places and no currency code", () => {
+    expect(formatMinorNumber(1250500, "KWD", "en-US")).toBe("1,250.500");
+  });
+
+  it("throws on non-safe integers", () => {
+    expect(() => formatMinorNumber(12.34, "USD")).toThrow(
+      /safe integer/i,
+    );
+    expect(() => formatMinorNumber(Number.MAX_SAFE_INTEGER + 1, "USD")).toThrow(
+      /safe integer/i,
+    );
+  });
+});
+

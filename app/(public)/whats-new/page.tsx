@@ -7,7 +7,7 @@ export default function WhatsNewPage() {
       <PublicHeader />
       <header className="guide-hero compact">
         <p className="eyebrow">Release notes</p>
-        <h1>What&apos;s new in Tender</h1>
+        <h1>What&apos;s new in Trace</h1>
         <p>
           A plain-language record of visible product changes, why they matter
           and what remains deliberately outside this portfolio release.

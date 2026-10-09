@@ -1,0 +1,56 @@
+.wrap {
+  display: inline-block;
+}
+.stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1.5px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 3px;
+  background: rgba(251, 250, 246, 0.92);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+}
+.fp {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.85;
+}
+.draft {
+  color: var(--muted);
+  opacity: 0.75;
+}
+.approved,
+.accepted,
+.paid {
+  color: var(--accent);
+}
+.issued {
+  color: var(--ink);
+}
+.rejected {
+  color: var(--red);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@media print {
+  .stamp {
+    background: transparent;
+  }
+}

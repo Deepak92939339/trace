@@ -1,0 +1,120 @@
+.section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: var(--sans);
+}
+
+.title {
+  font-size: var(--text-14, 14px);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hint {
+  font-size: var(--text-12, 12px);
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.controlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shellFrame {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 560px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+  overflow: hidden;
+  background: var(--canvas);
+  position: relative;
+}
+
+.previewSidebar {
+  height: 100%;
+  min-height: 560px;
+  position: relative;
+}
+
+.shellMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+}
+
+.mockBody {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.mockPanel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.saveState {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.saveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 860px) {
+  .shellFrame {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .previewSidebar {
+    min-height: auto;
+    height: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .section {
+    padding: 16px;
+  }
+  .mockBody {
+    padding: 0 16px 16px;
+  }
+}

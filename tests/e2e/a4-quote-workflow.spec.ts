@@ -189,7 +189,7 @@ test("manager rejection safely records reason and other tenant learns nothing", 
   await otherPage.goto(quoteUrl);
   await expect(
     otherPage.getByRole("heading", {
-      name: "This page is not part of Tender.",
+      name: "This page is not part of Trace.",
     }),
   ).toBeVisible();
   await expect(otherPage.getByText(/TND-\d{4}-\d{4,}/)).toHaveCount(0);
@@ -311,8 +311,8 @@ test("40-line issued quote has deterministic continued print pages", async ({
     timeout: 20_000,
   });
   await page.emulateMedia({ media: "print" });
-  await expect(page.locator(".print-page")).toHaveCount(3);
-  await expect(page.getByText("Page 3 of 3")).toBeVisible();
-  await expect(page.getByText("Continued — commercial lines")).toHaveCount(2);
+  await expect(page.locator(".print-page")).toHaveCount(4);
+  await expect(page.getByText("Page 4 of 4")).toBeVisible();
+  await expect(page.getByText("Continued — commercial lines")).toHaveCount(3);
   await expect(page.locator(".print-totals")).toHaveCount(1);
 });

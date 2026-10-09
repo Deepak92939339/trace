@@ -16,6 +16,7 @@ export default async function ProtectedLayout({
         displayName: context.profile.displayName,
         roleLabel: context.membership.role.label,
         organizationName: context.membership.organization.name,
+        readOnly: context.membership.role.key === "reviewer",
       }}
     >
       {children}

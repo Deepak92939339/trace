@@ -1,4 +1,4 @@
-import { canonicalizeQuoteSnapshotV1 } from "../../../lib/quotes/canonical-snapshot.ts";
+import { canonicalizeQuoteSnapshot } from "../../../lib/quotes/canonical-snapshot.ts";
 import type {
   AcceptanceProjection,
   BuyerQuoteProjection,
@@ -94,7 +94,7 @@ function openProjection(value: unknown): BuyerQuoteProjection {
   if (row.effective_state !== "issued") {
     throw new TypeError("open result effective state is invalid.");
   }
-  canonicalizeQuoteSnapshotV1(row.snapshot);
+  canonicalizeQuoteSnapshot(row.snapshot);
   const responseType = row.response_type;
   if (
     responseType !== null &&

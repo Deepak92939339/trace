@@ -1,11 +1,21 @@
 import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/quotes/quote-builder";
+import { HistoryTimeline } from "@/components/quotes/history-timeline";
 import { IssuedPrintDocument } from "@/components/quotes/issued-print-document";
+import { EmailActivityList } from "@/components/quotes/email-activity-list";
+import { EmailToBuyerPanel } from "@/components/quotes/email-to-buyer-panel";
 import { RecipientAccessPanel } from "@/components/quotes/recipient-access-panel";
 import { RecipientCommitment } from "@/components/quotes/recipient-commitment";
+import { getDraftMargin } from "./draft-margin";
 import { requireApplicationContext } from "@/lib/auth/context";
 import { effectiveQuoteState } from "@/lib/quotes/effective-state";
-import { calculateExtendedLineAmountMinor } from "@/lib/quotes/calculate";
+import {
+  issuedActorForRevision,
+  printPropsFromLegacyRows,
+  printPropsFromRevision,
+  verifiedSealedSnapshot,
+  type IssuedPrintProps,
+} from "@/lib/quotes/issued-print-props";
 import {
   canCreateShareLink,
   defaultShareExpiry,
@@ -18,6 +28,8 @@ import {
   type ShareLinkRecord,
 } from "@/lib/quotes/share-link";
 import { createClient } from "@/lib/supabase/server";
+import type { EmailActivityRow } from "@/lib/outbox/status";
+import { type PaymentMilestoneInput } from "@/lib/quotes/payment-schedule";
 
 export default async function QuotePage({
   params,
@@ -93,7 +105,9 @@ export default async function QuotePage({
       .order("created_at", { ascending: false }),
     supabase
       .from("quote_revisions")
-      .select("id, revision_number, state, valid_until")
+      .select(
+        "id, revision_number, state, valid_until, payment_schedule:snapshot->payment_schedule",
+      )
       .eq("organization_id", context.membership.organizationId)
       .eq("quote_id", quote.id)
       .order("revision_number", { ascending: false }),
@@ -202,10 +216,127 @@ export default async function QuotePage({
   const showCommitment =
     Boolean(quote.current_revision_id) &&
     (currentRevision?.state === "issued" || commitmentEvents.length > 0);
+  const canReadMargin = context.capabilities.includes("margin.read");
+  const initialMargin =
+    quote.state === "draft" && canReadMargin
+      ? await getDraftMargin(quote.id)
+      : null;
+  const draftScheduleResult =
+    quote.state === "draft"
+      ? await supabase
+          .from("quote_payment_schedule_editor")
+          .select("milestones")
+          .eq("quote_id", quote.id)
+          .maybeSingle()
+      : null;
+  const initialSchedule =
+    quote.state === "draft"
+      ? ((draftScheduleResult?.data?.milestones ??
+          []) as PaymentMilestoneInput[])
+      : Array.isArray(currentRevision?.payment_schedule)
+        ? (currentRevision.payment_schedule as unknown as PaymentMilestoneInput[])
+        : [];
+  // Emails about this quotation. Internal addresses are never returned by this view.
+  const { data: emailRows, error: emailError } = await supabase
+    .from("quote_email_activity")
+    .select(
+      "id, kind, audience, recipient_label, display_status, attempts, max_attempts, created_at, sent_at, last_error_code",
+    )
+    .eq("organization_id", context.membership.organizationId)
+    .eq("quote_id", quote.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (emailError) throw new Error("Unable to load the quotation emails.");
+  const emails = (emailRows ?? []) as EmailActivityRow[];
+  // The print document and the PDF share one source: the sealed snapshot of the current
+  // issued revision, never the live quote tables (which a successor revision rewrites).
+  let issuedPrint: IssuedPrintProps | null = null;
+  let pdfDownload: {
+    href: string;
+    available: boolean;
+    canGenerate: boolean;
+  } | null = null;
+  if (quote.state === "issued" && quote.issued_at) {
+    const [sealedResult, pdfResult] = currentRevision
+      ? await Promise.all([
+          supabase
+            .from("quote_revisions")
+            .select("snapshot, snapshot_hash, issued_at")
+            .eq("id", currentRevision.id)
+            .maybeSingle(),
+          supabase
+            .from("quote_revision_pdfs")
+            .select("revision_id")
+            .eq("revision_id", currentRevision.id)
+            .maybeSingle(),
+        ])
+      : [null, null];
+    if (sealedResult?.error || pdfResult?.error)
+      throw new Error("Unable to load the sealed quotation revision.");
+    const sealed = sealedResult?.data;
+    const activity = activityResult.data ?? [];
+    if (currentRevision && sealed?.snapshot) {
+      issuedPrint = printPropsFromRevision({
+        snapshot: verifiedSealedSnapshot(sealed),
+        issuedAt: sealed.issued_at ?? quote.issued_at,
+        issuedActor: issuedActorForRevision(activity, currentRevision.id),
+        timeZone: timezone,
+      });
+      pdfDownload = {
+        href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
+        available: Boolean(pdfResult?.data),
+        canGenerate: context.capabilities.includes("quote.print"),
+      };
+    } else {
+      issuedPrint = printPropsFromLegacyRows({
+        quote: { ...quote, issued_at: quote.issued_at },
+        seller: sellerSnapshot,
+        items: itemsResult.data ?? [],
+        charges: (chargesResult.data ?? []).map((charge) => ({
+          id: charge.id,
+          description_snapshot: charge.description_snapshot,
+          amount_minor: charge.amount_minor,
+          tax_minor: charge.tax_minor,
+          charge_total_minor: charge.charge_total_minor,
+        })),
+        issuedActor:
+          activity.find(
+            (row) =>
+              row.event_type === "quote.issued" ||
+              row.event_type === "quote.revision_issue",
+          )?.actor_name_snapshot ?? "Trace user",
+        timeZone: timezone,
+      });
+    }
+  }
   return (
     <section className="quote-page">
       <QuoteBuilder
+        pdfDownload={pdfDownload}
         key={`${quote.id}:${quote.version}`}
+        canReadMargin={canReadMargin}
+        initialMargin={initialMargin}
+        initialSchedule={initialSchedule}
+        previewSeller={
+          sellerSnapshot
+            ? {
+                name: sellerSnapshot.legalName,
+                addressLines: [
+                  [sellerSnapshot.addressLine1, sellerSnapshot.addressLine2]
+                    .filter(Boolean)
+                    .join(", "),
+                  [
+                    sellerSnapshot.city,
+                    sellerSnapshot.region,
+                    sellerSnapshot.postalCode,
+                    sellerSnapshot.countryCode,
+                  ]
+                    .filter(Boolean)
+                    .join(", "),
+                ],
+              }
+            : { name: context.membership.organization.name, addressLines: [] }
+        }
         quote={{
           id: quote.id,
           number: quote.number,
@@ -224,6 +355,7 @@ export default async function QuotePage({
           discountMinor: quote.discount_minor,
           taxMinor: quote.tax_minor ?? 0,
           chargesMinor: quote.charges_minor ?? 0,
+          chargeNetMinor: quote.charge_net_minor,
           totalMinor: quote.total_minor,
           customerSnapshot: submitted
             ? {
@@ -243,6 +375,9 @@ export default async function QuotePage({
         }}
         customers={customers}
         capabilities={context.capabilities}
+        approvalThresholdBps={
+          context.membership.organization.approval_threshold_bps
+        }
         products={(productsResult.data ?? []).map((product) => {
           const tax = Array.isArray(product.tax_profiles)
             ? product.tax_profiles[0]!
@@ -313,11 +448,29 @@ export default async function QuotePage({
           links={shareLinks}
         />
       )}
+      {canShare && currentRevision && (
+        <EmailToBuyerPanel
+          quoteId={quote.id}
+          quoteVersion={quote.version}
+          revisionId={currentRevision.id}
+          revisionNumber={currentRevision.revision_number}
+          timezone={timezone}
+          maxExpiresAt={maxExpires.toISOString()}
+          defaultExpiresAt={(defaultExpires ?? maxExpires).toISOString()}
+        />
+      )}
       {showCommitment && (
         <RecipientCommitment
           locale={quote.locale}
           timezone={timezone}
           events={commitmentEvents}
+        />
+      )}
+      {(emails.length > 0 || quote.state === "issued") && (
+        <EmailActivityList
+          emails={emails}
+          locale={quote.locale}
+          timezone={timezone}
         />
       )}
       <section className="activity-section" aria-labelledby="activity-heading">
@@ -331,102 +484,36 @@ export default async function QuotePage({
             <span>{quote.rejected_reason}</span>
           </p>
         )}
-        <ol>
-          {(activityResult.data ?? []).map((activity) => (
-            <li key={activity.id}>
-              <div>
-                <strong>{activity.message}</strong>
-                {activity.event_type === "quote.rejected" &&
-                  typeof activity.safe_metadata === "object" &&
-                  activity.safe_metadata &&
-                  !Array.isArray(activity.safe_metadata) &&
-                  typeof activity.safe_metadata.reason === "string" && (
-                    <span>{activity.safe_metadata.reason}</span>
-                  )}
-                <span>
-                  {activity.actor_name_snapshot} ·{" "}
-                  {activity.actor_role_snapshot} ·{" "}
-                  {activity.actor_source.replace("_", " ")}
-                </span>
-              </div>
-              <time dateTime={activity.created_at}>
-                {new Intl.DateTimeFormat(quote.locale, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                  timeZone: context.membership.organization.timezone,
-                }).format(new Date(activity.created_at))}
-              </time>
-            </li>
-          ))}
-        </ol>
-      </section>
-      {quote.state === "issued" && quote.issued_at && (
-        <IssuedPrintDocument
-          quote={{
-            number: quote.number,
-            issueDate: quote.issue_date,
-            validUntil: quote.valid_until,
-            currencyCode: quote.currency_code,
-            locale: quote.locale,
-            taxLabel: quote.tax_label,
-            taxMode: quote.tax_mode,
-            notes: quote.notes,
-            subtotalMinor: quote.subtotal_minor,
-            discountMinor: quote.discount_minor,
-            taxMinor: quote.tax_minor ?? 0,
-            chargesMinor: quote.charges_minor ?? 0,
-            totalMinor: quote.total_minor,
-            issuedAt: quote.issued_at,
-          }}
-          seller={sellerSnapshot}
-          customer={{
-            name: quote.customer_name_snapshot ?? "Customer",
-            contactName: quote.contact_name_snapshot ?? "",
-            email: quote.email_snapshot ?? "",
-            address: [
-              quote.billing_address_line1_snapshot,
-              quote.billing_address_line2_snapshot,
-              quote.billing_city_snapshot,
-              quote.billing_region_snapshot,
-              quote.billing_postal_code_snapshot,
-              quote.billing_country_code_snapshot,
+        <HistoryTimeline
+          events={(activityResult.data ?? []).map((activity) => ({
+            id: activity.id,
+            type: activity.event_type,
+            title: activity.message,
+            detail:
+              activity.event_type === "quote.rejected" &&
+              typeof activity.safe_metadata === "object" &&
+              activity.safe_metadata &&
+              !Array.isArray(activity.safe_metadata) &&
+              typeof activity.safe_metadata.reason === "string"
+                ? activity.safe_metadata.reason
+                : undefined,
+            actor: [
+              activity.actor_name_snapshot,
+              activity.actor_role_snapshot,
+              activity.actor_source.replace("_", " "),
             ]
               .filter(Boolean)
-              .join(", "),
-            taxIdentifier: quote.tax_identifier_snapshot,
-          }}
-          items={(itemsResult.data ?? []).map((item) => ({
-            id: item.id,
-            position: item.position,
-            sku: item.sku_snapshot,
-            description: item.description_snapshot,
-            unitCode: item.unit_code_snapshot,
-            quantityScaled: item.quantity_scaled,
-            quantityScale: item.quantity_scale,
-            unitPriceMinor: item.unit_price_minor_snapshot,
-            taxCode: item.tax_code_snapshot,
-            extendedAmountMinor: calculateExtendedLineAmountMinor({
-              unitPriceMinor: item.unit_price_minor_snapshot,
-              quantityScaled: item.quantity_scaled,
-              quantityScale: item.quantity_scale,
-            }),
+              .join(" · "),
+            at: activity.created_at,
+            atLabel: new Intl.DateTimeFormat(quote.locale, {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: context.membership.organization.timezone,
+            }).format(new Date(activity.created_at)),
           }))}
-          charges={(chargesResult.data ?? []).map((charge) => ({
-            id: charge.id,
-            description: charge.description_snapshot,
-            amountMinor: charge.amount_minor,
-            taxMinor: charge.tax_minor,
-            totalMinor: charge.charge_total_minor,
-          }))}
-          issuedActor={
-            (activityResult.data ?? []).find(
-              (activity) =>
-                activity.event_type === "quote.issued" ||
-                activity.event_type === "quote.revision_issue",
-            )?.actor_name_snapshot ?? "Tender user"
-          }
         />
-      )}
+      </section>
+      {issuedPrint && <IssuedPrintDocument {...issuedPrint} />}
     </section>
   );
 }

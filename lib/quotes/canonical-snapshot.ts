@@ -1,4 +1,13 @@
+import {
+  allocateMilestoneAmounts,
+  MAX_PAYMENT_LABEL_LENGTH,
+  MAX_PAYMENT_MILESTONES,
+  PAYMENT_TRIGGERS,
+  type PaymentScheduleEntryV2,
+} from "./payment-schedule.ts";
+
 export const SNAPSHOT_FORMAT_VERSION = 1 as const;
+export const SNAPSHOT_FORMAT_VERSION_2 = 2 as const;
 export const CALCULATION_FORMAT_VERSION = 1 as const;
 
 /**
@@ -73,6 +82,21 @@ export type CanonicalQuoteSnapshotV1 = {
     fingerprint: string;
   };
 };
+
+/**
+ * Format v2 is v1 plus a sealed payment schedule (when payment is due). A quote
+ * without a schedule is still sealed as v1, byte-identical to before.
+ */
+export type CanonicalQuoteSnapshotV2 = Omit<
+  CanonicalQuoteSnapshotV1,
+  "format_version"
+> & {
+  format_version: typeof SNAPSHOT_FORMAT_VERSION_2;
+  payment_schedule: PaymentScheduleEntryV2[];
+};
+
+export type CanonicalQuoteSnapshot =
+  CanonicalQuoteSnapshotV1 | CanonicalQuoteSnapshotV2;
 
 export type CanonicalSnapshotItemV1 = {
   id: string;
@@ -515,6 +539,74 @@ function validateSnapshotCharge(value: unknown, path: string): void {
 function validateQuoteSnapshotV1(
   value: unknown,
 ): asserts value is CanonicalQuoteSnapshotV1 {
+  validateQuoteSnapshotBody(value, 1);
+}
+
+function validateQuoteSnapshotV2(
+  value: unknown,
+): asserts value is CanonicalQuoteSnapshotV2 {
+  validateQuoteSnapshotBody(value, 2);
+  const record = value as UnknownRecord;
+  const schedule = array(record.payment_schedule, "snapshot.payment_schedule");
+  if (schedule.length < 1 || schedule.length > MAX_PAYMENT_MILESTONES) {
+    throw new RangeError(
+      "snapshot.payment_schedule must have 1 to 12 milestones.",
+    );
+  }
+  const entries = schedule.map((entry, index) => {
+    const path = `snapshot.payment_schedule[${index}]`;
+    const item = object(entry, path, [
+      "position",
+      "label",
+      "basis_points",
+      "trigger",
+      "due_date",
+      "amount_minor",
+    ]);
+    const label = string(item.label, `${path}.label`);
+    if (label.length < 1 || label.length > MAX_PAYMENT_LABEL_LENGTH) {
+      throw new RangeError(`${path}.label must be 1 to 120 characters.`);
+    }
+    const basisPoints = safeInteger(item.basis_points, `${path}.basis_points`);
+    if (basisPoints < 1 || basisPoints > 10_000) {
+      throw new RangeError(`${path}.basis_points must be 1 to 10000.`);
+    }
+    const trigger = oneOf(item.trigger, `${path}.trigger`, PAYMENT_TRIGGERS);
+    const dueDate = nullableString(item.due_date, `${path}.due_date`);
+    if ((trigger === "on_date") !== (dueDate !== null)) {
+      throw new RangeError(
+        `${path}.due_date is required for and only for on_date milestones.`,
+      );
+    }
+    if (dueDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+      throw new RangeError(`${path}.due_date must be an ISO date.`);
+    }
+    return {
+      position: safeInteger(item.position, `${path}.position`),
+      basisPoints,
+      amount: safeInteger(item.amount_minor, `${path}.amount_minor`),
+    };
+  });
+  const ordered = [...entries].sort((a, b) => a.position - b.position);
+  ordered.forEach((entry, index) => {
+    if (entry.position !== index + 1) {
+      throw new RangeError(
+        "snapshot.payment_schedule positions must be 1 to n without gaps.",
+      );
+    }
+  });
+  const expected = allocateMilestoneAmounts(
+    (value as CanonicalQuoteSnapshotV2).totals.total_minor,
+    ordered.map((entry) => entry.basisPoints),
+  );
+  if (ordered.some((entry, index) => entry.amount !== expected[index])) {
+    throw new RangeError(
+      "snapshot.payment_schedule amounts do not match the quote total.",
+    );
+  }
+}
+
+function validateQuoteSnapshotBody(value: unknown, formatVersion: 1 | 2): void {
   const record = object(value, "snapshot", [
     "format_version",
     "quote",
@@ -526,8 +618,9 @@ function validateQuoteSnapshotV1(
     "totals",
     "approval_policy",
     "calculation",
+    ...(formatVersion === 2 ? ["payment_schedule"] : []),
   ]);
-  version(record.format_version, "snapshot.format_version", 1);
+  version(record.format_version, "snapshot.format_version", formatVersion);
 
   const quote = object(record.quote, "snapshot.quote", [
     "id",
@@ -807,6 +900,49 @@ export function canonicalizeQuoteSnapshotV1(value: unknown) {
     totals: totals(value.totals),
     approval_policy: { ...value.approval_policy, reason_codes: reasonCodes },
   });
+}
+
+function canonicalizeQuoteSnapshotV2(value: unknown) {
+  validateQuoteSnapshotV2(value);
+  const items = [...value.items].sort(
+    (left, right) => left.position - right.position,
+  );
+  const charges = [...value.charges].sort(
+    (left, right) => left.position - right.position,
+  );
+  const paymentSchedule = [...value.payment_schedule].sort(
+    (left, right) => left.position - right.position,
+  );
+  const reasonCodes = [
+    ...new Set(
+      value.approval_policy.reason_codes.map((code) => code.normalize("NFC")),
+    ),
+  ].sort(compareUtf8);
+  return canonicalJson({
+    ...value,
+    items: items.map(snapshotItem),
+    charges: charges.map(snapshotCharge),
+    totals: totals(value.totals),
+    approval_policy: { ...value.approval_policy, reason_codes: reasonCodes },
+    payment_schedule: paymentSchedule,
+  });
+}
+
+/**
+ * Version-dispatching canonicalizer. Format 1 goes through the unchanged strict
+ * v1 path (a v1 document cannot carry a payment schedule); format 2 adds the
+ * schedule; anything else is rejected.
+ */
+export function canonicalizeQuoteSnapshot(value: unknown) {
+  const declared =
+    value !== null && typeof value === "object" && !Array.isArray(value)
+      ? (value as UnknownRecord).format_version
+      : undefined;
+  if (declared === 1) return canonicalizeQuoteSnapshotV1(value);
+  if (declared === 2) return canonicalizeQuoteSnapshotV2(value);
+  throw new RangeError(
+    "snapshot.format_version has an unsupported format version.",
+  );
 }
 
 export function canonicalUtf8(value: string) {

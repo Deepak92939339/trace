@@ -1,0 +1,31 @@
+.paper {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--r-paper);
+  box-shadow: var(--shadow-paper);
+  color: var(--ink);
+}
+.sm {
+  padding: 18px 20px 14px;
+}
+.md {
+  padding: 26px 26px 18px;
+}
+.lg {
+  padding: 48px 56px 36px;
+}
+@media (max-width: 700px) {
+  .md {
+    padding: 20px 18px 14px;
+  }
+  .lg {
+    padding: 26px 20px 24px;
+  }
+}
+@media print {
+  .paper {
+    box-shadow: none;
+    border-color: transparent;
+  }
+}

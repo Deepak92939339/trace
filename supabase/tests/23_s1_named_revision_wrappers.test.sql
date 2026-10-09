@@ -63,7 +63,7 @@ with created as (
   select public.create_verified_quote_draft(
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     'a3000000-0000-4000-8000-000000000001',
-    'INR', 'en-IN', 'GST 18%', 'exclusive', '2026-08-24', '2026-09-14',
+    'INR', 'en-IN', 'GST 18%', 'exclusive', current_date, (current_date + 21),
     'c2000000-0000-4000-8000-000000000001'
   ) result
 )
@@ -79,7 +79,7 @@ select lives_ok($$
       'customer_id', 'a3000000-0000-4000-8000-000000000001',
       'currency_code', 'INR', 'locale', 'en-IN', 'tax_label', 'GST 18%',
       'tax_mode', 'exclusive', 'discount_bps', 0,
-      'issue_date', '2026-08-24', 'valid_until', '2026-09-14',
+      'issue_date', current_date, 'valid_until', (current_date + 21),
       'notes', 'Named wrapper contract',
       'items', jsonb_build_array(jsonb_build_object(
         'line_id', null, 'product_id', 'a2000000-0000-4000-8000-000000000001',

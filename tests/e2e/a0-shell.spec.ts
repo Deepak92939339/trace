@@ -30,7 +30,7 @@ test("unknown routes are handled", async ({ page }) => {
   const response = await page.goto("/not-a-tender-route");
   expect(response?.status()).toBe(404);
   await expect(
-    page.getByRole("heading", { name: "This page is not part of Tender." }),
+    page.getByRole("heading", { name: "This page is not part of Trace." }),
   ).toBeVisible();
 });
 

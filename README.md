@@ -1,6 +1,6 @@
-# Tender
+# Trace
 
-Tender is a multi-tenant commercial quotation application for preparing priced offers, routing discount decisions, and issuing an accountable customer-facing record. It demonstrates how a compact B2B workflow can keep tenant isolation, exact money, approval policy, lifecycle transitions, and audit activity inside one coherent system.
+Trace is a multi-tenant commercial quotation application for preparing priced offers, routing discount decisions, and issuing an accountable customer-facing record. It demonstrates how a compact B2B workflow can keep tenant isolation, exact money, approval policy, lifecycle transitions, and audit activity inside one coherent system.
 
 > Live demo: **[tender-eta-orpin.vercel.app](https://tender-eta-orpin.vercel.app)**
 
@@ -19,7 +19,7 @@ The current public-release candidate is local only: branch `feat/issuer-share-li
 
 ## Architecture
 
-Tender is a Next.js 16 App Router application using React 19, strict TypeScript, Supabase Auth, PostgreSQL, and the Supabase Data API. Server Components and Server Actions use the browser-safe Supabase URL and publishable/anon key with the signed-in user's session. PostgreSQL RLS and capability-aware functions enforce the tenant and authorization boundary.
+Trace is a Next.js 16 App Router application using React 19, strict TypeScript, Supabase Auth, PostgreSQL, and the Supabase Data API. Server Components and Server Actions use the browser-safe Supabase URL and publishable/anon key with the signed-in user's session. PostgreSQL RLS and capability-aware functions enforce the tenant and authorization boundary.
 
 Authoritative commercial enforcement is implemented in PostgreSQL because writes can arrive from more than one UI path and must be checked atomically with stored state. The TypeScript calculator makes editing responsive, but the database recalculates and validates persisted totals, currencies, quantities, discounts, taxes, versions, actors, and lifecycle transitions. See [Architecture](docs/ARCHITECTURE.md) and [Security](docs/SECURITY.md).
 
@@ -64,7 +64,7 @@ Individual checks are available as `npm run format:check`, `npm run lint`, `npm 
 
 ## Demo access
 
-Normal local behavior keeps self-service signup enabled. Set the server-only variable `TENDER_DEMO_MODE=true` for a public portfolio deployment. In that mode Tender:
+Normal local behavior keeps self-service signup enabled. Set the server-only variable `TENDER_DEMO_MODE=true` for a public portfolio deployment. In that mode Trace:
 
 - removes signup calls to action;
 - redirects `/create-account` to sign-in;
@@ -87,7 +87,7 @@ The intended deployment is Vercel for Next.js plus one dedicated Supabase projec
 - `TENDER_EDGE_BROKER_TRANSPORT_SECRET` for the server-to-server public broker envelope
 - `TENDER_PUBLIC_SESSION_ENCRYPTION_KEY` for the short-lived encrypted recipient session
 
-The transport and session secrets are server-only Next.js runtime values; `TENDER_DEMO_MODE` is a server-only non-secret flag. No service-role key or database URL is used by Next.js or browser runtime. The isolated Supabase Edge broker alone receives the service-role credential for its four fixed RPC calls. The database URL is needed only in the operator's local environment for the deliberately invoked cloud demo-data command. No `vercel.json` is required for the current Next.js deployment. Full preparation, migration dry-run, Auth URL settings, smoke checks, and rollback assumptions are in [Deployment](docs/DEPLOYMENT.md); the verified public release is recorded in [Production deployment evidence](docs/DEPLOYMENT_EVIDENCE.md).
+The transport and session secrets are server-only Next.js runtime values; `TENDER_DEMO_MODE` is a server-only non-secret flag. No database URL is used by Next.js or browser runtime, and the browser never sees the service-role key. The isolated Supabase Edge broker receives the service-role credential for its four fixed RPC calls; the Next.js server additionally holds `SUPABASE_SERVICE_ROLE_KEY` for exactly two server-only modules (PDF storage in `lib/quote-pdf/privileged-writer.ts` and the email outbox worker in `lib/outbox/privileged-outbox.ts`), enforced by `npm run test:secrets`. Email uses `TRACE_MAIL_PROVIDER`, `TRACE_MAIL_FROM`, `TRACE_RESEND_API_KEY` and `TRACE_OUTBOX_DRAIN_SECRET` (server-only; see [Deployment](docs/DEPLOYMENT.md)). The database URL is needed only in the operator's local environment for the deliberately invoked cloud demo-data command. No `vercel.json` is required for the current Next.js deployment. Full preparation, migration dry-run, Auth URL settings, smoke checks, and rollback assumptions are in [Deployment](docs/DEPLOYMENT.md); the verified public release is recorded in [Production deployment evidence](docs/DEPLOYMENT_EVIDENCE.md).
 
 ## Current limitations
 

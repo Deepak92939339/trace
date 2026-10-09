@@ -1,0 +1,129 @@
+.meterContainer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.values {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.marginValue {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.tone_green {
+  color: var(--accent);
+}
+
+.tone_amber {
+  color: var(--amber);
+}
+
+.tone_red {
+  color: var(--red);
+}
+
+.floorText {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.mutedNotice {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sunken);
+  overflow: visible;
+  margin-bottom: 6px;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--margin-pct, 0%);
+  border-radius: 999px;
+  transition:
+    width var(--t),
+    background-color var(--t);
+}
+
+.fill_green {
+  background: var(--accent);
+}
+
+.fill_amber {
+  background: var(--amber);
+}
+
+.fill_red {
+  background: var(--red);
+}
+
+.tick {
+  position: absolute;
+  left: var(--floor-pct, 0%);
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+.linesNote {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 4px 0 8px;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-ctl);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.noticeAmber {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber-line);
+}
+
+.noticeRed {
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red-line);
+}

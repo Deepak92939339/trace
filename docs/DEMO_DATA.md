@@ -2,7 +2,7 @@
 
 `supabase/seed.sql` is the predictable local verification seed. It is configured only for local `supabase db reset` and must never be applied to a hosted project.
 
-The separate `supabase/demo/seed-cloud-demo.sql` creates a one-time fictional dataset through Tender's command functions: 14 products, 6 customers, and 14 quotes with draft, submitted/waiting, automatic and manual approval, rejection, issuance, and date-derived expiry evidence. Quote lines, tax/discount calculations, submission snapshots, seller snapshots, command receipts, and activity are produced by the authoritative database workflow where practical.
+The separate `supabase/demo/seed-cloud-demo.sql` creates a one-time fictional dataset through Trace's command functions: 14 products, 6 customers, and 14 quotes with draft, submitted/waiting, automatic and manual approval, rejection, issuance, and date-derived expiry evidence. Quote lines, tax/discount calculations, submission snapshots, seller snapshots, command receipts, and activity are produced by the authoritative database workflow where practical.
 
 ## Guards
 

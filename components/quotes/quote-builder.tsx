@@ -9,7 +9,6 @@ import {
   type QuoteDraftProjection,
 } from "@/app/(application)/quotes/actions";
 import {
-  calculateExtendedLineAmountMinor,
   calculateQuote,
   type ChargeType,
   type QuoteCalculationInput,
@@ -18,12 +17,38 @@ import {
   type UnitCode,
 } from "@/lib/quotes/calculate";
 import { quoteStateLabel, type QuoteState } from "@/lib/quotes/effective-state";
-import { SUPPORTED_CURRENCY_CODES } from "@/lib/formatting/currency";
 import {
   formatMinor,
   formatMinorDecimal,
   parseDecimalMinor,
 } from "@/lib/formatting/money";
+import styles from "./quote-builder.module.css";
+import { ConflictBanner, ExpiredNotice } from "@/components/states";
+import {
+  BuilderHeader,
+  ChargesSection,
+  DecisionActions,
+  DiscountPolicyMeter,
+  DocumentPreview,
+  LineGrid,
+  MarginMeter,
+  PaymentScheduleEditor,
+  RejectDialog,
+  SaveState,
+  SubmissionSnapshot,
+  TermsStrip,
+  TotalsList,
+} from "./builder";
+import {
+  allocateMilestoneAmounts,
+  validatePaymentMilestones,
+  type PaymentMilestoneInput,
+} from "@/lib/quotes/payment-schedule";
+import { formatBasisPoints } from "@/lib/formatting/basis-points";
+import {
+  getDraftMargin,
+  type DraftMargin,
+} from "@/app/(application)/quotes/[number]/draft-margin";
 
 type Customer = { id: string; name: string; taxTreatment: TaxTreatment };
 type Product = {
@@ -83,6 +108,7 @@ export type QuoteBuilderProps = {
     discountMinor: number;
     taxMinor: number;
     chargesMinor: number;
+    chargeNetMinor?: number;
     totalMinor: number;
     customerSnapshot?: {
       name: string;
@@ -102,6 +128,8 @@ export type QuoteBuilderProps = {
   products: Product[];
   taxProfiles: TaxProfile[];
   capabilities: string[];
+  approvalThresholdBps?: number;
+  previewSeller: { name: string; addressLines: string[] };
   initialLines: Array<{
     id: string;
     product: Product;
@@ -119,6 +147,15 @@ export type QuoteBuilderProps = {
     taxTreatment: TaxTreatment;
     discountApplies: boolean;
   }>;
+  canReadMargin?: boolean;
+  initialMargin?: DraftMargin | null;
+  initialSchedule?: PaymentMilestoneInput[];
+  /** Download link for the issued revision's PDF (see PdfDownload). */
+  pdfDownload?: {
+    href: string;
+    available: boolean;
+    canGenerate: boolean;
+  } | null;
 };
 
 function quantityText(scaled: number, scale: number) {
@@ -165,8 +202,14 @@ export function QuoteBuilder({
   products,
   taxProfiles,
   capabilities,
+  approvalThresholdBps = 1000,
+  previewSeller,
   initialLines,
   initialCharges,
+  canReadMargin,
+  initialMargin,
+  initialSchedule,
+  pdfDownload,
 }: QuoteBuilderProps) {
   const router = useRouter();
   const productsById = useMemo(
@@ -209,6 +252,10 @@ export function QuoteBuilder({
       discountApplies: charge.discountApplies,
     })),
   );
+  const marginRequestRef = useRef(0);
+  const [margin, setMargin] = useState<DraftMargin | null>(
+    initialMargin ?? null,
+  );
   const [saveState, setSaveState] = useState<
     "Saved" | "Unsaved" | "Saving…" | "Save failed"
   >("Saved");
@@ -218,9 +265,24 @@ export function QuoteBuilder({
     discountMinor: quote.discountMinor,
     taxMinor: quote.taxMinor,
     chargesMinor: quote.chargesMinor,
+    chargeNetMinor: quote.chargeNetMinor,
     totalMinor: quote.totalMinor,
   });
   const versionRef = useRef(quote.version);
+  const [quoteVersion, setQuoteVersion] = useState(quote.version);
+  const [draftSchedule, setDraftSchedule] = useState<PaymentMilestoneInput[]>(
+    initialSchedule ?? [],
+  );
+  const handleScheduleChange = useCallback(
+    (milestones: PaymentMilestoneInput[]) => {
+      setDraftSchedule(milestones);
+    },
+    [],
+  );
+  const handleScheduleVersionBump = useCallback((newVersion: number) => {
+    versionRef.current = newVersion;
+    setQuoteVersion(newVersion);
+  }, []);
   const savingRef = useRef(false);
   const [queuedSave, setQueuedSave] = useState(0);
   const [staleConflict, setStaleConflict] = useState(false);
@@ -464,6 +526,7 @@ export function QuoteBuilder({
     ) => {
       const projected = projectionState(projection, identity);
       versionRef.current = projection.version;
+      setQuoteVersion(projection.version);
       setCustomerId(projected.customerId);
       setCurrencyCode(projected.currencyCode);
       setLocale(projected.locale);
@@ -480,6 +543,7 @@ export function QuoteBuilder({
         discountMinor: projection.discount_minor,
         taxMinor: projection.tax_minor,
         chargesMinor: projection.charges_minor,
+        chargeNetMinor: undefined, // projection has no net field; presentTotals derives it
         totalMinor: projection.total_minor,
       });
       baselineRef.current = projected.signature;
@@ -487,8 +551,19 @@ export function QuoteBuilder({
       setStaleConflict(false);
       setSaveState("Saved");
       setSaveMessage(message);
+      if (canReadMargin) {
+        const requestId = ++marginRequestRef.current;
+        getDraftMargin(quote.id)
+          .then((nextMargin) => {
+            // Ignore out-of-order responses from earlier saves.
+            if (requestId === marginRequestRef.current) setMargin(nextMargin);
+          })
+          .catch(() => {
+            // Keep the last known margin; the save itself succeeded.
+          });
+      }
     },
-    [projectionState],
+    [projectionState, canReadMargin, quote.id],
   );
 
   const persist = useCallback(
@@ -517,11 +592,13 @@ export function QuoteBuilder({
       if (result.status === "saved" && result.projection) {
         const projected = projectionState(result.projection, capturedIdentity);
         versionRef.current = result.projection.version;
+        setQuoteVersion(result.projection.version);
         setServerTotals({
           subtotalMinor: result.projection.subtotal_minor,
           discountMinor: result.projection.discount_minor,
           taxMinor: result.projection.tax_minor,
           chargesMinor: result.projection.charges_minor,
+          chargeNetMinor: undefined, // projection has no net field; presentTotals derives it
           totalMinor: result.projection.total_minor,
         });
         baselineRef.current = projected.signature;
@@ -686,6 +763,7 @@ export function QuoteBuilder({
     discount_minor: serverTotals.discountMinor,
     tax_minor: serverTotals.taxMinor,
     charges_minor: serverTotals.chargesMinor,
+    charge_net_minor: serverTotals.chargeNetMinor,
     total_minor: serverTotals.totalMinor,
   };
 
@@ -772,491 +850,293 @@ export function QuoteBuilder({
   }
 
   const stateLabel = quoteStateLabel(quote.state);
+  const effectiveThresholdBps =
+    quote.customerSnapshot?.approvalThresholdBps ?? approvalThresholdBps;
+
+  const mathLines = useMemo(() => {
+    if (!prepared.calculation) return [];
+    return prepared.calculation.items.map((item, index) => {
+      const qty = (item.quantity_scaled / item.quantity_scale).toLocaleString(
+        locale,
+        {
+          maximumFractionDigits: item.quantity_precision_snapshot,
+        },
+      );
+      const unitPrice = formatMinor(
+        item.unit_price_minor_snapshot,
+        currencyCode,
+        locale,
+      );
+      return {
+        key: `math-item-${item.product_id}-${index}`,
+        label: item.description_snapshot,
+        detail: `${qty} ${item.unit_code_snapshot} × ${unitPrice}`,
+        amountMinor: item.base_minor,
+      };
+    });
+  }, [prepared.calculation, locale, currencyCode]);
+
+  const mathAdjustments = useMemo(() => {
+    if (!prepared.calculation) return [];
+    const adjustments = [];
+    if (prepared.calculation.discount_minor > 0) {
+      adjustments.push({
+        key: "discount",
+        label: `Discount ${(discountBps / 100).toFixed(2)}%`,
+        amountMinor: -prepared.calculation.discount_minor,
+      });
+    }
+    if (prepared.calculation.tax_minor > 0) {
+      adjustments.push({
+        key: "tax",
+        label: taxLabel ? `${taxLabel} (${taxMode})` : "Tax",
+        amountMinor: prepared.calculation.tax_minor,
+      });
+    }
+    if (prepared.calculation.charges.length > 0) {
+      for (const charge of prepared.calculation.charges) {
+        adjustments.push({
+          key: `charge-${charge.position}`,
+          label: charge.description_snapshot,
+          amountMinor: charge.net_minor,
+        });
+      }
+    }
+    return adjustments;
+  }, [prepared.calculation, discountBps, taxLabel, taxMode]);
+
+  const currentCustomer = customers.find((c) => c.id === customerId);
+  const customerName = quote.customerSnapshot?.name ?? currentCustomer?.name;
+  const customerContact = quote.customerSnapshot?.contactName;
+  const customerAddress = quote.customerSnapshot
+    ? [
+        quote.customerSnapshot.addressLine1,
+        quote.customerSnapshot.city,
+        quote.customerSnapshot.countryCode,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : undefined;
+
+  const previewLines = useMemo(() => {
+    return lines.map((line, index) => {
+      const calcItem = prepared.calculation?.items[index];
+      return {
+        key: line.key,
+        sku: line.product.sku,
+        description: line.product.description,
+        quantity: line.quantity,
+        unitCode: line.product.unitCode,
+        unitPriceMinor: line.product.unitPriceMinor,
+        amountMinor: calcItem ? calcItem.base_minor : undefined,
+      };
+    });
+  }, [lines, prepared.calculation]);
+
+  const previewCharges = useMemo(() => {
+    return charges.map((charge, index) => {
+      const calcCharge = prepared.calculation?.charges[index];
+      return {
+        key: charge.key,
+        description: charge.description,
+        amountMinor: calcCharge ? calcCharge.charge_total_minor : 0,
+      };
+    });
+  }, [charges, prepared.calculation]);
+
+  const previewPaymentSchedule = useMemo(() => {
+    if (
+      !draftSchedule ||
+      draftSchedule.length === 0 ||
+      validatePaymentMilestones(draftSchedule, issueDate) !== null
+    ) {
+      return undefined;
+    }
+    const totalBps = draftSchedule.reduce((sum, m) => sum + m.basis_points, 0);
+    if (totalBps !== 10000) return undefined;
+    const quoteTotal = prepared.calculation?.total_minor ?? quote.totalMinor;
+    if (quoteTotal <= 0) return undefined;
+    try {
+      const allocated = allocateMilestoneAmounts(
+        quoteTotal,
+        draftSchedule.map((m) => m.basis_points),
+      );
+      return draftSchedule.map((m, i) => {
+        let dueText = "";
+        if (m.trigger === "on_acceptance") dueText = "Due on acceptance";
+        else if (m.trigger === "on_delivery") dueText = "Due on delivery";
+        else if (m.trigger === "on_completion") dueText = "Due on completion";
+        else if (m.trigger === "on_date" && m.due_date)
+          dueText = `Due on ${m.due_date}`;
+        return {
+          label: m.label,
+          percentDisplay: formatBasisPoints(m.basis_points),
+          amountDisplay: formatMinor(allocated[i]!, currencyCode, locale),
+          dueText,
+        };
+      });
+    } catch {
+      return undefined;
+    }
+  }, [
+    draftSchedule,
+    issueDate,
+    prepared.calculation,
+    quote.totalMinor,
+    currencyCode,
+    locale,
+  ]);
 
   return (
-    <div className="quote-builder">
+    <div className={`quote-builder ${styles.quoteBuilder}`}>
       <section
-        className="quote-document"
+        className={`quote-document ${styles.workColumn}`}
         aria-labelledby="quote-number-heading"
       >
-        <header className="quote-document-header">
-          <div>
-            <p className="eyebrow">Quotation</p>
-            <h1 id="quote-number-heading">{quote.number}</h1>
-          </div>
-          <span className="state-label">{stateLabel}</span>
-        </header>
-        {quote.customerSnapshot && (
-          <section
-            className="quote-submission-snapshot"
-            aria-labelledby="submission-snapshot-heading"
-          >
-            <div>
-              <p className="eyebrow">Submission snapshot</p>
-              <h2 id="submission-snapshot-heading">
-                {quote.customerSnapshot.name}
-              </h2>
-              <p>
-                {[
-                  quote.customerSnapshot.contactName,
-                  quote.customerSnapshot.email,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || "No contact details supplied"}
-              </p>
-            </div>
-            <dl>
-              <div>
-                <dt>Billing address</dt>
-                <dd>
-                  {[
-                    quote.customerSnapshot.addressLine1,
-                    quote.customerSnapshot.addressLine2,
-                    quote.customerSnapshot.city,
-                    quote.customerSnapshot.region,
-                    quote.customerSnapshot.postalCode,
-                    quote.customerSnapshot.countryCode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt>Tax identifier</dt>
-                <dd>{quote.customerSnapshot.taxIdentifier || "—"}</dd>
-              </div>
-              <div>
-                <dt>Approval threshold at submission</dt>
-                <dd>
-                  {(quote.customerSnapshot.approvalThresholdBps / 100).toFixed(
-                    2,
-                  )}
-                  %
-                </dd>
-              </div>
-            </dl>
-          </section>
+        <BuilderHeader quote={quote} stateLabel={stateLabel} />
+        {quote.state === "expired" && (
+          <ExpiredNotice
+            tone="expired"
+            title="This quotation has expired"
+            body={`Validity ended on ${validUntil}. Create a new revision to quote again.`}
+          />
         )}
-        <fieldset className="quote-edit-fieldset" disabled={!editable}>
-          <div className="quote-header-fields form-grid">
-            <label className="span-2">
-              Customer
-              <select
-                value={customerId}
-                onChange={(event) => setCustomerId(event.target.value)}
-              >
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Issue date
-              <input
-                type="date"
-                value={issueDate}
-                onChange={(event) => setIssueDate(event.target.value)}
-              />
-            </label>
-            <label>
-              Valid until
-              <input
-                type="date"
-                value={validUntil}
-                onChange={(event) => setValidUntil(event.target.value)}
-              />
-            </label>
-            <label>
-              Currency
-              <select
-                aria-label="Quote currency"
-                value={currencyCode}
-                onChange={(event) => setCurrencyCode(event.target.value)}
-              >
-                {SUPPORTED_CURRENCY_CODES.map((code) => (
-                  <option key={code} value={code}>
-                    {code}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Locale
-              <input
-                value={locale}
-                maxLength={35}
-                onChange={(event) => setLocale(event.target.value)}
-              />
-            </label>
-            <label>
-              Tax label
-              <input
-                value={taxLabel}
-                maxLength={80}
-                onChange={(event) => setTaxLabel(event.target.value)}
-              />
-            </label>
-            <label>
-              Price basis
-              <select
-                value={taxMode}
-                onChange={(event) =>
-                  setTaxMode(event.target.value as TaxPriceBasis)
-                }
-              >
-                <option value="exclusive">Tax exclusive</option>
-                <option value="inclusive">Tax inclusive</option>
-              </select>
-            </label>
-            <label>
-              Discount %
-              <input
-                aria-label="Discount percent"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={discountBps / 100}
-                onChange={(event) =>
-                  setDiscountBps(
-                    Math.max(
-                      0,
-                      Math.min(
-                        10_000,
-                        Math.round(Number(event.target.value) * 100),
-                      ),
-                    ),
-                  )
-                }
-              />
-            </label>
-          </div>
+        <SubmissionSnapshot customerSnapshot={quote.customerSnapshot} />
 
-          <section className="quote-lines" aria-labelledby="lines-heading">
-            <header>
-              <div>
-                <p className="eyebrow">Commercial lines</p>
-                <h2 id="lines-heading">Items</h2>
-              </div>
-              <div className="inline-add">
-                <label>
-                  Catalog product
-                  <select
-                    aria-label="Catalog product"
-                    value={selectedProduct}
-                    onChange={(event) => setSelectedProduct(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        addProduct();
+        <fieldset
+          className={`quote-edit-fieldset ${styles.fieldset}`}
+          disabled={!editable}
+        >
+          <TermsStrip
+            customerId={customerId}
+            customers={customers}
+            issueDate={issueDate}
+            validUntil={validUntil}
+            currencyCode={currencyCode}
+            locale={locale}
+            taxLabel={taxLabel}
+            taxMode={taxMode}
+            discountBps={discountBps}
+            onCustomerIdChange={(value) => setCustomerId(value)}
+            onIssueDateChange={(value) => setIssueDate(value)}
+            onValidUntilChange={(value) => setValidUntil(value)}
+            onCurrencyCodeChange={(value) => setCurrencyCode(value)}
+            onLocaleChange={(value) => setLocale(value)}
+            onTaxLabelChange={(value) => setTaxLabel(value)}
+            onTaxModeChange={(value) => setTaxMode(value)}
+            onDiscountBpsChange={(value) =>
+              setDiscountBps(
+                Math.max(0, Math.min(10_000, Math.round(Number(value) * 100))),
+              )
+            }
+          />
+
+          <LineGrid
+            lines={lines}
+            products={products}
+            selectedProduct={selectedProduct}
+            calculatedItems={prepared.calculation?.items}
+            currencyCode={currencyCode}
+            locale={locale}
+            saveState={saveState}
+            refreshingLineId={refreshingLineId}
+            onSelectedProductChange={(value) => setSelectedProduct(value)}
+            onAddProduct={addProduct}
+            onQuantityChange={(key, quantity) =>
+              setLines((current) =>
+                current.map((entry) =>
+                  entry.key === key
+                    ? {
+                        ...entry,
+                        quantity,
                       }
-                    }}
-                  >
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.sku} — {product.description}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  className="button"
-                  type="button"
-                  onClick={addProduct}
-                  disabled={!selectedProduct}
-                >
-                  Add product
-                </button>
-              </div>
-            </header>
-            <div
-              className="table-region"
-              tabIndex={0}
-              role="region"
-              aria-label="Quotation items table"
-            >
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Unit price</th>
-                    <th>Tax</th>
-                    <th>Amount</th>
-                    <th>
-                      <span className="sr-only">Remove</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((line, index) => {
-                    const product = line.product;
-                    const calculated = prepared.calculation?.items[index];
-                    return (
-                      <tr key={line.key} data-line-id={line.lineId ?? "new"}>
-                        <td>
-                          <strong>{product.sku}</strong>
-                          <br />
-                          <span>{product.description}</span>
-                        </td>
-                        <td>
-                          <label className="table-control">
-                            <span className="sr-only">
-                              Quantity for {product.sku}
-                            </span>
-                            <input
-                              aria-label={`Quantity for ${product.sku}`}
-                              inputMode="decimal"
-                              value={line.quantity}
-                              onChange={(event) =>
-                                setLines((current) =>
-                                  current.map((entry) =>
-                                    entry.key === line.key
-                                      ? {
-                                          ...entry,
-                                          quantity: event.target.value,
-                                        }
-                                      : entry,
-                                  ),
-                                )
-                              }
-                            />
-                          </label>{" "}
-                          {product.unitCode}
-                        </td>
-                        <td className="money">
-                          {formatMinor(
-                            product.unitPriceMinor,
-                            product.currencyCode,
-                            locale,
-                          )}
-                        </td>
-                        <td>{product.taxCode}</td>
-                        <td className="money">
-                          {calculated
-                            ? formatMinor(
-                                calculateExtendedLineAmountMinor({
-                                  unitPriceMinor:
-                                    calculated.unit_price_minor_snapshot,
-                                  quantityScaled: calculated.quantity_scaled,
-                                  quantityScale: calculated.quantity_scale,
-                                }),
-                                currencyCode,
-                                locale,
-                              )
-                            : "—"}
-                        </td>
-                        <td>
-                          <div className="table-row-actions">
-                            {line.lineId && (
-                              <button
-                                className="text-action"
-                                type="button"
-                                onClick={() => void refreshLine(line.lineId!)}
-                                disabled={
-                                  saveState !== "Saved" ||
-                                  refreshingLineId !== null
-                                }
-                              >
-                                {refreshingLineId === line.lineId
-                                  ? "Refreshing…"
-                                  : "Refresh pricing"}
-                              </button>
-                            )}
-                            <button
-                              className="text-action"
-                              type="button"
-                              aria-label={`Remove ${product.sku}`}
-                              onClick={() =>
-                                setLines((current) =>
-                                  current.filter(
-                                    (entry) => entry.key !== line.key,
-                                  ),
-                                )
-                              }
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {!lines.length && (
-                    <tr>
-                      <td colSpan={6} className="table-empty">
-                        Add a catalog product to prepare this quotation.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                    : entry,
+                ),
+              )
+            }
+            onRefreshLine={(lineId) => void refreshLine(lineId)}
+            onRemoveLine={(key) =>
+              setLines((current) =>
+                current.filter((entry) => entry.key !== key),
+              )
+            }
+          />
 
-          <section className="quote-charges" aria-labelledby="charges-heading">
-            <header>
-              <div>
-                <p className="eyebrow">Additional commercial amounts</p>
-                <h2 id="charges-heading">Charges</h2>
-              </div>
-              <button
-                className="button"
-                type="button"
-                onClick={addCharge}
-                disabled={!taxProfiles.length}
-              >
-                Add charge
-              </button>
-            </header>
-            {charges.map((charge, index) => (
-              <div
-                className="charge-row"
-                key={charge.key}
-                data-charge-id={charge.chargeId ?? "new"}
-              >
-                <label>
-                  Type
-                  <select
-                    aria-label={`Charge ${index + 1} type`}
-                    value={charge.chargeType}
-                    onChange={(event) =>
-                      setCharges((current) =>
-                        current.map((entry) =>
-                          entry.key === charge.key
-                            ? {
-                                ...entry,
-                                chargeType: event.target.value as ChargeType,
-                              }
-                            : entry,
-                        ),
-                      )
-                    }
-                  >
-                    {[
-                      "freight",
-                      "shipping",
-                      "handling",
-                      "insurance",
-                      "packaging",
-                      "customs_duties",
-                      "other",
-                    ].map((type) => (
-                      <option key={type} value={type}>
-                        {type.replaceAll("_", " ")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="charge-description">
-                  Description
-                  <input
-                    aria-label={`Charge ${index + 1} description`}
-                    value={charge.description}
-                    maxLength={300}
-                    onChange={(event) =>
-                      setCharges((current) =>
-                        current.map((entry) =>
-                          entry.key === charge.key
-                            ? { ...entry, description: event.target.value }
-                            : entry,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Amount
-                  <input
-                    aria-label={`Charge ${index + 1} amount`}
-                    inputMode="decimal"
-                    value={charge.amount}
-                    onChange={(event) =>
-                      setCharges((current) =>
-                        current.map((entry) =>
-                          entry.key === charge.key
-                            ? { ...entry, amount: event.target.value }
-                            : entry,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                {charge.chargeId ? (
-                  <label>
-                    Tax snapshot
-                    <input
-                      aria-label={`Charge ${index + 1} tax snapshot`}
-                      value={`${charge.taxCode} · ${(charge.taxBps / 100).toFixed(2)}%`}
-                      readOnly
-                    />
-                  </label>
-                ) : (
-                  <label>
-                    Tax profile
-                    <select
-                      aria-label={`Charge ${index + 1} tax profile`}
-                      value={charge.taxProfileId}
-                      onChange={(event) =>
-                        setCharges((current) =>
-                          current.map((entry) =>
-                            entry.key === charge.key
-                              ? { ...entry, taxProfileId: event.target.value }
-                              : entry,
-                          ),
-                        )
+          <ChargesSection
+            charges={charges}
+            taxProfiles={taxProfiles}
+            onAddCharge={addCharge}
+            onChargeTypeChange={(key, chargeType) =>
+              setCharges((current) =>
+                current.map((entry) =>
+                  entry.key === key
+                    ? {
+                        ...entry,
+                        chargeType,
                       }
-                    >
-                      {taxProfiles.map((tax) => (
-                        <option key={tax.id} value={tax.id}>
-                          {tax.code} — {tax.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    checked={charge.discountApplies}
-                    onChange={(event) =>
-                      setCharges((current) =>
-                        current.map((entry) =>
-                          entry.key === charge.key
-                            ? {
-                                ...entry,
-                                discountApplies: event.target.checked,
-                              }
-                            : entry,
-                        ),
-                      )
-                    }
-                  />{" "}
-                  Apply quote discount
-                </label>
-                <button
-                  className="text-action"
-                  type="button"
-                  onClick={() =>
-                    setCharges((current) =>
-                      current.filter((entry) => entry.key !== charge.key),
-                    )
-                  }
-                >
-                  Remove charge
-                </button>
-              </div>
-            ))}
-            {!charges.length && (
-              <p className="quiet-empty">No additional charges.</p>
-            )}
-          </section>
+                    : entry,
+                ),
+              )
+            }
+            onChargeDescriptionChange={(key, description) =>
+              setCharges((current) =>
+                current.map((entry) =>
+                  entry.key === key ? { ...entry, description } : entry,
+                ),
+              )
+            }
+            onChargeAmountChange={(key, amount) =>
+              setCharges((current) =>
+                current.map((entry) =>
+                  entry.key === key ? { ...entry, amount } : entry,
+                ),
+              )
+            }
+            onChargeTaxProfileIdChange={(key, taxProfileId) =>
+              setCharges((current) =>
+                current.map((entry) =>
+                  entry.key === key ? { ...entry, taxProfileId } : entry,
+                ),
+              )
+            }
+            onChargeDiscountAppliesChange={(key, discountApplies) =>
+              setCharges((current) =>
+                current.map((entry) =>
+                  entry.key === key
+                    ? {
+                        ...entry,
+                        discountApplies,
+                      }
+                    : entry,
+                ),
+              )
+            }
+            onRemoveCharge={(key) =>
+              setCharges((current) =>
+                current.filter((entry) => entry.key !== key),
+              )
+            }
+          />
 
-          <label className="notes-field">
+          <PaymentScheduleEditor
+            quoteId={quote.id}
+            expectedVersion={quoteVersion}
+            issueDate={issueDate}
+            totalMinor={displayTotals.total_minor}
+            currencyCode={currencyCode}
+            locale={locale}
+            initialSchedule={initialSchedule}
+            editable={editable}
+            isDraftSaving={saveState === "Saving…"}
+            isDraftDirty={saveState !== "Saved"}
+            onVersionBump={handleScheduleVersionBump}
+            onScheduleChange={handleScheduleChange}
+          />
+
+          <label className={`notes-field ${styles.notesField}`}>
             Commercial notes
             <textarea
+              className={styles.notesTextarea}
               value={notes}
               maxLength={5000}
               rows={6}
@@ -1264,226 +1144,184 @@ export function QuoteBuilder({
             />
           </label>
         </fieldset>
-      </section>
 
-      <aside className="quote-summary" aria-label="Quotation summary">
-        <p className="eyebrow">Calculation summary</p>
-        <h2>Exact totals</h2>
-        {prepared.error && (
-          <div className="form-error" role="alert">
-            {prepared.error}
-          </div>
-        )}
-        <dl>
-          <div>
-            <dt>Subtotal</dt>
-            <dd>
-              {formatMinor(displayTotals.subtotal_minor, currencyCode, locale)}
-            </dd>
-          </div>
-          <div>
-            <dt>Discount</dt>
-            <dd>
-              −{" "}
-              {formatMinor(displayTotals.discount_minor, currencyCode, locale)}
-            </dd>
-          </div>
-          <div>
-            <dt>Tax</dt>
-            <dd>
-              {formatMinor(displayTotals.tax_minor, currencyCode, locale)}
-            </dd>
-          </div>
-          <div>
-            <dt>Charges</dt>
-            <dd>
-              {formatMinor(displayTotals.charges_minor, currencyCode, locale)}
-            </dd>
-          </div>
-          <div className="total-row">
-            <dt>Total</dt>
-            <dd>
+        <DocumentPreview
+          quoteNumber={quote.number}
+          issueDate={issueDate}
+          validUntil={validUntil}
+          customerName={customerName}
+          customerContact={customerContact}
+          customerAddress={customerAddress}
+          lines={previewLines}
+          charges={previewCharges}
+          displayTotals={displayTotals}
+          currencyCode={currencyCode}
+          locale={locale}
+          taxMode={taxMode}
+          taxLabel={taxLabel}
+          sellerName={previewSeller.name}
+          sellerAddressLines={previewSeller.addressLines}
+          paymentSchedule={previewPaymentSchedule}
+        />
+
+        {/* Sticky summary bar for <1180px */}
+        <div className={styles.bottomSummaryBar} aria-hidden="true">
+          <div className={styles.barTotal}>
+            <span className={styles.barTotalLabel}>Total</span>
+            <span className={styles.barTotalValue}>
               {formatMinor(displayTotals.total_minor, currencyCode, locale)}
-            </dd>
+            </span>
           </div>
-        </dl>
-        <p className="legal-note">
-          {taxMode === "inclusive"
-            ? "Prices are marked tax-inclusive."
-            : "Prices are marked tax-exclusive."}{" "}
-          {customerTreatment.replaceAll("_", " ")} treatment.
-        </p>
-        <div
-          className={`save-indicator save-${saveState.toLowerCase().replaceAll(/[^a-z]+/g, "-")}`}
-          aria-live="polite"
-          role="status"
-        >
-          <strong>{saveState}</strong>
-          <span>{saveMessage}</span>
-        </div>
-        {staleConflict && (
-          <button
-            className="button"
-            type="button"
-            onClick={() => window.location.reload()}
-          >
-            Reload server state
-          </button>
-        )}
-        <div className="summary-actions">
-          {editable && (
-            <button
-              className="button"
-              type="button"
-              onClick={saveNow}
-              disabled={saveState === "Saving…"}
-            >
-              Save draft <span className="shortcut">⌘/Ctrl S</span>
-            </button>
-          )}
-          {quote.state === "draft" && capabilities.includes("quote.submit") && (
-            <button
-              className="button button-primary"
-              type="button"
-              onClick={() => void runWorkflow("submit")}
-              disabled={
-                workflowBusy || saveState !== "Saved" || lines.length === 0
-              }
-            >
-              Submit for decision <span className="shortcut">⌘/Ctrl Enter</span>
-            </button>
-          )}
-          {quote.state === "waiting" &&
-            capabilities.includes("quote.approve") && (
+          <div className={styles.barSaveState}>
+            <span
+              className={`${styles.barDot} ${
+                saveState === "Saved"
+                  ? styles.dotSaved
+                  : saveState === "Unsaved"
+                    ? styles.dotUnsaved
+                    : saveState === "Saving…"
+                      ? styles.dotSaving
+                      : styles.dotSaveFailed
+              }`}
+            />
+            <span>{saveState}</span>
+          </div>
+          <div className={styles.barAction}>
+            {quote.state === "draft" &&
+            capabilities.includes("quote.submit") ? (
               <button
-                className="button button-primary"
                 type="button"
+                tabIndex={-1}
+                className={styles.barButton}
+                onClick={() => void runWorkflow("submit")}
+                disabled={
+                  workflowBusy || saveState !== "Saved" || lines.length === 0
+                }
+              >
+                Submit for decision
+              </button>
+            ) : quote.state === "waiting" &&
+              capabilities.includes("quote.approve") ? (
+              <button
+                type="button"
+                tabIndex={-1}
+                className={styles.barButton}
                 onClick={() => void runWorkflow("approve")}
                 disabled={workflowBusy}
               >
                 Approve quote
               </button>
-            )}
-          {quote.state === "waiting" &&
-            capabilities.includes("quote.reject") && (
+            ) : quote.state === "approved" &&
+              capabilities.includes("quote.issue") ? (
               <button
-                ref={rejectButtonRef}
-                className="button"
                 type="button"
-                onClick={openRejectDialog}
-                disabled={workflowBusy}
-              >
-                Reject quote
-              </button>
-            )}
-          {quote.state === "approved" &&
-            capabilities.includes("quote.issue") && (
-              <button
-                className="button button-primary"
-                type="button"
+                tabIndex={-1}
+                className={styles.barButton}
                 onClick={() => void runWorkflow("issue")}
                 disabled={workflowBusy}
               >
                 Issue quote
               </button>
-            )}
-          {quote.state === "issued" && capabilities.includes("quote.print") && (
-            <button
-              className="button button-primary"
-              type="button"
-              onClick={() => window.print()}
-            >
-              Print / Save PDF
-            </button>
-          )}
+            ) : quote.state === "issued" &&
+              capabilities.includes("quote.print") ? (
+              <button
+                type="button"
+                tabIndex={-1}
+                className={styles.barButton}
+                onClick={() => window.print()}
+              >
+                Print / Save PDF
+              </button>
+            ) : editable ? (
+              <button
+                type="button"
+                tabIndex={-1}
+                className={styles.barButton}
+                onClick={saveNow}
+                disabled={saveState === "Saving…"}
+              >
+                Save draft
+              </button>
+            ) : null}
+          </div>
         </div>
-        {workflowMessage && (
-          <p className="workflow-message" role="status" aria-live="polite">
-            {workflowMessage}
-          </p>
+      </section>
+
+      <aside
+        className={`quote-summary ${styles.quoteSummary}`}
+        aria-label="Quotation summary"
+      >
+        <TotalsList
+          preparedError={prepared.error}
+          displayTotals={displayTotals}
+          currencyCode={currencyCode}
+          locale={locale}
+          taxMode={taxMode}
+          customerTreatment={customerTreatment}
+          mathLines={mathLines}
+          mathAdjustments={mathAdjustments}
+        />
+        <DiscountPolicyMeter
+          discountBps={discountBps}
+          thresholdBps={effectiveThresholdBps}
+        />
+        {canReadMargin && quote.state === "draft" && (
+          <MarginMeter margin={margin} />
         )}
-        <p className="legal-note">
+        <SaveState
+          saveState={saveState}
+          saveMessage={saveMessage}
+          staleConflict={false}
+          onReloadServerState={() => {}}
+        />
+        {staleConflict && (
+          <ConflictBanner
+            title="Someone else saved this quote"
+            body="Your changes were not saved. Reload to see the latest version, then make your change again."
+            action={
+              <button
+                className="button"
+                type="button"
+                onClick={() => window.location.reload()}
+              >
+                Reload server state
+              </button>
+            }
+          />
+        )}
+        <DecisionActions
+          quote={quote}
+          capabilities={capabilities}
+          editable={editable}
+          saveState={saveState}
+          workflowBusy={workflowBusy}
+          lines={lines}
+          workflowMessage={workflowMessage}
+          rejectButtonRef={rejectButtonRef}
+          onSaveDraft={saveNow}
+          onSubmitForDecision={() => void runWorkflow("submit")}
+          onApproveQuote={() => void runWorkflow("approve")}
+          onOpenRejectDialog={openRejectDialog}
+          onIssueQuote={() => void runWorkflow("issue")}
+          onPrintQuote={() => window.print()}
+          pdfDownload={pdfDownload}
+        />
+        <p className={`legal-note ${styles.legalNote}`}>
           Server calculations, authorization and version are authoritative.
           Approved is not Issued; Issued does not mean Delivered.
         </p>
       </aside>
-      <dialog
-        className="reject-dialog"
-        ref={rejectDialogRef}
+      <RejectDialog
+        rejectDialogRef={rejectDialogRef}
+        rejectReasonRef={rejectReasonRef}
+        workflowBusy={workflowBusy}
+        workflowMessage={workflowMessage}
         onClose={() => {
           setWorkflowMessage("");
           rejectButtonRef.current?.focus();
         }}
-        onKeyDown={(event) => {
-          if (event.key !== "Tab") return;
-          const controls = Array.from(
-            event.currentTarget.querySelectorAll<HTMLElement>(
-              "textarea, button:not([disabled])",
-            ),
-          );
-          const first = controls[0];
-          const last = controls.at(-1);
-          if (event.shiftKey && document.activeElement === first && last) {
-            event.preventDefault();
-            last.focus();
-          } else if (
-            !event.shiftKey &&
-            document.activeElement === last &&
-            first
-          ) {
-            event.preventDefault();
-            first.focus();
-          }
-        }}
-        aria-labelledby="reject-heading"
-      >
-        <form
-          method="dialog"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const reason = rejectReasonRef.current?.value ?? "";
-            if (reason.trim().length >= 3) void runWorkflow("reject", reason);
-          }}
-        >
-          <p className="eyebrow">Commercial decision</p>
-          <h2 id="reject-heading">Reject quotation</h2>
-          <p>
-            Give a meaningful reason. It becomes untrusted text in the
-            commercial Activity record.
-          </p>
-          <label>
-            Rejection reason
-            <textarea
-              ref={rejectReasonRef}
-              required
-              minLength={3}
-              maxLength={1000}
-              rows={6}
-            />
-          </label>
-          {workflowMessage && (
-            <p className="workflow-message" role="status" aria-live="polite">
-              {workflowMessage}
-            </p>
-          )}
-          <div className="dialog-actions">
-            <button
-              className="button"
-              type="button"
-              onClick={() => rejectDialogRef.current?.close()}
-            >
-              Cancel
-            </button>
-            <button
-              className="button button-primary"
-              type="submit"
-              disabled={workflowBusy}
-            >
-              Confirm rejection
-            </button>
-          </div>
-        </form>
-      </dialog>
+        onConfirmReject={(reason) => void runWorkflow("reject", reason)}
+      />
     </div>
   );
 }

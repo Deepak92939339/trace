@@ -1,0 +1,189 @@
+.skeleton {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.block {
+  background: linear-gradient(
+    90deg,
+    var(--sunken) 25%,
+    var(--canvas) 50%,
+    var(--sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: var(--r-ctl, 6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: none;
+    background: var(--sunken);
+  }
+}
+
+/* Page variant */
+.pageWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eyebrowBlock {
+  width: 80px;
+  height: 12px;
+}
+
+.titleBlock {
+  width: 220px;
+  height: 28px;
+}
+
+.subBlock {
+  width: 320px;
+  height: 16px;
+}
+
+.pageBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardBlock {
+  width: 100%;
+  height: 64px;
+}
+
+/* Table variant */
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+  padding: 16px;
+  background: var(--surface);
+}
+
+.tableHeaderBlock {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--r-ctl, 6px);
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.tableCell {
+  height: 24px;
+  flex: 1;
+}
+
+.cellWide {
+  flex: 2;
+}
+
+.cellNarrow {
+  flex: 0.8;
+}
+
+/* Document variant */
+.docWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+}
+
+.docHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.docBrandBlock {
+  width: 120px;
+  height: 24px;
+}
+
+.docMetaBlock {
+  width: 160px;
+  height: 16px;
+}
+
+.docRule {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  animation: none;
+}
+
+.docRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.docRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.docItemBlock {
+  width: 60%;
+  height: 20px;
+}
+
+.docPriceBlock {
+  width: 80px;
+  height: 20px;
+}
+
+.docFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.docTotalBlock {
+  width: 120px;
+  height: 24px;
+}

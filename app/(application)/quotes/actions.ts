@@ -357,7 +357,7 @@ export async function saveQuoteDraftAction(
   const value = projection.data;
   return {
     status: "saved",
-    message: "Saved to Tender.",
+    message: "Saved to Trace.",
     version: value.version,
     totals: {
       subtotalMinor: value.subtotal_minor,
@@ -414,7 +414,7 @@ export async function refreshQuoteLineAction(
       return {
         status: "stale",
         message: withReference(
-          "Refresh failed because this draft changed in another session. Your local work remains visible; reload to reconcile with Tender.",
+          "Refresh failed because this draft changed in another session. Your local work remains visible; reload to reconcile with Trace.",
           reference,
         ),
       };
@@ -804,7 +804,7 @@ export async function createQuoteShareLinkAction(
     linkId: presented.linkId,
     url: presented.url ?? undefined,
     message:
-      "Recipient link created. Copy or open it now. Tender cannot show this secret again after you leave this page.",
+      "Recipient link created. Copy or open it now. Trace cannot show this secret again after you leave this page.",
   };
 }
 
@@ -922,4 +922,109 @@ export async function revokeQuoteShareLinkAction(
   revalidatePath("/quotes");
   revalidatePath(`/quotes/${encodeURIComponent(quoteRow.number)}`);
   return { status: "ok", message: "Recipient link revoked." };
+}
+
+const emailToBuyerSchema = z.object({
+  quoteId: z.string().uuid(),
+  revisionId: z.string().uuid(),
+  expectedVersion: z.number().int().positive(),
+  commandId: z.string().uuid(),
+  recipientEmail: z.string().trim().email().min(3).max(254),
+  expiresAt: z.iso.datetime(),
+});
+
+export type QueueEmailToBuyerResult = {
+  status: "queued" | "stale" | "failed";
+  message: string;
+};
+
+/**
+ * Queues an email to the buyer. Nothing is sent here: the database writes an outbox row in this
+ * transaction and a separate worker sends it. Quote.share, the current issued revision, the
+ * version and the expiry bounds are all enforced by the database (a view with an INSTEAD OF
+ * trigger), the same rules as creating a recipient link.
+ */
+export async function queueQuoteEmailToBuyerAction(
+  input: unknown,
+): Promise<QueueEmailToBuyerResult> {
+  const context = await requireApplicationContext();
+  if (!context.capabilities.includes("quote.share")) {
+    return {
+      status: "failed",
+      message: "The email was not queued. Your role cannot share quotations.",
+    };
+  }
+  const parsed = emailToBuyerSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      status: "failed",
+      message:
+        "The email was not queued. Check the buyer address and the link expiry, then try again.",
+    };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quote_buyer_email_requests")
+    // The view's computed columns are typed as never-writable in the generated types, but the
+    // INSTEAD OF trigger reads exactly these fields.
+    .insert({
+      quote_id: parsed.data.quoteId,
+      revision_id: parsed.data.revisionId,
+      expected_version: parsed.data.expectedVersion,
+      recipient_email: parsed.data.recipientEmail,
+      expires_at: parsed.data.expiresAt,
+      command_id: parsed.data.commandId,
+    } as never)
+    .select("id, status")
+    .single();
+  if (error || !data) {
+    const reference = logMutationFailure(
+      "quote.queue_email_to_buyer",
+      error ?? undefined,
+    );
+    const text = error?.message ?? "";
+    if (text.includes("revision_stale") || error?.code === "40001")
+      return {
+        status: "stale",
+        message: withReference(
+          "The email was not queued because the quotation changed. Reload and try again.",
+          reference,
+        ),
+      };
+    const known: Array<[string, string]> = [
+      [
+        "quote_already_accepted",
+        "The buyer has already accepted this quotation.",
+      ],
+      [
+        "revision_not_issued",
+        "Only the current issued revision can be emailed.",
+      ],
+      ["QUOTE_EXPIRED", "This quotation has expired."],
+      [
+        "share_expiry_invalid",
+        "The link expiry must be after now and no later than the quotation validity period.",
+      ],
+      ["recipient_email_invalid", "Check the buyer email address."],
+      [
+        "email_rate_limited",
+        "Too many emails were queued for this quotation recently. Try again later.",
+      ],
+      ["quote_share_forbidden", "Your role cannot share quotations."],
+    ];
+    const match = known.find(([code]) => text.includes(code));
+    return {
+      status: "failed",
+      message: withReference(
+        `The email was not queued. ${match?.[1] ?? "Nothing changed."}`,
+        reference,
+      ),
+    };
+  }
+  revalidatePath(`/quotes`);
+  return {
+    status: "queued",
+    message:
+      "Queued. The email will be sent shortly; it has not been sent yet. Its status appears in the Emails list below.",
+  };
 }

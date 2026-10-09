@@ -52,19 +52,19 @@ insert into public.organizations (
 values
   (
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-    'tender-demo',
-    'Tender Demonstration Company',
+    'trace-demo',
+    'Trace Demo Industries',
     'Asia/Kolkata',
     '33333333-3333-4333-8333-333333333333',
-    'Tender Demonstration Company',
+    'Trace Demo Industries',
     '14 Commerce Avenue',
     'Industrial District',
     'Pune',
     'Maharashtra',
     '411001',
     'IN',
-    'GSTIN-DEMO-TENDER',
-    'sales@tender.local',
+    'GSTIN-DEMO-TRACE',
+    'sales@trace.local',
     '+91 20 5550 0100'
   ),
   (
@@ -81,7 +81,7 @@ values
     '560001',
     'IN',
     'GSTIN-DEMO-OTHER',
-    'finance@other.tender.local',
+    'finance@other.trace.local',
     '+91 80 5550 0199'
   )
 on conflict (id) do nothing;

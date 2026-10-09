@@ -4,6 +4,10 @@ import type {
 } from "@/lib/quotes/commitment-contracts";
 import { formatMinor } from "@/lib/formatting/money";
 import { calculateExtendedLineAmountMinor } from "@/lib/quotes/calculate";
+import {
+  presentPaymentSchedule,
+  type PaymentScheduleRow,
+} from "@/lib/quotes/payment-schedule";
 
 export type RecipientQuoteViewModel = {
   quoteNumber: string;
@@ -40,6 +44,8 @@ export type RecipientQuoteViewModel = {
   taxLabel: string;
   taxMode: "exclusive" | "inclusive";
   notes: string;
+  /** When payment is due. Empty for a quote sealed without a schedule (v1). */
+  paymentSchedule: PaymentScheduleRow[];
   snapshotHash: string;
   calculationFingerprint: string;
 };
@@ -83,12 +89,16 @@ export function recipientQuoteViewModel(
       subtotal: money(snapshot.totals.subtotal_minor),
       discount: money(snapshot.totals.discount_minor),
       tax: money(snapshot.totals.tax_minor),
-      charges: money(snapshot.totals.charges_minor),
+      charges: money(snapshot.totals.charge_net_minor),
       total: money(snapshot.totals.total_minor),
     },
     taxLabel: snapshot.commercial.tax_label,
     taxMode: snapshot.commercial.tax_mode,
     notes: snapshot.commercial.notes,
+    paymentSchedule:
+      snapshot.format_version === 2
+        ? presentPaymentSchedule(snapshot.payment_schedule, money)
+        : [],
     snapshotHash: projection.snapshotHash,
     calculationFingerprint: projection.calculationFingerprint,
   };

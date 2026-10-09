@@ -155,8 +155,9 @@ export function RecipientAccessPanel({
         <h2 id="recipient-access-heading">Recipient access</h2>
         <p>
           Create a one-time capability link for issued revision {revisionNumber}
-          . Tender does not send email. The raw secret is shown only once and
-          cannot be recovered after you leave this page.
+          . This form does not send email (use Email to buyer for that). The raw
+          secret is shown only once and cannot be recovered after you leave this
+          page.
         </p>
       </header>
       <form

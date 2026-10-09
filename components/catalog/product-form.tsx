@@ -16,10 +16,12 @@ export function ProductForm({
   taxProfiles,
   currencyCode,
   commandId,
+  canReadMargin,
 }: {
   taxProfiles: TaxProfile[];
   currencyCode: string;
   commandId: string;
+  canReadMargin?: boolean;
 }) {
   const [state, action, pending] = useActionState(
     createProduct,
@@ -84,6 +86,17 @@ export function ProductForm({
             required
           />
         </label>
+        {canReadMargin && (
+          <label>
+            Unit cost (internal)
+            <input
+              name="unitCost"
+              inputMode="decimal"
+              placeholder={`0${currencyMinorUnitExponent(currencyCode) > 0 ? `.${"0".repeat(currencyMinorUnitExponent(currencyCode))}` : ""}`}
+            />
+            <small>Never shown to buyers.</small>
+          </label>
+        )}
         <label>
           Currency
           <select name="currencyCode" defaultValue={currencyCode} required>

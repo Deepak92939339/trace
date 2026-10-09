@@ -1,0 +1,79 @@
+:root {
+  /* Canvas and surfaces */
+  --canvas: #F4F6F7;
+  --surface: #FFFFFF;
+  --sunken: #EEF1F3;
+  --paper: #FBFAF6;
+  --paper-edge: #E6E1D6;
+  --paper-rule: #D9D3C6;
+
+  /* Ink and typography */
+  --ink: #17212B;
+  --ink-2: #3A4654;
+  --muted: #647184;
+  --faint: #8A95A3; /* non-text only: borders/icons, never text */
+
+  /* Hairlines and borders */
+  --line: #E3E7EB;
+  --line-strong: #CDD5DB;
+
+  /* Accent (Green only) */
+  --accent: #216B46;
+  --accent-hover: #185638;
+  --accent-press: #12452D;
+  --accent-soft: #E8F1EB;
+  --accent-line: #B9D3C2;
+
+  /* Amber (Waiting / warning / over limit) */
+  --amber: #B45309;
+  --amber-soft: #FEF4E6;
+  --amber-line: #F3D3A6;
+
+  /* Red (Rejected / below cost / danger) */
+  --red: #B42318;
+  --red-soft: #FDEDEB;
+  --red-line: #F2C2BC;
+
+  /* Slate pill */
+  --slate-pill: #E9EDF0;
+
+  /* Radii */
+  --r-ctl: 6px;
+  --r-panel: 8px;
+  --r-paper: 3px;
+
+  /* Shadows */
+  --shadow-paper: 0 1px 1px rgba(23, 33, 43, 0.04), 0 10px 30px -12px rgba(23, 33, 43, 0.18);
+  --shadow-pop: 0 12px 32px -10px rgba(23, 33, 43, 0.22);
+
+  /* Motion */
+  --t: 150ms cubic-bezier(0.2, 0, 0, 1);
+  --motion: 150ms cubic-bezier(0.2, 0, 0, 1);
+
+  /* Font aliases (next/font owns --font-sans, --font-serif, --font-mono on <html>) */
+  --sans: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  --serif: var(--font-serif, "Iowan Old Style", Georgia, serif);
+  --mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+
+  /* Type scale */
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-26: 26px;
+  --text-32: 32px;
+  --text-display: clamp(36px, 4.6vw, 58px);
+
+  /* Aliases for legacy names still used in globals.css */
+  --surface-cool: #f7f3e9;
+  --accent-dark: var(--accent-hover);
+  --accent-active: var(--accent-press);
+  --danger: var(--red);
+  --success: var(--accent);
+  --focus: var(--accent);
+  --radius-control: var(--r-ctl);
+  --radius-panel: var(--r-panel);
+  --shadow-document: var(--shadow-paper);
+}

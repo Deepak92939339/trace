@@ -1,6 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
+import {
+  PRIVILEGED_OUTBOX,
+  PRIVILEGED_WRITER,
+  serviceRoleConfinementFindings,
+} from "./service-role-confinement.mjs";
 
 const root = process.cwd();
 const tracked = execFileSync(
@@ -28,7 +33,7 @@ const rawPatterns = [
   /\b(?:sb_secret_|ghp_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{12,}\b/,
 ];
 const assignedSecret =
-  /\b(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_URL|TENDER_EDGE_BROKER_TRANSPORT_SECRET|TENDER_PUBLIC_SESSION_ENCRYPTION_KEY|PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET|FRIDAY_GATEWAY_SECRET|FRIDAY_N8N_WEBHOOK_SECRET|N8N_[A-Z0-9_]*SECRET)[\t ]*=[\t ]*([^\s#]*)/g;
+  /\b(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_URL|TRACE_RESEND_API_KEY|TRACE_OUTBOX_DRAIN_SECRET|TENDER_EDGE_BROKER_TRANSPORT_SECRET|TENDER_PUBLIC_SESSION_ENCRYPTION_KEY|PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET|FRIDAY_GATEWAY_SECRET|FRIDAY_N8N_WEBHOOK_SECRET|N8N_[A-Z0-9_]*SECRET)[\t ]*=[\t ]*([^\s#]*)/g;
 const placeholders = new Set([
   "",
   "replace_me",
@@ -71,7 +76,7 @@ collectClientFiles(clientRoot);
 for (const path of clientFiles) {
   const source = readFileSync(path, "utf8");
   if (
-    /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_URL|TENDER_EDGE_BROKER_TRANSPORT_SECRET|TENDER_PUBLIC_SESSION_ENCRYPTION_KEY|PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET|postgres(?:ql)?:\/\/|sb_secret_|ghp_|github_pat_|xox[baprs]-/.test(
+    /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_URL|TRACE_RESEND_API_KEY|TRACE_OUTBOX_DRAIN_SECRET|TENDER_EDGE_BROKER_TRANSPORT_SECRET|TENDER_PUBLIC_SESSION_ENCRYPTION_KEY|PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET|postgres(?:ql)?:\/\/|sb_secret_|ghp_|github_pat_|xox[baprs]-/.test(
       source,
     )
   ) {
@@ -80,6 +85,9 @@ for (const path of clientFiles) {
     );
   }
 }
+
+// P5: the service-role key may be named only by the server-only privileged writer.
+findings.push(...serviceRoleConfinementFindings(root));
 
 if (findings.length)
   throw new Error(`Secret verification failed:\n${findings.join("\n")}`);
@@ -91,4 +99,7 @@ console.log(
 );
 console.log(
   `PASS ${clientFiles.length} built client assets contain no server-only key, database URL, or raw token marker.`,
+);
+console.log(
+  `PASS the service-role key is referenced only by ${PRIVILEGED_WRITER} and ${PRIVILEGED_OUTBOX} (server-only); the mail key and drain secret have one owner module each; no other app module names or imports them.`,
 );

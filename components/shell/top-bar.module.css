@@ -1,0 +1,135 @@
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--sans);
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  white-space: nowrap;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.crumb a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--t, 150ms ease);
+}
+
+.crumb a:hover {
+  color: var(--ink);
+}
+
+.crumb b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.crumbAncestor {
+  color: var(--muted);
+}
+
+.sep {
+  color: var(--line-strong);
+  user-select: none;
+}
+
+.topSpacer {
+  flex: 1;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  width: 300px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl, 6px);
+  background: var(--canvas);
+  color: var(--faint);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t, 150ms ease), background var(--t, 150ms ease);
+}
+
+.search:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.search svg {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.searchText {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1100px) {
+  .search {
+    width: auto;
+  }
+  .searchText {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .crumb .crumbAncestor,
+  .crumb .sep {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .top {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .search {
+    display: none;
+  }
+  .crumb {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .crumb b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .actions button:not([class*="primary"]),
+  .actions a:not([class*="primary"]) {
+    display: none;
+  }
+}

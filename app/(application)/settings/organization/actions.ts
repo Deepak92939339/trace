@@ -161,8 +161,20 @@ export async function updateOrganizationSettings(formData: FormData) {
   });
   if (!parsed.success) finish("invalid_input");
 
+  // Optional internal margin floor. Absent field: leave unchanged. Empty: clear.
+  let marginFloorBps: number | null | undefined;
+  if (formData.has("marginFloorBps")) {
+    const raw = field(formData, "marginFloorBps").trim();
+    if (raw === "") marginFloorBps = null;
+    else {
+      const floor = basisPoints.safeParse(raw);
+      if (!floor.success) finish("invalid_input");
+      else marginFloorBps = floor.data;
+    }
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.rpc("update_organization_settings", {
+  const { data, error } = await supabase.rpc("update_organization_settings", {
     p_organization_id: context.membership.organizationId,
     p_expected_version: parsed.data.expectedVersion,
     p_payload: {
@@ -187,6 +199,26 @@ export async function updateOrganizationSettings(formData: FormData) {
   if (error) {
     logMutationFailure("organization.settings_update", error);
     finish(classifyMutationFailure(error));
+  }
+
+  if (marginFloorBps !== undefined) {
+    // Written through the organization.manage-gated view with the version the
+    // main RPC returned; both calls bump the organization version.
+    const version =
+      data && typeof data === "object" && !Array.isArray(data)
+        ? data.version
+        : null;
+    const { data: floorRows, error: floorError } = await supabase
+      .from("organization_margin_policy")
+      .update({ margin_floor_bps: marginFloorBps })
+      .eq("id", context.membership.organizationId)
+      .eq("version", typeof version === "number" ? version : -1)
+      .select("version");
+    if (floorError) {
+      logMutationFailure("organization.margin_floor_update", floorError);
+      finish(classifyMutationFailure(floorError));
+    }
+    if (!floorRows || floorRows.length !== 1) finish("stale_record");
   }
 
   finish("organization_saved");

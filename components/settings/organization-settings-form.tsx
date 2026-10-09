@@ -1,4 +1,5 @@
 import { SUPPORTED_CURRENCY_CODES } from "@/lib/formatting/currency";
+import { formatBasisPoints } from "@/lib/formatting/basis-points";
 import { updateOrganizationSettings } from "@/app/(application)/settings/organization/actions";
 
 export type OrganizationSettingsValues = {
@@ -18,6 +19,7 @@ export type OrganizationSettingsValues = {
   sellerTaxIdentifier: string | null;
   timezone: string;
   version: number;
+  marginFloorBps?: number | null;
 };
 
 function RequiredMarker() {
@@ -30,8 +32,10 @@ function RequiredMarker() {
 
 export function OrganizationSettingsForm({
   organization,
+  canReadMargin,
 }: {
   organization: OrganizationSettingsValues;
+  canReadMargin?: boolean;
 }) {
   return (
     <form action={updateOrganizationSettings} className="settings-form">
@@ -105,6 +109,29 @@ export function OrganizationSettingsForm({
               step={1}
             />
           </label>
+          {canReadMargin && (
+            <label>
+              Margin floor (basis points)
+              <input
+                name="marginFloorBps"
+                type="number"
+                inputMode="numeric"
+                defaultValue={
+                  organization.marginFloorBps != null
+                    ? organization.marginFloorBps
+                    : ""
+                }
+                min={0}
+                max={10_000}
+                step={1}
+              />
+              <small>
+                {organization.marginFloorBps != null
+                  ? formatBasisPoints(organization.marginFloorBps)
+                  : "No floor set"}
+              </small>
+            </label>
+          )}
         </div>
         <datalist id="organization-timezones">
           <option value="UTC" />

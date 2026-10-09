@@ -89,7 +89,7 @@ export const getApplicationContext = cache(async () => {
     user: { id: user.id, email: user.email ?? "" },
     profile: {
       displayName:
-        profile?.display_name ?? user.email?.split("@")[0] ?? "Tender user",
+        profile?.display_name ?? user.email?.split("@")[0] ?? "Trace user",
       locale: profile?.default_locale ?? "en-IN",
     },
     membership,

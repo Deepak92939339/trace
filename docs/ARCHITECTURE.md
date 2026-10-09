@@ -1,6 +1,6 @@
 # Architecture
 
-Tender is a Next.js App Router application backed by Supabase Auth, PostgreSQL, and the Supabase Data API.
+Trace is a Next.js App Router application backed by Supabase Auth, PostgreSQL, and the Supabase Data API.
 
 ## Request and trust boundaries
 

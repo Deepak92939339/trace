@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { Brand } from "@/components/ui/brand";
+import { Paper } from "@/components/paper/paper";
+import { ProposalView } from "@/components/proposal/proposal-view";
 import type {
   BuyerQuoteProjection,
   VerificationProjection,
@@ -20,6 +22,9 @@ import {
   type RecipientQuoteViewModel,
 } from "@/lib/public-quotes/view-model";
 import type { AcceptanceProjection } from "@/lib/quotes/commitment-contracts";
+import { AcceptanceReceipt } from "@/components/proposal/acceptance-receipt";
+import { ErrorState, ExpiredNotice, Skeleton } from "@/components/states";
+import styles from "./recipient.module.css";
 
 type AccessStatus =
   | "loading"
@@ -70,23 +75,6 @@ const terminalMessages: Partial<Record<AccessStatus, string>> = {
   already_accepted: "This quotation has already been accepted.",
   stale: "This revision is no longer current.",
 };
-
-function stateLabel(quote: RecipientQuoteViewModel) {
-  if (quote.responseType === "accepted") return "Accepted";
-  if (quote.responseType === "declined") return "Declined";
-  if (quote.responseType === "change_requested")
-    return "Change request recorded";
-  return quote.effectiveState === "issued" ? "Issued" : quote.effectiveState;
-}
-
-function quantity(
-  item: RecipientQuoteViewModel["items"][number],
-  locale: string,
-) {
-  return new Intl.NumberFormat(locale, {
-    maximumFractionDigits: Math.round(Math.log10(item.quantity_scale)),
-  }).format(item.quantity_scaled / item.quantity_scale);
-}
 
 function Dialog({
   open,
@@ -152,16 +140,18 @@ function Dialog({
   }, [open, pending, onClose]);
   if (!open) return null;
   return (
-    <div className="recipient-dialog-backdrop">
+    <div className={`recipient-dialog-backdrop ${styles.dialogBackdrop}`}>
       <section
         ref={ref}
-        className="recipient-dialog"
+        className={`recipient-dialog ${styles.dialogPanel}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <h2 id={titleId}>{title}</h2>
+        <h2 id={titleId} className={styles.dialogTitle}>
+          {title}
+        </h2>
         {children}
       </section>
     </div>
@@ -314,196 +304,101 @@ export function RecipientQuoteClient({ selector }: { selector: string }) {
 
   if (access !== "ready" || !quote)
     return (
-      <main id="main-content" className="recipient-shell">
-        <header className="recipient-header">
-          <Brand />
+      <main id="main-content" className={`recipient-shell ${styles.shell}`}>
+        <header className={`recipient-header ${styles.header}`}>
+          <Brand href="" muted size="sm" />
         </header>
-        <section className="recipient-access" role="status" aria-live="polite">
-          <h1>
-            {access === "loading"
-              ? "Opening quotation"
-              : "Quotation unavailable"}
-          </h1>
-          <p>
-            {access === "loading"
-              ? "Establishing a secure session…"
-              : terminalMessages[access]}
-          </p>
+        <section className={styles.access} role="status" aria-live="polite">
+          {access === "loading" ? (
+            <>
+              <h1 className={styles.accessTitle}>Opening quotation</h1>
+              <p className={styles.accessMessage}>
+                Establishing a secure session…
+              </p>
+              <Skeleton variant="document" />
+            </>
+          ) : access === "expired" ? (
+            <ExpiredNotice
+              tone="expired"
+              title="Quotation unavailable"
+              body={terminalMessages[access]}
+            />
+          ) : [
+              "revoked",
+              "superseded",
+              "stale",
+              "accepted",
+              "already_accepted",
+              "already_responded",
+            ].includes(access) ? (
+            <ExpiredNotice
+              tone="closed"
+              title="Quotation unavailable"
+              body={terminalMessages[access]}
+            />
+          ) : (
+            <ErrorState
+              title="Quotation unavailable"
+              body={terminalMessages[access]}
+            />
+          )}
         </section>
       </main>
     );
+
   const canRespond =
     quote.effectiveState === "issued" && quote.responseType === null;
+
   return (
-    <main id="main-content" className="recipient-shell">
-      <header className="recipient-header">
-        <Brand />
+    <main id="main-content" className={`recipient-shell ${styles.shell}`}>
+      <header className={`recipient-header ${styles.header}`}>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
         <span>Secure quotation view</span>
       </header>
-      <div className="recipient-content">
-        <article className="recipient-document">
-          <header className="recipient-document-header">
-            <div>
-              <p className="eyebrow">Commercial quotation</p>
-              <h1>{quote.quoteNumber}</h1>
-              <p>
-                Revision {quote.revisionNumber} · Issued {quote.issueDate} ·
-                Valid until {quote.validUntil}
-              </p>
-            </div>
-            <strong className="recipient-state">{stateLabel(quote)}</strong>
-          </header>
-          <section className="recipient-parties">
-            <address>
-              <span>Seller</span>
-              <strong>{quote.seller.legal_name}</strong>
-              <small>
-                {[
-                  quote.seller.address_line1,
-                  quote.seller.address_line2,
-                  quote.seller.city,
-                  quote.seller.region,
-                  quote.seller.postal_code,
-                  quote.seller.country_code,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-              </small>
-            </address>
-            <address>
-              <span>Buyer</span>
-              <strong>{quote.buyer.name}</strong>
-              <small>
-                {[
-                  quote.buyer.contact_name,
-                  quote.buyer.email,
-                  quote.buyer.address_line1,
-                  quote.buyer.address_line2,
-                  quote.buyer.city,
-                  quote.buyer.region,
-                  quote.buyer.postal_code,
-                  quote.buyer.country_code,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-              </small>
-            </address>
-          </section>
-          <div className="recipient-lines">
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Quantity</th>
-                  <th>Unit price</th>
-                  <th>Tax</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {quote.items.map((item) => (
-                  <tr key={item.id}>
-                    <td data-label="Item">
-                      <strong>{item.sku}</strong>
-                      <span>{item.description}</span>
-                    </td>
-                    <td data-label="Quantity">
-                      {quantity(item, quote.locale)} {item.unit_code}
-                    </td>
-                    <td data-label="Unit price">{item.unitPriceDisplay}</td>
-                    <td data-label="Tax">{item.tax_code}</td>
-                    <td data-label="Amount">{item.lineAmountDisplay}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {quote.charges.length > 0 && (
-            <section className="recipient-charges">
-              <h2>Charges</h2>
-              {quote.charges.map((charge) => (
-                <p key={charge.id}>
-                  <span>{charge.description}</span>
-                  <strong>{charge.totalDisplay}</strong>
-                </p>
-              ))}
-            </section>
-          )}
-          <dl className="recipient-totals">
-            <div>
-              <dt>Subtotal</dt>
-              <dd>{quote.totals.subtotal}</dd>
-            </div>
-            <div>
-              <dt>Discount</dt>
-              <dd>− {quote.totals.discount}</dd>
-            </div>
-            <div>
-              <dt>{quote.taxLabel}</dt>
-              <dd>{quote.totals.tax}</dd>
-            </div>
-            <div>
-              <dt>Charges</dt>
-              <dd>{quote.totals.charges}</dd>
-            </div>
-            <div className="recipient-grand-total">
-              <dt>Total</dt>
-              <dd>{quote.totals.total}</dd>
-            </div>
-          </dl>
-          {quote.notes && (
-            <section className="recipient-notes">
-              <h2>Commercial notes</h2>
-              <p>{quote.notes}</p>
-            </section>
-          )}
-          <footer>
-            Verification code evidence · Snapshot{" "}
-            <code>{quote.snapshotHash.slice(0, 16)}</code> · Calculation{" "}
-            <code>{quote.calculationFingerprint.slice(0, 16)}</code>
-          </footer>
-        </article>
-        <section className="recipient-actions">
-          <h2>Respond to this revision</h2>
-          <p>A response is recorded against this exact issued revision.</p>
-          {canRespond ? (
-            <div className="recipient-action-row">
-              <button
-                onClick={() => {
-                  setMutation("idle");
-                  setDialog("change");
-                }}
-              >
-                Request changes
-              </button>
-              <button
-                className="danger"
-                onClick={() => {
-                  setMutation("idle");
-                  setDialog("decline");
-                }}
-              >
-                Decline
-              </button>
-              <button
-                className="primary"
-                onClick={() => {
-                  acceptanceKey.current = null;
-                  setMutation("idle");
-                  setDialog("accept");
-                }}
-              >
-                Accept quotation
-              </button>
-            </div>
-          ) : (
-            <p className="recipient-muted">
-              No further response can be recorded for this revision.
-            </p>
-          )}
-        </section>
+
+      {acceptance && (
+        <AcceptanceReceipt acceptance={acceptance} quote={quote} />
+      )}
+
+      <ProposalView
+        quote={quote}
+        canRespond={canRespond}
+        onRequestChanges={() => {
+          setMutation("idle");
+          setDialog("change");
+        }}
+        onDecline={() => {
+          setMutation("idle");
+          setDialog("decline");
+        }}
+        onAccept={() => {
+          acceptanceKey.current = null;
+          setMutation("idle");
+          setDialog("accept");
+        }}
+      />
+
+      <div className={styles.lowerWrap}>
         <VerificationSection verification={verification} onSubmit={verify} />
+
+        <footer className={styles.footer}>
+          <span className={styles.footerInner}>
+            Secured by <Brand href="" muted size="sm" />
+          </span>
+        </footer>
       </div>
+
       <ChangeDialog
         open={dialog === "change"}
         pending={mutation === "pending"}
@@ -526,21 +421,6 @@ export function RecipientQuoteClient({ selector }: { selector: string }) {
         onClose={() => setDialog(null)}
         onSubmit={(name, title) => void accept(name, title)}
       />
-      {acceptance && (
-        <section className="recipient-acceptance-evidence" role="status">
-          <strong>Acceptance recorded</strong>
-          <p>
-            {new Intl.DateTimeFormat(quote.locale, {
-              dateStyle: "long",
-              timeStyle: "short",
-            }).format(new Date(acceptance.acceptedAt))}
-          </p>
-          <p>
-            Statement evidence ·{" "}
-            <code>{acceptance.acceptanceStatementHash.slice(0, 16)}</code>
-          </p>
-        </section>
-      )}
     </main>
   );
 }
@@ -582,9 +462,10 @@ function ChangeDialog({
           onSubmit(trimmed);
         }}
       >
-        <label>
+        <label className={styles.label}>
           Message to the issuer
           <textarea
+            className={styles.textarea}
             data-autofocus
             value={message}
             maxLength={2000}
@@ -606,11 +487,20 @@ function ChangeDialog({
               "The request could not be recorded."}
           </p>
         )}
-        <div className="recipient-dialog-actions">
-          <button type="button" onClick={onClose} disabled={pending}>
+        <div className={`recipient-dialog-actions ${styles.dialogActions}`}>
+          <button
+            className={styles.btn}
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+          >
             Cancel
           </button>
-          <button className="primary" type="submit" disabled={pending}>
+          <button
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            type="submit"
+            disabled={pending}
+          >
             {pending ? "Recording…" : "Send change request"}
           </button>
         </div>
@@ -618,6 +508,7 @@ function ChangeDialog({
     </Dialog>
   );
 }
+
 function DeclineDialog({
   open,
   pending,
@@ -649,12 +540,12 @@ function DeclineDialog({
               "The decline could not be recorded.")}
         </p>
       )}
-      <div className="recipient-dialog-actions">
-        <button onClick={onClose} disabled={pending}>
+      <div className={`recipient-dialog-actions ${styles.dialogActions}`}>
+        <button className={styles.btn} onClick={onClose} disabled={pending}>
           Cancel
         </button>
         <button
-          className="danger"
+          className={`${styles.btn} ${styles.btnDanger}`}
           onClick={onSubmit}
           disabled={pending}
           data-autofocus
@@ -691,9 +582,11 @@ function AcceptanceDialog({
       pending={pending}
       onClose={onClose}
     >
-      <p className="recipient-statement">{statement}</p>
+      <p className={`recipient-statement ${styles.dialogStatement}`}>
+        {statement}
+      </p>
       <p>
-        Acceptance is an electronic commercial acknowledgement. Tender does not
+        Acceptance is an electronic commercial acknowledgement. Trace does not
         certify identity and no drawn signature is requested.
       </p>
       <form
@@ -716,9 +609,10 @@ function AcceptanceDialog({
           onSubmit(normalizedName, normalizedTitle);
         }}
       >
-        <label>
+        <label className={styles.label}>
           Buyer-asserted full name
           <input
+            className={styles.input}
             data-autofocus
             autoComplete="name"
             value={name}
@@ -726,9 +620,10 @@ function AcceptanceDialog({
             onChange={(event) => setName(event.target.value)}
           />
         </label>
-        <label>
+        <label className={styles.label}>
           Buyer-asserted title (optional)
           <input
+            className={styles.input}
             autoComplete="organization-title"
             value={title}
             disabled={pending}
@@ -736,7 +631,7 @@ function AcceptanceDialog({
           />
         </label>
         <p>
-          These details are buyer-asserted only; Tender does not certify
+          These details are buyer-asserted only; Trace does not certify
           identity.
         </p>
         {error && <p role="alert">{error}</p>}
@@ -746,11 +641,20 @@ function AcceptanceDialog({
               "Acceptance could not be recorded."}
           </p>
         )}
-        <div className="recipient-dialog-actions">
-          <button type="button" onClick={onClose} disabled={pending}>
+        <div className={`recipient-dialog-actions ${styles.dialogActions}`}>
+          <button
+            className={styles.btn}
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+          >
             Cancel
           </button>
-          <button className="primary" type="submit" disabled={pending}>
+          <button
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            type="submit"
+            disabled={pending}
+          >
             {pending ? "Recording…" : "Accept quotation"}
           </button>
         </div>
@@ -758,6 +662,7 @@ function AcceptanceDialog({
     </Dialog>
   );
 }
+
 function VerificationSection({
   verification,
   onSubmit,
@@ -768,52 +673,58 @@ function VerificationSection({
   const [value, setValue] = useState("");
   const result = verification.result;
   return (
-    <section className="recipient-verification">
-      <h2>Verify a quotation</h2>
-      <p>Enter the 32-character code from the document footer.</p>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSubmit(value);
-        }}
-      >
-        <label>
-          Verification code
-          <input
-            value={value}
-            autoComplete="off"
-            spellCheck={false}
-            maxLength={40}
-            onChange={(event) => setValue(event.target.value)}
-          />
-        </label>
-        <button disabled={verification.status === "pending"}>
-          {verification.status === "pending" ? "Checking…" : "Verify record"}
-        </button>
-      </form>
-      <div aria-live="polite">
-        {verification.status === "verified" && result && (
-          <p className="recipient-verified">
-            Verified · {result.quoteNumber} revision {result.revisionNumber} ·{" "}
-            {result.totalDisplay}
-          </p>
-        )}
-        {verification.status === "invalid" && (
-          <p>
-            The verification code must contain exactly 32 hexadecimal
-            characters.
-          </p>
-        )}
-        {verification.status === "not_found" && (
-          <p>No issued revision matches this code.</p>
-        )}
-        {verification.status === "rate_limited" && (
-          <p>Too many verification attempts. Please wait and try again.</p>
-        )}
-        {verification.status === "unavailable" && (
-          <p>Verification is temporarily unavailable.</p>
-        )}
-      </div>
-    </section>
+    <div className={`recipient-verification ${styles.verification}`}>
+      <Paper padding="md" as="section">
+        <h2 className={styles.verificationTitle}>Verify a quotation</h2>
+        <p>Enter the 32-character code from the document footer.</p>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit(value);
+          }}
+        >
+          <label className={styles.label}>
+            Verification code
+            <input
+              className={styles.input}
+              value={value}
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={40}
+              onChange={(event) => setValue(event.target.value)}
+            />
+          </label>
+          <button
+            className={styles.btn}
+            disabled={verification.status === "pending"}
+          >
+            {verification.status === "pending" ? "Checking…" : "Verify record"}
+          </button>
+        </form>
+        <div aria-live="polite">
+          {verification.status === "verified" && result && (
+            <p className={`recipient-verified ${styles.verifiedResult}`}>
+              Verified · {result.quoteNumber} revision {result.revisionNumber} ·{" "}
+              {result.totalDisplay}
+            </p>
+          )}
+          {verification.status === "invalid" && (
+            <p>
+              The verification code must contain exactly 32 hexadecimal
+              characters.
+            </p>
+          )}
+          {verification.status === "not_found" && (
+            <p>No issued revision matches this code.</p>
+          )}
+          {verification.status === "rate_limited" && (
+            <p>Too many verification attempts. Please wait and try again.</p>
+          )}
+          {verification.status === "unavailable" && (
+            <p>Verification is temporarily unavailable.</p>
+          )}
+        </div>
+      </Paper>
+    </div>
   );
 }

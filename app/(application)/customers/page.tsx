@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/states";
 import { CustomerForm } from "@/components/customers/customer-form";
 import { requireApplicationContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
@@ -93,7 +94,10 @@ export default async function CustomersPage({
             {!customers?.length && (
               <tr>
                 <td colSpan={5} className="table-empty">
-                  No customers match this view.
+                  <EmptyState
+                    icon="search"
+                    title="No customers match this view."
+                  />
                 </td>
               </tr>
             )}

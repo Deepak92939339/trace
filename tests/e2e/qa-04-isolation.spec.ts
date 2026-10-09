@@ -31,7 +31,7 @@ test("qa-04: strict tenant isolation on quotes", async ({ page, browser }) => {
   await euroPage.goto(quoteUrl);
 
   await expect(
-    euroPage.getByRole("heading", { name: "This page is not part of Tender." }),
+    euroPage.getByRole("heading", { name: "This page is not part of Trace." }),
   ).toBeVisible();
   await expect(
     euroPage.getByRole("heading", { name: "Asha Engineering Works" }),

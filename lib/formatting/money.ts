@@ -27,6 +27,27 @@ export function formatMinor(
   }
 }
 
+export function formatMinorNumber(
+  amountMinor: number,
+  currencyCode: string,
+  locale = "en-IN",
+) {
+  if (!Number.isSafeInteger(amountMinor))
+    throw new Error("Money amount must be a safe integer.");
+  const supportedCurrency = normalizeSupportedCurrency(currencyCode);
+  const exponent = currencyMinorUnitExponent(supportedCurrency);
+  const scale = currencyMinorUnitScale(supportedCurrency);
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "decimal",
+      minimumFractionDigits: exponent,
+      maximumFractionDigits: exponent,
+    }).format(amountMinor / scale);
+  } catch {
+    return (amountMinor / scale).toFixed(exponent);
+  }
+}
+
 export function formatMinorDecimal(amountMinor: number, currencyCode: string) {
   if (!Number.isSafeInteger(amountMinor))
     throw new Error("Money amount must be a safe integer.");

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/states";
 import { formatMinor } from "@/lib/formatting/money";
 import {
   effectiveQuoteState,
@@ -94,8 +95,10 @@ export default async function QuotesPage() {
             {!quotes?.length && (
               <tr>
                 <td colSpan={6} className="table-empty">
-                  No quotations yet. Create a draft to begin the commercial
-                  record.
+                  <EmptyState
+                    icon="inbox"
+                    title="No quotations yet. Create a draft to begin the commercial record."
+                  />
                 </td>
               </tr>
             )}

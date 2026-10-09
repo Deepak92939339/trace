@@ -1,4 +1,4 @@
-import type { CanonicalQuoteSnapshotV1 } from "./canonical-snapshot.ts";
+import type { CanonicalQuoteSnapshot } from "./canonical-snapshot.ts";
 
 export type VerifiedRevisionState =
   "draft" | "waiting" | "approved" | "rejected" | "issued";
@@ -114,7 +114,7 @@ export type BuyerQuoteProjection = {
   effectiveState: "issued" | "expired" | "accepted";
   snapshotHash: string;
   calculationFingerprint: string;
-  snapshot: CanonicalQuoteSnapshotV1;
+  snapshot: CanonicalQuoteSnapshot;
   responseType: RecipientEventType | null;
   acceptanceAllowed: boolean;
   acceptanceStatementVersion: 1;

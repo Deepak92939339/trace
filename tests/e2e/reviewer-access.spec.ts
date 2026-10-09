@@ -26,7 +26,7 @@ test("public reviewer enters in one click and sees only read controls", async ({
   await page.getByRole("link", { name: "Help" }).click();
   await expect(
     page.getByRole("heading", {
-      name: "Understand Tender without guessing.",
+      name: "Understand Trace without guessing.",
     }),
   ).toBeVisible();
   await expect(
@@ -43,7 +43,7 @@ test("public reviewer enters in one click and sees only read controls", async ({
   await page.goto("/quotes");
   await page.getByRole("link", { name: "What's new" }).click();
   await expect(
-    page.getByRole("heading", { name: "What's new in Tender" }),
+    page.getByRole("heading", { name: "What's new in Trace" }),
   ).toBeVisible();
   expect(
     await page.evaluate(

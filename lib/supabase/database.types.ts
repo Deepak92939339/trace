@@ -97,6 +97,13 @@ export type Database = {
             foreignKeyName: "catalog_import_batches_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "catalog_import_batches_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
@@ -194,6 +201,13 @@ export type Database = {
             foreignKeyName: "command_receipts_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "command_receipts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
@@ -274,7 +288,144 @@ export type Database = {
             foreignKeyName: "customers_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "customers_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_outbox: {
+        Row: {
+          attempts: number;
+          audience: string | null;
+          created_at: string;
+          created_by: string | null;
+          dead_at: string | null;
+          dedupe_key: string;
+          id: string;
+          kind: string;
+          last_error_code: string | null;
+          locked_until: string | null;
+          max_attempts: number;
+          next_attempt_at: string;
+          organization_id: string;
+          payload: Json;
+          provider_message_id: string | null;
+          quote_id: string;
+          recipient_email: string;
+          recipient_user_id: string | null;
+          revision_id: string;
+          sent_at: string | null;
+          share_expires_at: string | null;
+          share_link_id: string | null;
+          status: string;
+        };
+        Insert: {
+          attempts?: number;
+          audience?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          dead_at?: string | null;
+          dedupe_key: string;
+          id?: string;
+          kind: string;
+          last_error_code?: string | null;
+          locked_until?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          organization_id: string;
+          payload: Json;
+          provider_message_id?: string | null;
+          quote_id: string;
+          recipient_email: string;
+          recipient_user_id?: string | null;
+          revision_id: string;
+          sent_at?: string | null;
+          share_expires_at?: string | null;
+          share_link_id?: string | null;
+          status?: string;
+        };
+        Update: {
+          attempts?: number;
+          audience?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          dead_at?: string | null;
+          dedupe_key?: string;
+          id?: string;
+          kind?: string;
+          last_error_code?: string | null;
+          locked_until?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          organization_id?: string;
+          payload?: Json;
+          provider_message_id?: string | null;
+          quote_id?: string;
+          recipient_email?: string;
+          recipient_user_id?: string | null;
+          revision_id?: string;
+          sent_at?: string | null;
+          share_expires_at?: string | null;
+          share_link_id?: string | null;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      email_outbox_attempts: {
+        Row: {
+          attempt_no: number;
+          error_code: string | null;
+          finished_at: string | null;
+          id: string;
+          outbox_id: string;
+          outcome: string | null;
+          started_at: string;
+        };
+        Insert: {
+          attempt_no: number;
+          error_code?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          outbox_id: string;
+          outcome?: string | null;
+          started_at?: string;
+        };
+        Update: {
+          attempt_no?: number;
+          error_code?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          outbox_id?: string;
+          outcome?: string | null;
+          started_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_attempts_outbox_id_fkey";
+            columns: ["outbox_id"];
+            isOneToOne: false;
+            referencedRelation: "email_outbox";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_outbox_attempts_outbox_id_fkey";
+            columns: ["outbox_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_buyer_email_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_outbox_attempts_outbox_id_fkey";
+            columns: ["outbox_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_email_activity";
             referencedColumns: ["id"];
           },
         ];
@@ -312,6 +463,13 @@ export type Database = {
             foreignKeyName: "organization_memberships_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
@@ -332,6 +490,7 @@ export type Database = {
           default_currency_code: string;
           default_locale: string;
           id: string;
+          margin_floor_bps: number | null;
           name: string;
           seller_address_line1: string | null;
           seller_address_line2: string | null;
@@ -356,6 +515,7 @@ export type Database = {
           default_currency_code?: string;
           default_locale?: string;
           id?: string;
+          margin_floor_bps?: number | null;
           name: string;
           seller_address_line1?: string | null;
           seller_address_line2?: string | null;
@@ -380,6 +540,7 @@ export type Database = {
           default_currency_code?: string;
           default_locale?: string;
           id?: string;
+          margin_floor_bps?: number | null;
           name?: string;
           seller_address_line1?: string | null;
           seller_address_line2?: string | null;
@@ -412,6 +573,7 @@ export type Database = {
           sku: string;
           tax_profile_id: string;
           unit_code: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor: number | null;
           unit_price_minor: number;
           updated_at: string;
           version: number;
@@ -428,6 +590,7 @@ export type Database = {
           sku: string;
           tax_profile_id: string;
           unit_code: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor?: number | null;
           unit_price_minor: number;
           updated_at?: string;
           version?: number;
@@ -444,11 +607,19 @@ export type Database = {
           sku?: string;
           tax_profile_id?: string;
           unit_code?: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor?: number | null;
           unit_price_minor?: number;
           updated_at?: string;
           version?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: "products_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "products_organization_id_fkey";
             columns: ["organization_id"];
@@ -561,6 +732,13 @@ export type Database = {
             foreignKeyName: "quote_acceptances_organization_id_quote_id_revision_id_fkey";
             columns: ["organization_id", "quote_id", "revision_id"];
             isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
+          },
+          {
+            foreignKeyName: "quote_acceptances_organization_id_quote_id_revision_id_fkey";
+            columns: ["organization_id", "quote_id", "revision_id"];
+            isOneToOne: false;
             referencedRelation: "quote_revisions";
             referencedColumns: ["organization_id", "quote_id", "id"];
           },
@@ -647,6 +825,13 @@ export type Database = {
             foreignKeyName: "quote_activity_organization_id_quote_id_fkey";
             columns: ["organization_id", "quote_id"];
             isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_activity_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
             referencedRelation: "quotes";
             referencedColumns: ["organization_id", "id"];
           },
@@ -721,6 +906,13 @@ export type Database = {
             foreignKeyName: "quote_charges_organization_id_quote_id_fkey";
             columns: ["organization_id", "quote_id"];
             isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_charges_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
             referencedRelation: "quotes";
             referencedColumns: ["organization_id", "id"];
           },
@@ -750,6 +942,7 @@ export type Database = {
           tax_price_basis_snapshot: Database["public"]["Enums"]["tax_price_basis"];
           tax_treatment_snapshot: Database["public"]["Enums"]["tax_treatment"];
           unit_code_snapshot: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor_snapshot: number | null;
           unit_price_minor_snapshot: number;
           updated_at: string;
         };
@@ -776,6 +969,7 @@ export type Database = {
           tax_price_basis_snapshot: Database["public"]["Enums"]["tax_price_basis"];
           tax_treatment_snapshot: Database["public"]["Enums"]["tax_treatment"];
           unit_code_snapshot: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor_snapshot?: number | null;
           unit_price_minor_snapshot: number;
           updated_at?: string;
         };
@@ -802,10 +996,18 @@ export type Database = {
           tax_price_basis_snapshot?: Database["public"]["Enums"]["tax_price_basis"];
           tax_treatment_snapshot?: Database["public"]["Enums"]["tax_treatment"];
           unit_code_snapshot?: Database["public"]["Enums"]["unit_code"];
+          unit_cost_minor_snapshot?: number | null;
           unit_price_minor_snapshot?: number;
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "quote_items_organization_id_product_id_fkey";
+            columns: ["organization_id", "product_id"];
+            isOneToOne: false;
+            referencedRelation: "product_unit_costs";
+            referencedColumns: ["organization_id", "id"];
+          },
           {
             foreignKeyName: "quote_items_organization_id_product_id_fkey";
             columns: ["organization_id", "product_id"];
@@ -817,8 +1019,111 @@ export type Database = {
             foreignKeyName: "quote_items_organization_id_quote_id_fkey";
             columns: ["organization_id", "quote_id"];
             isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_items_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
             referencedRelation: "quotes";
             referencedColumns: ["organization_id", "id"];
+          },
+        ];
+      };
+      quote_payment_milestones: {
+        Row: {
+          basis_points: number;
+          created_at: string;
+          due_date: string | null;
+          id: string;
+          label: string;
+          organization_id: string;
+          payment_trigger: Database["public"]["Enums"]["quote_payment_trigger"];
+          position: number;
+          quote_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          basis_points: number;
+          created_at?: string;
+          due_date?: string | null;
+          id?: string;
+          label: string;
+          organization_id: string;
+          payment_trigger: Database["public"]["Enums"]["quote_payment_trigger"];
+          position: number;
+          quote_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          basis_points?: number;
+          created_at?: string;
+          due_date?: string | null;
+          id?: string;
+          label?: string;
+          organization_id?: string;
+          payment_trigger?: Database["public"]["Enums"]["quote_payment_trigger"];
+          position?: number;
+          quote_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quote_payment_milestones_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_payment_milestones_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
+            referencedRelation: "quotes";
+            referencedColumns: ["organization_id", "id"];
+          },
+        ];
+      };
+      quote_pdf_render_attempts: {
+        Row: {
+          finished_at: string | null;
+          id: string;
+          outcome: string;
+          revision_id: string;
+          started_at: string;
+          user_id: string;
+        };
+        Insert: {
+          finished_at?: string | null;
+          id?: string;
+          outcome?: string;
+          revision_id: string;
+          started_at?: string;
+          user_id: string;
+        };
+        Update: {
+          finished_at?: string | null;
+          id?: string;
+          outcome?: string;
+          revision_id?: string;
+          started_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quote_pdf_render_attempts_revision_id_fkey";
+            columns: ["revision_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["revision_id"];
+          },
+          {
+            foreignKeyName: "quote_pdf_render_attempts_revision_id_fkey";
+            columns: ["revision_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_revisions";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -888,6 +1193,13 @@ export type Database = {
             foreignKeyName: "quote_recipient_events_organization_id_quote_id_revision_i_fkey";
             columns: ["organization_id", "quote_id", "revision_id"];
             isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
+          },
+          {
+            foreignKeyName: "quote_recipient_events_organization_id_quote_id_revision_i_fkey";
+            columns: ["organization_id", "quote_id", "revision_id"];
+            isOneToOne: false;
             referencedRelation: "quote_revisions";
             referencedColumns: ["organization_id", "quote_id", "id"];
           },
@@ -906,6 +1218,57 @@ export type Database = {
               "quote_id",
               "id",
               "revision_id",
+            ];
+          },
+        ];
+      };
+      quote_revision_pdfs: {
+        Row: {
+          byte_length: number;
+          generated_at: string;
+          organization_id: string;
+          quote_id: string;
+          revision_id: string;
+          sha256: string;
+          snapshot_hash: string;
+          storage_path: string;
+        };
+        Insert: {
+          byte_length: number;
+          generated_at?: string;
+          organization_id: string;
+          quote_id: string;
+          revision_id: string;
+          sha256: string;
+          snapshot_hash: string;
+          storage_path: string;
+        };
+        Update: {
+          byte_length?: number;
+          generated_at?: string;
+          organization_id?: string;
+          quote_id?: string;
+          revision_id?: string;
+          sha256?: string;
+          snapshot_hash?: string;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quote_revision_pdfs_organization_id_quote_id_revision_id_s_fkey";
+            columns: [
+              "organization_id",
+              "quote_id",
+              "revision_id",
+              "snapshot_hash",
+            ];
+            isOneToOne: false;
+            referencedRelation: "quote_revisions";
+            referencedColumns: [
+              "organization_id",
+              "quote_id",
+              "id",
+              "snapshot_hash",
             ];
           },
         ];
@@ -931,6 +1294,9 @@ export type Database = {
           legacy_captured_at: string | null;
           legacy_snapshot: Json | null;
           legacy_source_revision_id: string | null;
+          lines_without_cost: number | null;
+          margin_bps: number | null;
+          margin_floor_bps: number | null;
           organization_id: string;
           parent_revision_id: string | null;
           quote_id: string;
@@ -971,6 +1337,9 @@ export type Database = {
           legacy_captured_at?: string | null;
           legacy_snapshot?: Json | null;
           legacy_source_revision_id?: string | null;
+          lines_without_cost?: number | null;
+          margin_bps?: number | null;
+          margin_floor_bps?: number | null;
           organization_id: string;
           parent_revision_id?: string | null;
           quote_id: string;
@@ -1011,6 +1380,9 @@ export type Database = {
           legacy_captured_at?: string | null;
           legacy_snapshot?: Json | null;
           legacy_source_revision_id?: string | null;
+          lines_without_cost?: number | null;
+          margin_bps?: number | null;
+          margin_floor_bps?: number | null;
           organization_id?: string;
           parent_revision_id?: string | null;
           quote_id?: string;
@@ -1040,6 +1412,17 @@ export type Database = {
               "legacy_source_revision_id",
             ];
             isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
+          },
+          {
+            foreignKeyName: "quote_revisions_legacy_source_fkey";
+            columns: [
+              "organization_id",
+              "quote_id",
+              "legacy_source_revision_id",
+            ];
+            isOneToOne: false;
             referencedRelation: "quote_revisions";
             referencedColumns: ["organization_id", "quote_id", "id"];
           },
@@ -1047,8 +1430,22 @@ export type Database = {
             foreignKeyName: "quote_revisions_organization_id_quote_id_fkey";
             columns: ["organization_id", "quote_id"];
             isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_revisions_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
             referencedRelation: "quotes";
             referencedColumns: ["organization_id", "id"];
+          },
+          {
+            foreignKeyName: "quote_revisions_parent_fkey";
+            columns: ["organization_id", "quote_id", "parent_revision_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
           },
           {
             foreignKeyName: "quote_revisions_parent_fkey";
@@ -1076,6 +1473,13 @@ export type Database = {
           sequence_year?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: "quote_sequences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "quote_sequences_organization_id_fkey";
             columns: ["organization_id"];
@@ -1138,6 +1542,13 @@ export type Database = {
           token_hash_algorithm?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "quote_share_links_organization_id_quote_id_revision_id_fkey";
+            columns: ["organization_id", "quote_id", "revision_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
+          },
           {
             foreignKeyName: "quote_share_links_organization_id_quote_id_revision_id_fkey";
             columns: ["organization_id", "quote_id", "revision_id"];
@@ -1336,8 +1747,22 @@ export type Database = {
             foreignKeyName: "quotes_accepted_revision_fkey";
             columns: ["organization_id", "id", "accepted_revision_id"];
             isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
+          },
+          {
+            foreignKeyName: "quotes_accepted_revision_fkey";
+            columns: ["organization_id", "id", "accepted_revision_id"];
+            isOneToOne: false;
             referencedRelation: "quote_revisions";
             referencedColumns: ["organization_id", "quote_id", "id"];
+          },
+          {
+            foreignKeyName: "quotes_current_revision_fkey";
+            columns: ["organization_id", "id", "current_revision_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_revision_margins";
+            referencedColumns: ["organization_id", "quote_id", "revision_id"];
           },
           {
             foreignKeyName: "quotes_current_revision_fkey";
@@ -1352,6 +1777,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "customers";
             referencedColumns: ["organization_id", "id"];
+          },
+          {
+            foreignKeyName: "quotes_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "quotes_organization_id_fkey";
@@ -1470,6 +1902,13 @@ export type Database = {
             foreignKeyName: "tax_profiles_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tax_profiles_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
@@ -1477,7 +1916,246 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      organization_margin_policy: {
+        Row: {
+          id: string | null;
+          margin_floor_bps: number | null;
+          version: number | null;
+        };
+        Insert: {
+          id?: string | null;
+          margin_floor_bps?: number | null;
+          version?: number | null;
+        };
+        Update: {
+          id?: string | null;
+          margin_floor_bps?: number | null;
+          version?: number | null;
+        };
+        Relationships: [];
+      };
+      product_unit_costs: {
+        Row: {
+          id: string | null;
+          organization_id: string | null;
+          unit_cost_minor: number | null;
+          version: number | null;
+        };
+        Insert: {
+          id?: string | null;
+          organization_id?: string | null;
+          unit_cost_minor?: number | null;
+          version?: number | null;
+        };
+        Update: {
+          id?: string | null;
+          organization_id?: string | null;
+          unit_cost_minor?: number | null;
+          version?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "products_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "products_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quote_buyer_email_requests: {
+        Row: {
+          command_id: string | null;
+          expected_version: number | null;
+          expires_at: string | null;
+          id: string | null;
+          quote_id: string | null;
+          recipient_email: string | null;
+          revision_id: string | null;
+          status: string | null;
+        };
+        Insert: {
+          command_id?: never;
+          expected_version?: never;
+          expires_at?: string | null;
+          id?: string | null;
+          quote_id?: string | null;
+          recipient_email?: string | null;
+          revision_id?: string | null;
+          status?: string | null;
+        };
+        Update: {
+          command_id?: never;
+          expected_version?: never;
+          expires_at?: string | null;
+          id?: string | null;
+          quote_id?: string | null;
+          recipient_email?: string | null;
+          revision_id?: string | null;
+          status?: string | null;
+        };
+        Relationships: [];
+      };
+      quote_draft_margin: {
+        Row: {
+          below_cost: boolean | null;
+          floor_bps: number | null;
+          lines_without_cost: number | null;
+          margin_bps: number | null;
+          quote_id: string | null;
+          under_floor: boolean | null;
+        };
+        Relationships: [];
+      };
+      quote_email_activity: {
+        Row: {
+          attempts: number | null;
+          audience: string | null;
+          created_at: string | null;
+          dead_at: string | null;
+          display_status: string | null;
+          id: string | null;
+          kind: string | null;
+          last_error_code: string | null;
+          max_attempts: number | null;
+          organization_id: string | null;
+          quote_id: string | null;
+          recipient_email: string | null;
+          recipient_label: string | null;
+          revision_id: string | null;
+          sent_at: string | null;
+        };
+        Insert: {
+          attempts?: number | null;
+          audience?: string | null;
+          created_at?: string | null;
+          dead_at?: string | null;
+          display_status?: never;
+          id?: string | null;
+          kind?: string | null;
+          last_error_code?: string | null;
+          max_attempts?: number | null;
+          organization_id?: string | null;
+          quote_id?: string | null;
+          recipient_email?: never;
+          recipient_label?: never;
+          revision_id?: string | null;
+          sent_at?: string | null;
+        };
+        Update: {
+          attempts?: number | null;
+          audience?: string | null;
+          created_at?: string | null;
+          dead_at?: string | null;
+          display_status?: never;
+          id?: string | null;
+          kind?: string | null;
+          last_error_code?: string | null;
+          max_attempts?: number | null;
+          organization_id?: string | null;
+          quote_id?: string | null;
+          recipient_email?: never;
+          recipient_label?: never;
+          revision_id?: string | null;
+          sent_at?: string | null;
+        };
+        Relationships: [];
+      };
+      quote_margin_calc: {
+        Row: {
+          below_cost: boolean | null;
+          floor_bps: number | null;
+          lines_without_cost: number | null;
+          margin_bps: number | null;
+          organization_id: string | null;
+          quote_id: string | null;
+          state: Database["public"]["Enums"]["quote_state"] | null;
+          under_floor: boolean | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quotes_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization_margin_policy";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quotes_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quote_payment_schedule_editor: {
+        Row: {
+          milestones: Json | null;
+          quote_id: string | null;
+          version: number | null;
+        };
+        Insert: {
+          milestones?: never;
+          quote_id?: string | null;
+          version?: number | null;
+        };
+        Update: {
+          milestones?: never;
+          quote_id?: string | null;
+          version?: number | null;
+        };
+        Relationships: [];
+      };
+      quote_revision_margins: {
+        Row: {
+          lines_without_cost: number | null;
+          margin_bps: number | null;
+          margin_floor_bps: number | null;
+          organization_id: string | null;
+          quote_id: string | null;
+          revision_id: string | null;
+        };
+        Insert: {
+          lines_without_cost?: number | null;
+          margin_bps?: number | null;
+          margin_floor_bps?: number | null;
+          organization_id?: string | null;
+          quote_id?: string | null;
+          revision_id?: string | null;
+        };
+        Update: {
+          lines_without_cost?: number | null;
+          margin_bps?: number | null;
+          margin_floor_bps?: number | null;
+          organization_id?: string | null;
+          quote_id?: string | null;
+          revision_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quote_revisions_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_margin_calc";
+            referencedColumns: ["organization_id", "quote_id"];
+          },
+          {
+            foreignKeyName: "quote_revisions_organization_id_quote_id_fkey";
+            columns: ["organization_id", "quote_id"];
+            isOneToOne: false;
+            referencedRelation: "quotes";
+            referencedColumns: ["organization_id", "id"];
+          },
+        ];
+      };
     };
     Functions: {
       approve_quote: {
@@ -1493,6 +2171,15 @@ export type Database = {
           p_command_id: string;
           p_expected_version: number;
           p_quote_id: string;
+        };
+        Returns: Json;
+      };
+      approve_quote_revision: {
+        Args: {
+          p_command_id: string;
+          p_expected_version: number;
+          p_quote_id: string;
+          p_revision_id: string;
         };
         Returns: Json;
       };
@@ -1578,6 +2265,14 @@ export type Database = {
       calculate_quote_payloads: { Args: { p_payloads: Json }; Returns: Json };
       canonical_json_string_v1: { Args: { p_value: string }; Returns: string };
       canonical_json_v1: { Args: { p_value: Json }; Returns: string };
+      claim_email_outbox: {
+        Args: { p_lease_seconds: number; p_limit: number };
+        Returns: Json;
+      };
+      claim_quote_pdf_render: {
+        Args: { p_revision_id: string; p_user_id: string };
+        Returns: Json;
+      };
       command_receipt_replay: {
         Args: {
           p_aggregate_id: string;
@@ -1604,6 +2299,16 @@ export type Database = {
           p_allow_partial: boolean;
           p_batch_id: string;
           p_command_id: string;
+        };
+        Returns: Json;
+      };
+      complete_email_outbox: {
+        Args: {
+          p_attempt_no: number;
+          p_error_code: string;
+          p_outbox_id: string;
+          p_outcome: string;
+          p_provider_message_id: string;
         };
         Returns: Json;
       };
@@ -1730,6 +2435,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      finish_quote_pdf_render: {
+        Args: { p_attempt_id: string; p_succeeded: boolean };
+        Returns: undefined;
+      };
       has_org_capability: {
         Args: { p_capability_key: string; p_organization_id: string };
         Returns: boolean;
@@ -1762,6 +2471,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      issue_quote_revision: {
+        Args: {
+          p_command_id: string;
+          p_expected_version: number;
+          p_quote_id: string;
+          p_revision_id: string;
+        };
+        Returns: Json;
+      };
       next_quote_number: {
         Args: { p_issue_date: string; p_organization_id: string };
         Returns: string;
@@ -1782,6 +2500,25 @@ export type Database = {
       organization_local_date: {
         Args: { p_at: string; p_organization_id: string };
         Returns: string;
+      };
+      outbox_insert: {
+        Args: {
+          p_created_by: string;
+          p_dedupe_key: string;
+          p_email: string;
+          p_kind: string;
+          p_organization_id: string;
+          p_payload: Json;
+          p_quote_id: string;
+          p_revision_id: string;
+          p_share_expires_at: string;
+          p_user_id: string;
+        };
+        Returns: string;
+      };
+      outbox_mint_share_link: {
+        Args: { p_attempt_no: number; p_outbox_id: string };
+        Returns: Json;
       };
       parse_currency_minor: {
         Args: { p_currency_code: string; p_value: string };
@@ -1824,6 +2561,10 @@ export type Database = {
         };
         Returns: Database["public"]["Enums"]["quote_state"];
       };
+      quote_milestone_amounts: {
+        Args: { p_basis_points: number[]; p_total: number };
+        Returns: number[];
+      };
       quote_public_link_status: {
         Args: {
           p_limit?: number;
@@ -1836,6 +2577,16 @@ export type Database = {
         Returns: Json;
       };
       quote_snapshot_v1: {
+        Args: {
+          p_calculation_fingerprint: string;
+          p_reason_codes: string[];
+          p_requires_manual: boolean;
+          p_revision_id: string;
+          p_threshold_bps: number;
+        };
+        Returns: Json;
+      };
+      quote_snapshot_v2: {
         Args: {
           p_calculation_fingerprint: string;
           p_reason_codes: string[];
@@ -1862,6 +2613,15 @@ export type Database = {
         };
         Returns: undefined;
       };
+      record_quote_pdf: {
+        Args: {
+          p_byte_length: number;
+          p_path: string;
+          p_revision_id: string;
+          p_sha256: string;
+        };
+        Returns: Json;
+      };
       refresh_quote_line_from_catalog: {
         Args: {
           p_command_id: string;
@@ -1886,6 +2646,16 @@ export type Database = {
           p_expected_version: number;
           p_quote_id: string;
           p_reason: string;
+        };
+        Returns: Json;
+      };
+      reject_quote_revision: {
+        Args: {
+          p_command_id: string;
+          p_expected_version: number;
+          p_quote_id: string;
+          p_reason: string;
+          p_revision_id: string;
         };
         Returns: Json;
       };
@@ -2005,6 +2775,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      submit_quote_revision: {
+        Args: {
+          p_command_id: string;
+          p_expected_version: number;
+          p_quote_id: string;
+          p_revision_id: string;
+        };
+        Returns: Json;
+      };
       update_customer: {
         Args: {
           p_command_id: string;
@@ -2064,6 +2843,8 @@ export type Database = {
         | "packaging"
         | "customs_duties"
         | "other";
+      quote_payment_trigger:
+        "on_acceptance" | "on_delivery" | "on_completion" | "on_date";
       quote_recipient_event_type:
         "viewed" | "change_requested" | "declined" | "accepted";
       quote_revision_record_kind: "verified_revision" | "legacy_capture";
@@ -2215,6 +2996,12 @@ export const Constants = {
         "packaging",
         "customs_duties",
         "other",
+      ],
+      quote_payment_trigger: [
+        "on_acceptance",
+        "on_delivery",
+        "on_completion",
+        "on_date",
       ],
       quote_recipient_event_type: [
         "viewed",

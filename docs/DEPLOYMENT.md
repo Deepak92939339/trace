@@ -34,8 +34,11 @@ Set these runtime variables for Production (and Preview only if previews should 
 - `TENDER_DEMO_MODE=true`
 - `TENDER_EDGE_BROKER_TRANSPORT_SECRET`
 - `TENDER_PUBLIC_SESSION_ENCRYPTION_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only; read only by `lib/quote-pdf/privileged-writer.ts` and `lib/outbox/privileged-outbox.ts`)
+- `NEXT_PUBLIC_APP_URL` (the public origin, used for links in internal emails)
+- `TRACE_MAIL_PROVIDER=resend`, `TRACE_MAIL_FROM`, `TRACE_RESEND_API_KEY`, `TRACE_OUTBOX_DRAIN_SECRET` (email outbox; see below)
 
-The transport and session secrets are server-only; `TENDER_DEMO_MODE` is a server-only non-secret flag. The transport secret authenticates only the fixed Next-to-Edge broker envelope and does not grant database access. The session key encrypts and authenticates the short-lived capability cookie. Do not expose either secret with a `NEXT_PUBLIC_` prefix. Do not add `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, or `PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET` to Vercel.
+The transport and session secrets are server-only; `TENDER_DEMO_MODE` is a server-only non-secret flag. The transport secret authenticates only the fixed Next-to-Edge broker envelope and does not grant database access. The session key encrypts and authenticates the short-lived capability cookie. Do not expose either secret with a `NEXT_PUBLIC_` prefix. Do not add `SUPABASE_DB_URL` or `PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET` to Vercel. `SUPABASE_SERVICE_ROLE_KEY` is added to Vercel only for the two server modules named above (PDF storage and the email outbox) and never with a `NEXT_PUBLIC_` prefix.
 
 ## 4. Isolated public broker Edge Function
 
@@ -44,7 +47,7 @@ The browser remains limited to public Supabase configuration. Next calls this fu
 - `TENDER_EDGE_BROKER_TRANSPORT_SECRET` (shared only with the Next server runtime)
 - `PUBLIC_BROKER_RATE_LIMIT_HMAC_SECRET`
 
-The Supabase Edge runtime supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. The service-role credential is permitted only inside this function and only for its fixed calls to `broker_open_quote`, `broker_record_quote_event`, `broker_accept_quote`, and `broker_verify_quote`. Never copy it into Vercel, Next.js, browser code, environment examples, build arguments, or logs. The Edge handler does not read public forwarding headers. It accepts a normalized client-address representation only after authenticating the HMAC envelope from Next.
+The Supabase Edge runtime supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Inside this function the service-role credential is used only for its fixed calls to `broker_open_quote`, `broker_record_quote_event`, `broker_accept_quote`, and `broker_verify_quote`. Outside it, only the two Next.js server modules listed in section 3 may hold the credential (PDF storage and the email outbox). Never copy it into browser code, environment examples, build arguments, or logs. The Edge handler does not read public forwarding headers. It accepts a normalized client-address representation only after authenticating the HMAC envelope from Next.
 
 Keep JWT verification disabled at the Supabase gateway so the HMAC-authenticated service-to-service request can reach the handler. Supabase documents that this makes the gateway route publicly invocable, so the function's signed-envelope check is mandatory and direct unsigned requests must return `401` before database dispatch. PostgreSQL remains authoritative for token validation, selector/code rate buckets, idempotency, effective state, and revision-scoped terminal responses. Confirm after deployment that direct `anon` and `authenticated` PostgREST calls to all four broker RPCs remain denied. See [Supabase Authorization headers](https://supabase.com/docs/guides/functions/auth-headers) and [Function configuration](https://supabase.com/docs/guides/functions/function-configuration).
 
@@ -77,3 +80,13 @@ Before deployment, run `npm ci`, `npm run verify`, and a production build with t
 ## Rollback and recovery
 
 This is a disposable portfolio demo. Roll back application code by promoting the prior known-good Vercel deployment. Database migrations are forward-only; before applying a new migration, use the hosted backup capability appropriate to the selected Supabase plan. For a release-candidate failure, prefer recreating a clean demo project, reapplying reviewed migrations, and deliberately reseeding rather than running a generic destructive reset against a hosted URL.
+
+## Email outbox (P6)
+
+Transactional email is queued in the database in the same transaction as the event that causes it and sent by a separate drain; nothing sends inline.
+
+1. Apply migration `20260904090000_p6_email_outbox.sql`.
+2. Set `TRACE_MAIL_PROVIDER=resend`, `TRACE_RESEND_API_KEY`, `TRACE_MAIL_FROM` (a sender on a domain verified with the provider), `NEXT_PUBLIC_APP_URL`, and `TRACE_OUTBOX_DRAIN_SECRET` (at least 32 random characters, for example `openssl rand -base64 48`) on the Next.js server.
+3. Schedule the drain: `pg_cron` plus `pg_net` calling `POST <app>/api/outbox/drain` every minute with header `Authorization: Bearer <TRACE_OUTBOX_DRAIN_SECRET>`. This is done at deploy, not by the application; nothing sends while no scheduler calls the route. Locally, run `node scripts/drain-outbox.mjs`.
+4. Failed sends retry at 1 min, 5 min, 30 min, 2 h and 6 h, then dead-letter; the quote page's Emails list shows Queued, Sent or Failed. "Sent" means handed to the provider, not delivered.
+5. Delivery is at least once. If the worker dies after the provider accepted a buyer email but before the row is marked sent, the retry mints a new link and revokes the first, so the buyer may hold two emails of which only the second link works.

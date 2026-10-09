@@ -51,4 +51,4 @@ for (const [command, args] of commands) {
   }
 }
 
-console.log("PASS complete Tender Milestone A verification gate.");
+console.log("PASS complete Trace Milestone A verification gate.");

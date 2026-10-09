@@ -1,0 +1,41 @@
+.app {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.appMain {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .app {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Print: only the document. Sidebar and top bar never print. */
+@media print {
+  .app,
+  .main {
+    display: block;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .app > aside,
+  .main > header {
+    display: none !important;
+  }
+}

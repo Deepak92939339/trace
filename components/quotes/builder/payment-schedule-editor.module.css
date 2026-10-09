@@ -1,0 +1,413 @@
+.container {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.titles {
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+.heading {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.empty {
+  padding: 20px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.emptyActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.addButton {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t);
+}
+
+.addButton:hover:not(:disabled) {
+  background: var(--sunken);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rowsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rowItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+}
+
+.rowGrid {
+  display: grid;
+  grid-template-columns:
+    minmax(140px, 2fr) minmax(90px, 1fr) minmax(130px, 1.2fr)
+    minmax(130px, 1.2fr) minmax(100px, 1fr) auto;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.control {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.control:focus {
+  border-color: var(--accent);
+}
+
+.controlError {
+  border-color: var(--red);
+}
+
+.amountCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.amountValue {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+}
+
+.iconButton {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-ctl);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background var(--t),
+    color var(--t);
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.iconButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.removeButton {
+  color: var(--red);
+}
+
+.removeButton:hover:not(:disabled) {
+  background: var(--red-soft);
+  border-color: var(--red-line);
+}
+
+.rowInlineError {
+  font-size: 11.5px;
+  color: var(--red);
+  margin: 0;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.footerSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.totalShares {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.amberNote {
+  font-size: 12px;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border: 1px solid var(--amber-line);
+  padding: 3px 8px;
+  border-radius: var(--r-ctl);
+}
+
+.maxNote {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.validationBox {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-soft);
+  border: 1px solid var(--red-line);
+  padding: 6px 10px;
+  border-radius: var(--r-ctl);
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.saveButton {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--t);
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--sunken);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unsavedNotice {
+  font-size: 12px;
+  color: var(--amber);
+  font-weight: 500;
+}
+
+.saveSuccess {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.saveError {
+  font-size: 12px;
+  color: var(--red);
+  font-weight: 500;
+}
+
+.removeScheduleButton {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--r-ctl);
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red);
+  cursor: pointer;
+  transition:
+    background var(--t),
+    border-color var(--t);
+}
+
+.removeScheduleButton:hover {
+  background: var(--red-soft);
+  border-color: var(--red-line);
+}
+
+.removeScheduleConfirm {
+  background: var(--red-soft);
+  border-color: var(--red-line);
+  font-weight: 600;
+}
+
+.conflictWrap {
+  margin-top: 10px;
+}
+
+.reloadButton {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Read-only table styling with global table resets */
+.readOnlyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.readOnlyTable th {
+  text-transform: uppercase;
+  background: transparent;
+  padding: 6px 8px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: left;
+}
+
+.readOnlyTable td {
+  text-transform: none;
+  background: transparent;
+  padding: 8px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  white-space: normal;
+  color: var(--ink);
+}
+
+.readOnlyTable .numCol {
+  text-align: right;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Grid children must be allowed to shrink below their inputs' intrinsic width. */
+.rowGrid > * {
+  min-width: 0;
+}
+
+.rowGrid .control {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  /* label | share + trigger | date (when dated) | amount + actions */
+  .rowGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+  }
+
+  .rowGrid > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .rowGrid > [aria-hidden="true"] {
+    display: none;
+  }
+
+  .rowActions {
+    grid-column: 2;
+    justify-content: flex-end;
+  }
+}
+
+@media print {
+  .container {
+    display: none !important;
+  }
+}

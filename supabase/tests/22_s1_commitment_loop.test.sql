@@ -44,7 +44,7 @@ set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","r
 with created as (
   select public.create_verified_quote_draft(
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'a3000000-0000-4000-8000-000000000001',
-    'INR', 'en-IN', 'GST 18%', 'exclusive', '2026-08-14', '2026-09-14',
+    'INR', 'en-IN', 'GST 18%', 'exclusive', current_date, (current_date + 31),
     'b1000000-0000-4000-8000-000000000001'
   ) result
 )
@@ -62,7 +62,7 @@ select lives_ok($$
     jsonb_build_object(
       'customer_id', 'a3000000-0000-4000-8000-000000000001', 'currency_code', 'INR',
       'locale', 'en-IN', 'tax_label', 'GST 18%', 'tax_mode', 'exclusive',
-      'discount_bps', 0, 'issue_date', '2026-08-14', 'valid_until', '2026-09-14',
+      'discount_bps', 0, 'issue_date', current_date, 'valid_until', (current_date + 31),
       'notes', E'Canonical\nquote', 'items', jsonb_build_array(jsonb_build_object(
         'line_id', null, 'product_id', 'a2000000-0000-4000-8000-000000000001',
         'position', 1, 'quantity_scaled', 1, 'quantity_scale', 1
@@ -209,7 +209,7 @@ with shared as (
   select public.create_quote_share_link(
     (select value::uuid from s1_values where key='quote_id'),
     (select value::uuid from s1_values where key='revision_id'), 4,
-    'buyer@example.test', '2026-09-01T00:00:00Z',
+    'buyer@example.test', (now() + interval '18 days'),
     'b1000000-0000-4000-8000-000000000005'
   ) result
 )
@@ -228,7 +228,7 @@ set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","r
 select is((public.create_quote_share_link(
     (select value::uuid from s1_values where key='quote_id'),
     (select value::uuid from s1_values where key='revision_id'), 4,
-    'buyer@example.test', '2026-09-01T00:00:00Z',
+    'buyer@example.test', (now() + interval '18 days'),
     'b1000000-0000-4000-8000-000000000005')->>'status'),
   'replayed_without_secret', 'share command replay creates no second secret');
 select is((select count(id)::integer from public.quote_share_links where revision_id=(select value::uuid from s1_values where key='revision_id')), 1, 'share replay creates one link');
@@ -236,7 +236,7 @@ with shared as (
   select public.create_quote_share_link(
     (select value::uuid from s1_values where key='quote_id'),
     (select value::uuid from s1_values where key='revision_id'), 4,
-    'second@example.test', '2026-09-01T00:00:00Z',
+    'second@example.test', (now() + interval '18 days'),
     'b1000000-0000-4000-8000-000000000009'
   ) result
 )
@@ -248,7 +248,7 @@ with shared as (
   select public.create_quote_share_link(
     (select value::uuid from s1_values where key='quote_id'),
     (select value::uuid from s1_values where key='revision_id'), 4,
-    'revoke@example.test', '2026-09-01T00:00:00Z',
+    'revoke@example.test', (now() + interval '18 days'),
     'b1000000-0000-4000-8000-000000000011'
   ) result
 )
@@ -272,7 +272,7 @@ select is((select count(*)::integer from public.quote_revisions where quote_id=(
 select throws_ok($$select public.create_quote_share_link(
   (select value::uuid from s1_values where key='quote_id'),
   (select value::uuid from s1_values where key='revision_id'), 4,
-  'attacker@example.test', '2026-09-01T00:00:00Z', extensions.gen_random_uuid())$$,
+  'attacker@example.test', (now() + interval '18 days'), extensions.gen_random_uuid())$$,
   '42501', 'quote_share_forbidden', 'cross-organization share creation is denied');
 reset role;
 set local role service_role;
@@ -361,7 +361,7 @@ with shared as (
   select public.create_quote_share_link(
     (select value::uuid from s1_values where key='quote_id'),
     (select value::uuid from s1_values where key='successor_revision_id'), 8,
-    'accept@example.test', '2026-09-01T00:00:00Z',
+    'accept@example.test', (now() + interval '18 days'),
     'b1000000-0000-4000-8000-000000000017'
   ) result
 )
@@ -429,7 +429,7 @@ set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","r
 with invalid_seller as (
   select public.create_verified_quote_draft(
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'a3000000-0000-4000-8000-000000000001',
-    'INR', 'en-IN', 'GST 18%', 'exclusive', '2026-08-14', '2026-09-14',
+    'INR', 'en-IN', 'GST 18%', 'exclusive', current_date, (current_date + 31),
     'b1000000-0000-4000-8000-000000000081'
   ) result
 )
@@ -442,7 +442,7 @@ select lives_ok($$select public.save_quote_draft(
   jsonb_build_object(
     'customer_id', 'a3000000-0000-4000-8000-000000000001', 'currency_code', 'INR',
     'locale', 'en-IN', 'tax_label', 'GST 18%', 'tax_mode', 'exclusive',
-    'discount_bps', 0, 'issue_date', '2026-08-14', 'valid_until', '2026-09-14',
+    'discount_bps', 0, 'issue_date', current_date, 'valid_until', (current_date + 31),
     'notes', 'Invalid sealed seller structure test', 'items', jsonb_build_array(jsonb_build_object(
       'line_id', null, 'product_id', 'a2000000-0000-4000-8000-000000000001',
       'position', 1, 'quantity_scaled', 1, 'quantity_scale', 1
@@ -480,7 +480,7 @@ set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","r
 with legacy as (
   select public.create_quote_draft(
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'a3000000-0000-4000-8000-000000000001',
-    'INR', 'en-IN', 'GST 18%', 'exclusive', '2026-08-14', '2026-09-14',
+    'INR', 'en-IN', 'GST 18%', 'exclusive', current_date, (current_date + 31),
     'b1000000-0000-4000-8000-000000000007'
   ) result
 )
@@ -491,7 +491,7 @@ select lives_ok($$select public.save_quote_draft(
   jsonb_build_object(
     'customer_id', 'a3000000-0000-4000-8000-000000000001', 'currency_code', 'INR',
     'locale', 'en-IN', 'tax_label', 'GST 18%', 'tax_mode', 'exclusive',
-    'discount_bps', 0, 'issue_date', '2026-08-14', 'valid_until', '2026-09-14',
+    'discount_bps', 0, 'issue_date', current_date, 'valid_until', (current_date + 31),
     'notes', 'Issued legacy evidence', 'items', jsonb_build_array(jsonb_build_object(
       'line_id', null, 'product_id', 'a2000000-0000-4000-8000-000000000001',
       'position', 1, 'quantity_scaled', 1, 'quantity_scale', 1

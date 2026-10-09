@@ -1,0 +1,372 @@
+/* Page padding comes from .app-main in the shell. */
+.container {
+  padding: 0;
+}
+
+.header {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border: 1px solid var(--amber-line);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.title {
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.notice {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--sunken);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl, 6px);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1360px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tableRegion {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel, 8px);
+  overflow-x: auto;
+  position: relative;
+  outline-offset: 2px;
+}
+
+.tableRegion:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+/* Explicit reset of globals.css bare table/th/td rules */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: normal;
+  background: transparent;
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 13px;
+}
+
+.table th {
+  background: var(--canvas);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 8px 12px;
+  height: 36px;
+  text-align: left;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table th.r,
+.table td.r {
+  text-align: right;
+}
+
+.table td {
+  background: transparent;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.table tbody tr {
+  cursor: pointer;
+  transition: background var(--t, 150ms ease);
+}
+
+.table tbody tr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.table tbody tr:hover td {
+  background: var(--sunken);
+}
+
+.table tbody tr[aria-selected="true"] td {
+  background: var(--sunken);
+}
+
+.table tbody tr[aria-selected="true"] td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.recordLink {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.recordLink:hover {
+  text-decoration: underline;
+}
+
+.customer {
+  font-weight: 500;
+}
+
+.discount {
+  display: block;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.discountOver {
+  display: block;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+}
+
+.limitText {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.reasonsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.submittedBy {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-ctl, 6px);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 12px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background var(--t, 150ms ease),
+    border-color var(--t, 150ms ease);
+}
+
+.button:hover {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.managerText {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Calm empty state */
+.empty {
+  padding: 48px 16px !important;
+  text-align: center !important;
+  color: var(--muted);
+}
+
+.emptyContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.emptyIcon {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+/* Under 720px: stacked cards */
+@media (max-width: 720px) {
+  .tableRegion {
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+    overflow-x: visible;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .table tbody tr {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-panel, 8px);
+    padding: 10px 14px;
+  }
+
+  .table tbody tr:hover td {
+    background: transparent;
+  }
+
+  .table tbody tr[aria-selected="true"] {
+    background: var(--sunken);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+
+  .table tbody tr[aria-selected="true"] td {
+    background: transparent;
+  }
+
+  .table tbody tr[aria-selected="true"] td:first-child {
+    box-shadow: none;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: right !important;
+  }
+
+  .table tbody tr:last-child td {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table tbody tr td:last-child {
+    border-bottom: 0;
+    padding-top: 8px;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .empty {
+    display: block !important;
+    text-align: center !important;
+    padding: 32px 16px !important;
+  }
+
+  .empty::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .discount,
+  .discountOver {
+    display: inline;
+  }
+
+  .limitText {
+    display: block;
+  }
+}
+
+/* Side-by-side with the drawer: the drawer carries customer, reasons and submitter. */
+@media (min-width: 1361px) {
+  .wideOnly {
+    display: none;
+  }
+}

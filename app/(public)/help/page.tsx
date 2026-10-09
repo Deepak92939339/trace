@@ -58,9 +58,9 @@ export default function HelpPage() {
 
       <header className="guide-hero">
         <p className="eyebrow">Fail-safe reviewer guide</p>
-        <h1>Understand Tender without guessing.</h1>
+        <h1>Understand Trace without guessing.</h1>
         <p>
-          Tender is a quotation workflow demonstration. It keeps product
+          Trace is a quotation workflow demonstration. It keeps product
           pricing, customer context, approval decisions and the issued document
           attached to one traceable commercial record.
         </p>
@@ -174,7 +174,7 @@ export default function HelpPage() {
         <div className="guide-callout">
           <strong>The important distinction</strong>
           <p>
-            Approved is not Issued, and Issued is not Delivered. Tender keeps
+            Approved is not Issued, and Issued is not Delivered. Trace keeps
             each event separate so a reviewer can tell what actually happened
             instead of interpreting one overloaded status.
           </p>

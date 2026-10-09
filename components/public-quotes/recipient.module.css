@@ -1,0 +1,262 @@
+/* Shell & Header */
+.shell {
+  min-height: 100vh;
+  background: var(--canvas);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 20px;
+  background: rgba(237, 240, 242, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.header svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+/* Loading / Access state */
+.access {
+  width: min(620px, calc(100% - 40px));
+  margin: 14vh auto;
+  padding: 32px;
+  border-top: 3px solid var(--accent);
+  background: var(--surface);
+  box-shadow: 0 10px 30px -12px rgba(23, 33, 43, 0.18);
+  border-radius: var(--r-panel, 8px);
+}
+
+.accessTitle {
+  font-family: var(--serif);
+  font-size: 28px;
+  margin-top: 0;
+  color: var(--ink);
+}
+
+.accessMessage {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Document follow-on content */
+.lowerWrap {
+  max-width: 820px;
+  margin: 40px auto 120px;
+  padding: 0 20px;
+}
+
+/* Verification */
+.verification {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-paper, 8px);
+  overflow: hidden;
+}
+
+.verificationTitle {
+  margin-top: 0;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.verifiedResult {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Acceptance Evidence */
+.acceptanceEvidence {
+  margin-top: 24px;
+  padding: 18px 24px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 var(--r-ctl, 6px) var(--r-ctl, 6px) 0;
+}
+
+.acceptanceTitle {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.acceptanceDate {
+  color: var(--ink-2);
+  margin: 4px 0;
+}
+
+.acceptanceMeta {
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+.acceptanceMeta code {
+  color: var(--ink);
+  font-family: var(--mono);
+}
+
+/* Footer */
+.footer {
+  margin-top: 64px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footerInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Dialog */
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(23, 33, 43, 0.36);
+}
+
+.dialogPanel {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 28px;
+  border-radius: var(--r-panel, 8px);
+  background: var(--surface);
+  box-shadow: 0 12px 32px -10px rgba(23, 33, 43, 0.22);
+}
+
+.dialogTitle {
+  margin-top: 0;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dialogStatement {
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--canvas);
+  color: var(--ink);
+  border-radius: var(--r-ctl, 6px);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+/* Form Controls */
+.label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 14px;
+}
+
+.input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-ctl, 6px);
+  background: var(--surface);
+  outline: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.textarea {
+  width: 100%;
+  height: 128px;
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-ctl, 6px);
+  background: var(--surface);
+  outline: none;
+  resize: vertical;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-ctl, 6px);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--t, 150ms ease), border-color var(--t, 150ms ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--sunken);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+
+.btnDanger {
+  border-color: transparent;
+  background: transparent;
+  color: var(--red);
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: var(--red-soft);
+}
+
+@media (max-width: 560px) {
+  .lowerWrap {
+    margin-bottom: 180px;
+  }
+}

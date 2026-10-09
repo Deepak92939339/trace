@@ -1,0 +1,121 @@
+.dialog {
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  padding: 24px;
+  background: var(--surface);
+  color: var(--ink);
+  max-width: 480px;
+  width: calc(100% - 32px);
+  box-shadow: var(--shadow-pop);
+}
+
+.dialog::backdrop {
+  background: rgba(23, 33, 43, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.heading {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.description {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0 0 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-ctl);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(33, 107, 70, 0.12);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelButton {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--r-ctl);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--t);
+}
+
+.cancelButton:hover {
+  background: var(--sunken);
+}
+
+.confirmButton {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--r-ctl);
+  border: none;
+  background: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background var(--t);
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.workflowMessage {
+  padding: 8px 10px;
+  border-radius: var(--r-ctl);
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber-line);
+  font-size: 12px;
+  margin-bottom: 12px;
+}

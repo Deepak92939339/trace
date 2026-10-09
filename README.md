@@ -1,135 +1,138 @@
+<div align="center">
+
 # Trace
 
-Trace is a multi-tenant commercial quotation application for preparing priced offers, routing discount decisions, and issuing an accountable customer-facing record. It demonstrates how a compact B2B workflow can keep tenant isolation, exact money, approval policy, lifecycle transitions, and audit activity inside one coherent system.
+### Commercial quotations, held to a clear rule.
 
-> Live demo: **[tender-eta-orpin.vercel.app](https://tender-eta-orpin.vercel.app)**
+**Priced once. Approved on the record. Issued unchanged.**
 
-## Status
+[**Open the live product →**](https://tender-eta-orpin.vercel.app)
 
-Trace is deployed as a portfolio demo: a Vercel project (Next.js) plus one dedicated Supabase project, linked above. The repository tracks 37 ordered migrations, 16 App Router pages and 5 route handlers, 29 pgTAP files, 46 unit-test files and 26 Playwright spec files. The hosted database is upgraded by applying new migrations in order **before** deploying the matching application version; see [Deployment](docs/DEPLOYMENT.md). Release history and design evidence live outside the repository.
+![Next.js 16](https://img.shields.io/badge/Next.js-16-111827?logo=nextdotjs)
+![React 19](https://img.shields.io/badge/React-19-111827?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-1f6b45?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-1f6b45?logo=postgresql&logoColor=white)
+![Database tests](https://img.shields.io/badge/database%20tests-1%2C036-1f6b45)
+![Parity](https://img.shields.io/badge/calculator%20parity-5%2C000%2F5%2C000-1f6b45)
 
-## What it demonstrates
+<br/>
 
-- Authenticated organizations with role/capability checks and tenant-scoped row-level security (RLS).
-- Catalog, customer, draft quote, approval/rejection, issuance, and issued-only print flows.
-- Integer minor-unit money, basis-point rates, and scaled integer quantities.
-- Optimistic concurrency, idempotent command receipts, immutable submission/issuance snapshots, and append-only quote activity.
-- Exact parity checks between the PostgreSQL commercial calculator and the TypeScript preview calculator.
-- Issuer controls to create, list, and revoke recipient capability links for issued revisions; recipients see only the authorized public projection and recorded acceptance evidence.
+<img src="docs/images/screens/builder.png" alt="Trace quote builder with live document preview and exact totals" width="100%"/>
+
+</div>
+
+<br/>
+
+## Why Trace exists
+
+A B2B quotation is not a document. It is a **commercial commitment**: a price, a discount someone was allowed to give, terms someone approved, and a buyer who said yes to *exactly that version*.
+
+Most quoting tools treat it like a spreadsheet with a PDF button. Numbers drift between screen and printout, approvals live in chat threads, and when a customer says *"we never agreed to that"*, nobody can prove what was sent.
+
+Trace keeps the whole commitment in one accountable record, from catalog price to buyer acceptance, and makes every step provable.
+
+<br/>
+
+## How a quotation moves
+
+<img src="docs/images/lifecycle.svg" alt="Quote lifecycle: draft, approval, issue, buyer response, revision" width="100%"/>
+
+- **Draft**: lines are priced from the catalog; totals update as you type, while the database remains the calculator of record.
+- **Approve**: a discount over the organization's limit, or a margin below its floor, routes the quote to a manager, with the reason attached.
+- **Issue**: the revision is sealed into a canonical snapshot with a SHA-256 hash, and exactly one immutable PDF is rendered from it.
+- **Respond**: the buyer accepts, declines or requests changes on a private link. Acceptance is bound to the hash of the exact revision they saw.
+- **Revise**: changes create a new revision. The issued one stays sealed and verifiable, permanently.
+
+<br/>
+
+## Product tour
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/approvals.png" alt="Approval queue with decision panel"/></td>
+    <td width="50%"><img src="docs/images/screens/proposal.png" alt="Buyer proposal on a private link"/></td>
+  </tr>
+  <tr>
+    <td><b>Approval queue.</b> Why each quote is waiting, what changed since the last revision, internal margin, and keyboard-fast decisions.</td>
+    <td><b>Buyer proposal.</b> A clean, private view of the issued revision with its payment schedule and a recorded response.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/screens/pdf.png" alt="Issued quotation PDF"/></td>
+    <td><img src="docs/images/screens/landing.png" alt="Trace landing page"/></td>
+  </tr>
+  <tr>
+    <td><b>Issued PDF.</b> Rendered from the sealed snapshot, stored once, served from the application's own origin.</td>
+    <td><b>Public specimen.</b> Anyone can build a sample quotation across five markets without an account.</td>
+  </tr>
+</table>
+
+<br/>
 
 ## Architecture
 
-Trace is a Next.js 16 App Router application using React 19, strict TypeScript, Supabase Auth, PostgreSQL, and the Supabase Data API. Server Components and Server Actions use the browser-safe Supabase URL and publishable/anon key with the signed-in user's session. PostgreSQL RLS and capability-aware functions enforce the tenant and authorization boundary.
+<img src="docs/images/architecture.svg" alt="Trace system architecture" width="100%"/>
 
-Authoritative commercial enforcement is implemented in PostgreSQL because writes can arrive from more than one UI path and must be checked atomically with stored state. The TypeScript calculator makes editing responsive, but the database recalculates and validates persisted totals, currencies, quantities, discounts, taxes, versions, actors, and lifecycle transitions. See [Architecture](docs/ARCHITECTURE.md) and [Security](docs/SECURITY.md).
+Trace is a Next.js 16 App Router application on Vercel, backed by Supabase PostgreSQL. Commercial authority lives in the database: security-definer command functions resolve the actor, check capabilities, lock records, verify versions, recalculate totals and write activity in one transaction. The TypeScript layer makes editing instant, but it never decides anything. See [Architecture](docs/ARCHITECTURE.md) and [Security](docs/SECURITY.md).
 
-## Local development
+<br/>
 
-Prerequisites:
+## Engineering decisions
 
-- Node.js 24 and npm 11
-- Docker Desktop (or another working Docker engine)
-- Chrome for the configured Playwright projects
+**The database is the calculator of record.** Money is integer minor units, rates are basis points, quantities are scaled integers. The PostgreSQL calculator is authoritative; the TypeScript preview is proven identical on 5,000 deterministic cases and 2,010 payment-schedule allocations.
 
-```bash
-npm ci
-npm run db:start
-npm run env:local
-npm run db:reset
-npm run dev
-```
+**Every issued revision is sealed.** Issuance writes a canonical JSON snapshot and its SHA-256 hash. Buyer acceptance binds that hash, so a later edit can never change what was agreed. When the payment schedule was introduced, older snapshots were kept byte-identical, so every past acceptance still verifies.
 
-Open `http://127.0.0.1:3000`. `npm run env:local` writes an ignored `.env.local` containing only the local browser-safe Supabase URL and anon key. The local reset seed is synthetic and exists only for automated verification; never apply `supabase/seed.sql` to a hosted project.
+**Cost never leaves the building.** Unit cost and margin sit behind a dedicated capability, column-level grants and gated views. Automated tests scan the buyer projection, the issued snapshot and the PDF, both keys and values, for anything cost-related.
 
-## Verification
+**One template, one truth.** The PDF is rendered from the same component the browser prints, fed only by the sealed snapshot, never by editable tables. It is stored once per revision in a private bucket and streamed back through the application, so no visitor ever talks to storage directly.
 
-Run the complete gate only against the repository's disposable local Supabase project:
+**Email without stored secrets.** Notifications are written to a transactional outbox in the same database transaction as the event. A scheduled worker delivers them with retries and dead-lettering, and buyer links are minted at send time, so no link secret is ever persisted.
 
-```bash
-npm run verify
-```
+**Isolation is enforced, not assumed.** Every tenant-owned row carries its organization, protected by row-level security and capability checks. The buyer path reaches the database only through an HMAC-verified Edge function limited to four fixed calls.
 
-The complete local gate resets the disposable database, applies migrations and the local seed, runs pgTAP, regenerates database types, runs lint, typecheck, unit and parity checks, concurrency runners, a production build, bounded Playwright shards, and tracked/client-asset secret scans. The latest recorded run of the individual checks:
+<br/>
 
-- Unit: **553/553 passed across 46 files**
-- pgTAP: **29 files, 1,036 assertions passed**
-- Calculator parity: **5,000/5,000 deterministic cases and 2,010 payment-milestone allocations matched exactly**
-- Playwright: **170 desktop/mobile assignments: 122 passed, 48 intentional project/mode skips, 0 failed**
-- Production build: **passed with 16 App Router pages and 5 route handlers; ESLint and TypeScript passed**
-- Security: **signed transport, tracked-file and client-asset secret scans, service-role confinement, and a client bundle with no Supabase URL or client passed**
+## Quality
 
-The reviewer-access spec only runs when `TENDER_DEMO_MODE=true`; see [Contributing](CONTRIBUTING.md) for the shell variables the browser suite needs.
+| Gate | Result |
+|---|---|
+| Unit tests | **553** passing across 46 files |
+| Database tests (pgTAP) | **1,036** assertions across 29 files: authorization, invariants, isolation |
+| Calculator parity (TypeScript ↔ SQL) | **5,000 / 5,000** quotes and **2,010** milestone allocations identical |
+| End-to-end (Playwright, desktop + mobile) | **122** passing, 0 failing |
+| Secrets | Tracked files, built client assets and service-role confinement scanned on every run |
+| Browser surface | Zero direct calls to the database or storage from client code |
 
-Individual checks are available as `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:auth`, `npm run test:db`, `npm run test:parity`, `npm run test:concurrency`, `npm run test:decisions`, `npm run build`, `npm run test:e2e`, and `npm run test:secrets`.
+<br/>
 
-## Demo access
+## Built with
 
-Normal local behavior keeps self-service signup enabled. Set the server-only variable `TENDER_DEMO_MODE=true` for a public portfolio deployment. In that mode Trace:
+| Layer | Technology |
+|---|---|
+| Application | Next.js 16 (App Router, Server Actions), React 19, TypeScript (strict), Zod |
+| Data | Supabase PostgreSQL, row-level security, security-definer commands, pgTAP |
+| Edge | Supabase Edge Functions (Deno) for the buyer broker |
+| Documents | Headless Chromium (`playwright-core` + `@sparticuz/chromium`), Supabase Storage |
+| Messaging | Transactional outbox, `pg_cron` + `pg_net`, Resend |
+| Quality | Vitest, Playwright, parity and concurrency runners |
+| Hosting | Vercel |
 
-- removes signup calls to action;
-- redirects `/create-account` to sign-in;
-- rejects the signup Server Action before calling Supabase Auth;
-- publishes a dedicated reviewer email and password on the sign-in page;
-- provides one-click entry to the seeded workspace;
-- assigns that identity only `organization.read`, `catalog.read`, `customer.read`, and `quote.read`.
+<br/>
 
-Hosted Supabase email signup remains disabled. The privately held manager identity owns the fictional seed, while the published `demo.reviewer@trace.example.test` identity is deliberately non-secret and read-only. Mutation controls are hidden in the application and denied independently by capability checks, guarded RPCs, and RLS. Do not reuse the published credential for any privileged identity or non-fictional environment.
+## Scope
 
-The cloud demo dataset is separate from the local test seed and never runs during migration deployment. Its allowlist is pinned to the dedicated disposable portfolio-demo project, while application remains a deliberate, guarded, idempotent operator action. See [Demo data](docs/DEMO_DATA.md).
+Trace models the commercial core of quoting: pricing, approval, issue, buyer commitment and revision. It is not an accounting, ERP or tax-compliance system, and it does not take payments. Tax treatment is configurable, not a compliance determination.
 
-## Deployment
+## How it was built
 
-The deployment is Vercel for Next.js plus one dedicated Supabase project, an isolated Supabase Edge function for the public recipient broker, a private storage bucket for issued PDFs, and an email outbox drained by a database scheduler. `.env.example` lists every variable name. The application runtime needs:
+Trace was designed, specified and verified by its owner, with implementation carried out by frontier AI coding agents under an evidence-gated process: no change was accepted without passing lint, type, unit, database, parity, secret and end-to-end gates, and every design decision above was reviewed before it shipped.
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`
-- `TENDER_DEMO_MODE=true` for the public read-only reviewer demo (the `TENDER_` prefix is a historical name kept for compatibility)
-- `TENDER_EDGE_BROKER_TRANSPORT_SECRET` for the server-to-server public broker envelope
-- `TENDER_PUBLIC_SESSION_ENCRYPTION_KEY` for the short-lived encrypted recipient session
-- `SUPABASE_SERVICE_ROLE_KEY` (server-only; PDF storage and the email outbox)
-- `TRACE_MAIL_PROVIDER`, `TRACE_MAIL_FROM`, `TRACE_RESEND_API_KEY`, `TRACE_OUTBOX_DRAIN_SECRET` for email
+<br/>
 
-The transport and session secrets are server-only Next.js runtime values; `TENDER_DEMO_MODE` is a server-only non-secret flag. No database URL is used by Next.js or browser runtime, and the browser never sees the service-role key. The isolated Supabase Edge broker receives the service-role credential for its four fixed RPC calls; the Next.js server additionally holds `SUPABASE_SERVICE_ROLE_KEY` for exactly two server-only modules (PDF storage in `lib/quote-pdf/privileged-writer.ts` and the email outbox worker in `lib/outbox/privileged-outbox.ts`), enforced by `npm run test:secrets`. The browser talks only to the application origin: issued PDFs are streamed through the application, never via a Supabase storage URL. See [Deployment](docs/DEPLOYMENT.md) and [Security](docs/SECURITY.md).
+---
 
-## Known demo limits
-
-- **Email goes only to the project owner.** The demo has no custom sending domain, so Resend only delivers from its shared test sender and only to the email address of the Resend account itself. "Email to buyer" works for that address; mail to any other recipient (including the fictional `*.example.test` demo users) fails and is shown as Failed. Real delivery needs a verified domain.
-- **PDF rendering depends on the host.** The first download of an issued revision renders it in a packaged headless Chromium on Vercel; the available function size, memory and duration depend on the Vercel plan. If rendering is unavailable, Print / Save as PDF on the issued view still works and existing PDFs stay downloadable.
-- **The reviewer credential is public by design.** `demo.reviewer@trace.example.test` is read-only and exists only in the fictional demo organization.
-
-## Current limitations
-
-- This is a portfolio-grade quotation workflow, not a tax, accounting, ERP, or legal-compliance system.
-- Issued means the commercial snapshot was finalized; it does not mean delivered to a customer.
-- Email is a transactional outbox with retries and dead-lettering, and each issued revision has one immutable PDF; there is no webhook automation or external integration layer, and delivery beyond the provider hand-off (bounces, opens) is not tracked.
-- The demo has one active organization context per user and no membership administration UI.
-- Signup mode is deployment configuration; changing it requires a rebuild/redeploy.
-- Migrations are forward-only: rollback is a forward fix or a backup-and-restore/recreated-demo decision, not a down-migration command.
-- Command receipts retain command payload/result evidence until an operator adopts and documents a retention policy.
-- `tax_profiles.price_basis` remains a deprecated compatibility field; quote calculations use the saved quote tax mode and line snapshots.
-- Some command functions intentionally lock their aggregate before later authorization/state guards, so rejected contenders can briefly wait rather than bypass serialization.
-- The portfolio demo is deployed; independent penetration testing has not occurred.
-
-## Repository map
-
-| Path                   | Purpose                                                                            |
-| ---------------------- | ---------------------------------------------------------------------------------- |
-| `app/`                 | App Router pages and Server Actions                                                |
-| `components/`          | Application, auth, quote, settings, and UI components                              |
-| `lib/`                 | Auth context, Supabase clients, validation, formatting, and preview calculation    |
-| `supabase/migrations/` | Ordered database source of truth                                                   |
-| `supabase/tests/`      | pgTAP authorization and invariant tests                                            |
-| `supabase/demo/`       | Guarded, deliberately invoked fictional cloud dataset                              |
-| `tests/unit/`          | Unit and focused auth-policy tests                                                 |
-| `tests/e2e/`           | Desktop/mobile Playwright workflows                                                |
-| `scripts/`             | Local environment, parity/concurrency, secret, full-gate, and guarded demo tooling |
-| `docs/`                | Architecture, security, deployment, and demo-data guidance                         |
-
-## Security and advisories
-
-This repository is a demonstration application and has not been independently penetration-tested. Do not use it for real commercial or personal data without a separate security, privacy, tax, and operational review. After publication, report suspected vulnerabilities through a private GitHub Security Advisory rather than a public issue. Dependency advisory results are reported from the final local release verification and should not be interpreted as proof that every transitive package is unreachable.
-
-Stage 4 updated the direct Next.js and matching ESLint integration to `16.3.2`, with normal compatible lockfile updates for PostCSS, Sharp, Nanoid, js-yaml, and undici. The final read-only `npm audit --omit=dev` and full `npm audit` both reported **zero vulnerabilities**. This result is point-in-time evidence, not a substitute for reviewing future advisories before deployment.
-
-## Contributing and license
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). No open-source license has been selected. Until the owner chooses one, copyright remains reserved and reuse permission is not granted. Realistic choices include MIT for broad permissive reuse, Apache-2.0 for permissive reuse with an explicit patent grant, or a source-available/custom license when portfolio visibility should not imply unrestricted reuse.
+<div align="center">
+<sub>Running it locally, verification and operations: <a href="docs/DEVELOPMENT.md">docs/DEVELOPMENT.md</a> · Security reports: private GitHub Security Advisory</sub>
+<br/>
+<sub>© 2026 <a href="https://github.com/Deepak92939339">Deepak92939339</a>. All rights reserved. Source is visible for review; no license to reuse is granted.</sub>
+</div>

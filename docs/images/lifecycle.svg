@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 460" width="1160" height="460" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#374151"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="1158" height="458" rx="18" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <text x="40" y="52" font-size="22" font-weight="700" fill="#111827">One document, from price to commitment</text>
+  <text x="40" y="78" font-size="14" fill="#6b7280">Every transition is a database command: capability-checked, version-checked, recorded.</text>
+
+  <!-- Draft -->
+  <rect x="40" y="200" width="150" height="64" rx="12" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="115" y="228" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">Draft</text>
+  <text x="115" y="248" text-anchor="middle" font-size="12" fill="#6b7280">priced from catalog</text>
+
+  <!-- Waiting -->
+  <rect x="250" y="112" width="190" height="64" rx="12" fill="#fff7ed" stroke="#f59e0b"/>
+  <text x="345" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">Waiting for approval</text>
+  <text x="345" y="160" text-anchor="middle" font-size="12" fill="#b45309">discount or margin rule</text>
+
+  <!-- Rejected -->
+  <rect x="490" y="112" width="140" height="64" rx="12" fill="#fef2f2" stroke="#ef4444"/>
+  <text x="560" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#991b1b">Rejected</text>
+  <text x="560" y="160" text-anchor="middle" font-size="12" fill="#b91c1c">with a reason</text>
+
+  <!-- Approved -->
+  <rect x="490" y="200" width="140" height="64" rx="12" fill="#ecfdf5" stroke="#1f6b45"/>
+  <text x="560" y="228" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">Approved</text>
+  <text x="560" y="248" text-anchor="middle" font-size="12" fill="#1f6b45">not yet issued</text>
+
+  <!-- Issued -->
+  <rect x="680" y="192" width="200" height="80" rx="12" fill="#111827" stroke="#111827"/>
+  <text x="780" y="220" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">Issued · sealed</text>
+  <text x="780" y="240" text-anchor="middle" font-size="12" fill="#d1d5db">snapshot + SHA-256 hash</text>
+  <text x="780" y="258" text-anchor="middle" font-size="12" fill="#d1d5db">one immutable PDF</text>
+
+  <!-- Buyer outcomes -->
+  <text x="930" y="104" font-size="11" font-weight="700" letter-spacing="1.2" fill="#6b7280">BUYER, ON A PRIVATE LINK</text>
+  <rect x="930" y="116" width="190" height="56" rx="12" fill="#ecfdf5" stroke="#1f6b45"/>
+  <text x="1025" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">Accepted</text>
+  <text x="1025" y="159" text-anchor="middle" font-size="12" fill="#1f6b45">bound to the exact hash</text>
+  <rect x="930" y="204" width="190" height="56" rx="12" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="1025" y="228" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">Changes requested</text>
+  <text x="1025" y="247" text-anchor="middle" font-size="12" fill="#1d4ed8">message to the seller</text>
+  <rect x="930" y="292" width="190" height="56" rx="12" fill="#f9fafb" stroke="#9ca3af"/>
+  <text x="1025" y="316" text-anchor="middle" font-size="15" font-weight="700" fill="#374151">Declined</text>
+  <text x="1025" y="335" text-anchor="middle" font-size="12" fill="#6b7280">recorded once</text>
+
+  <!-- Arrows -->
+  <g fill="none" stroke="#374151" stroke-width="2">
+    <path d="M190 232 H484" marker-end="url(#m)"/>
+    <path d="M190 220 C220 220 220 144 244 144" marker-end="url(#m)"/>
+    <path d="M440 144 H484" marker-end="url(#m)"/>
+    <path d="M440 160 C470 160 470 214 484 214" marker-end="url(#m)"/>
+    <path d="M630 232 H674" marker-end="url(#m)"/>
+    <path d="M880 216 C905 216 905 144 924 144" marker-end="url(#m)"/>
+    <path d="M880 232 H924" marker-end="url(#m)"/>
+    <path d="M880 248 C905 248 905 320 924 320" marker-end="url(#m)"/>
+    
+    <path d="M1120 232 H1142 V400 H115 V270" stroke-dasharray="6 5" marker-end="url(#m)"/>
+  </g>
+  <g font-size="11.5" font-weight="600" fill="#374151">
+    <text x="262" y="224">submit · within limits</text>
+    <text x="196" y="190">over limit</text>
+    <text x="446" y="136">reject</text>
+    <text x="450" y="194">approve</text>
+    <text x="640" y="224">issue</text>
+  </g>
+  <text x="300" y="392" font-size="12.5" font-weight="600" fill="#374151">revise → new revision; the issued one stays sealed and verifiable forever</text>
+  <text x="40" y="436" font-size="12" fill="#6b7280">Expiry is derived from valid-until in the organization's timezone, never stored as a transition. Approved never means issued; issued never means delivered.</text>
+</svg>

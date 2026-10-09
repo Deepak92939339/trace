@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 700" width="1280" height="700" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#1f6b45"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#6b7280"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="1278" height="698" rx="18" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <text x="40" y="54" font-size="22" font-weight="700" fill="#111827">System architecture</text>
+  <text x="40" y="80" font-size="14" fill="#6b7280">PostgreSQL decides every commercial write. The browser only ever talks to the application origin.</text>
+
+  <!-- Actors -->
+  <g font-size="13">
+    <rect x="40" y="140" width="190" height="96" rx="12" fill="#f6f8f7" stroke="#d1d5db"/>
+    <text x="58" y="170" font-size="15" font-weight="700" fill="#111827">Seller team</text>
+    <text x="58" y="194" fill="#374151">Operators · Managers</text>
+    <text x="58" y="216" fill="#6b7280">Read-only reviewers</text>
+
+    <rect x="40" y="300" width="190" height="96" rx="12" fill="#f6f8f7" stroke="#d1d5db"/>
+    <text x="58" y="330" font-size="15" font-weight="700" fill="#111827">Buyer</text>
+    <text x="58" y="354" fill="#374151">Private capability link</text>
+    <text x="58" y="376" fill="#6b7280">No account needed</text>
+
+    <rect x="40" y="460" width="190" height="96" rx="12" fill="#f6f8f7" stroke="#d1d5db"/>
+    <text x="58" y="490" font-size="15" font-weight="700" fill="#111827">Scheduler</text>
+    <text x="58" y="514" fill="#374151">pg_cron + pg_net</text>
+    <text x="58" y="536" fill="#6b7280">Every minute</text>
+  </g>
+
+  <!-- Vercel -->
+  <rect x="300" y="110" width="350" height="530" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="322" y="140" font-size="12" font-weight="700" letter-spacing="1.2" fill="#64748b">VERCEL · NEXT.JS 16 APP ROUTER</text>
+  <g font-size="12.5">
+    <rect x="322" y="158" width="306" height="84" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+    <text x="340" y="186" font-size="14.5" font-weight="700" fill="#111827">Server Components &amp; Actions</text>
+    <text x="340" y="208" fill="#374151">Runs as the signed-in user · zod-validated</text>
+    <text x="340" y="227" fill="#6b7280">Live preview kernel, never authoritative</text>
+
+    <rect x="322" y="260" width="306" height="84" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+    <text x="340" y="288" font-size="14.5" font-weight="700" fill="#111827">Recipient route</text>
+    <text x="340" y="310" fill="#374151">HMAC-signed envelope to the broker</text>
+    <text x="340" y="329" fill="#6b7280">Encrypted short-lived buyer session</text>
+
+    <rect x="322" y="362" width="306" height="84" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+    <text x="340" y="390" font-size="14.5" font-weight="700" fill="#111827">PDF route</text>
+    <text x="340" y="412" fill="#374151">Chromium renders the sealed snapshot</text>
+    <text x="340" y="431" fill="#6b7280">Streamed same-origin · rate limited</text>
+
+    <rect x="322" y="464" width="306" height="84" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+    <text x="340" y="492" font-size="14.5" font-weight="700" fill="#111827">Outbox drain</text>
+    <text x="340" y="514" fill="#374151">Bearer secret · claim · send · retry</text>
+    <text x="340" y="533" fill="#6b7280">Share link minted at send time, never stored</text>
+  </g>
+  <text x="322" y="580" font-size="12" fill="#64748b">Service-role key confined to two server modules,</text>
+  <text x="322" y="598" font-size="12" fill="#64748b">enforced by an automated secrets check.</text>
+
+  <!-- Supabase -->
+  <rect x="720" y="110" width="360" height="530" rx="16" fill="#f3f8f5" stroke="#a7c4b5" stroke-width="1.5"/>
+  <text x="742" y="140" font-size="12" font-weight="700" letter-spacing="1.2" fill="#1f6b45">SUPABASE</text>
+  <g font-size="12.5">
+    <rect x="742" y="158" width="316" height="186" rx="10" fill="#ffffff" stroke="#a7c4b5"/>
+    <text x="760" y="186" font-size="14.5" font-weight="700" fill="#111827">PostgreSQL · system of record</text>
+    <text x="760" y="212" fill="#374151">• Row-level security per organization</text>
+    <text x="760" y="234" fill="#374151">• Capability-checked command functions</text>
+    <text x="760" y="256" fill="#374151">• Integer money · authoritative calculator</text>
+    <text x="760" y="278" fill="#374151">• Sealed revision snapshots (SHA-256)</text>
+    <text x="760" y="300" fill="#374151">• Append-only activity · idempotent commands</text>
+    <text x="760" y="322" fill="#374151">• Transactional email outbox</text>
+
+    <rect x="742" y="362" width="316" height="84" rx="10" fill="#ffffff" stroke="#a7c4b5"/>
+    <text x="760" y="390" font-size="14.5" font-weight="700" fill="#111827">Edge function · trusted broker</text>
+    <text x="760" y="412" fill="#374151">Verifies the signed envelope</text>
+    <text x="760" y="431" fill="#6b7280">Four fixed RPCs, nothing else</text>
+
+    <rect x="742" y="464" width="316" height="72" rx="10" fill="#ffffff" stroke="#a7c4b5"/>
+    <text x="760" y="492" font-size="14.5" font-weight="700" fill="#111827">Storage · quote-pdfs (private)</text>
+    <text x="760" y="516" fill="#374151">One immutable PDF per issued revision</text>
+
+    <rect x="742" y="552" width="316" height="68" rx="10" fill="#ffffff" stroke="#a7c4b5"/>
+    <text x="760" y="580" font-size="14.5" font-weight="700" fill="#111827">Auth</text>
+    <text x="760" y="602" fill="#374151">Sessions · public signup disabled</text>
+  </g>
+
+  <!-- Resend -->
+  <rect x="1110" y="464" width="140" height="84" rx="12" fill="#f6f8f7" stroke="#d1d5db"/>
+  <text x="1128" y="496" font-size="15" font-weight="700" fill="#111827">Resend</text>
+  <text x="1128" y="518" font-size="12.5" fill="#6b7280">Transactional</text>
+  <text x="1128" y="536" font-size="12.5" fill="#6b7280">email</text>
+
+  <!-- Arrows -->
+  <g fill="none" stroke-width="2">
+    <path d="M230 188 H316" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M628 200 H736" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M230 348 C270 348 270 302 316 302" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M628 302 C680 302 690 404 736 404" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M900 362 V350" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M628 404 C680 404 690 500 736 500" stroke="#1f6b45" marker-end="url(#a)"/>
+    <path d="M230 508 H316" stroke="#6b7280" marker-end="url(#g)"/>
+    <path d="M628 520 H688 V670 H1180 V554" stroke="#6b7280" marker-end="url(#g)"/>
+  </g>
+  <g font-size="11.5" fill="#1f6b45" font-weight="600">
+    <text x="238" y="178">same origin</text>
+    <text x="646" y="190">user JWT · RLS</text>
+    <text x="634" y="345">signed envelope</text>
+    <text x="640" y="470">store once</text>
+  </g>
+  <text x="240" y="498" font-size="11.5" fill="#6b7280" font-weight="600">drain</text>
+  <text x="760" y="662" font-size="11.5" fill="#6b7280" font-weight="600">plain-text mail · retries · dead-letter</text>
+</svg>

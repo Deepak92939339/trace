@@ -73,7 +73,7 @@ Normal local behavior keeps self-service signup enabled. Set the server-only var
 - provides one-click entry to the seeded workspace;
 - assigns that identity only `organization.read`, `catalog.read`, `customer.read`, and `quote.read`.
 
-Hosted Supabase email signup remains disabled. The privately held manager identity owns the fictional seed, while the published `demo.reviewer@tender.example.test` identity is deliberately non-secret and read-only. Mutation controls are hidden in the application and denied independently by capability checks, guarded RPCs, and RLS. Do not reuse the published credential for any privileged identity or non-fictional environment.
+Hosted Supabase email signup remains disabled. The privately held manager identity owns the fictional seed, while the published `demo.reviewer@trace.example.test` identity is deliberately non-secret and read-only. Mutation controls are hidden in the application and denied independently by capability checks, guarded RPCs, and RLS. Do not reuse the published credential for any privileged identity or non-fictional environment.
 
 The cloud demo dataset is separate from the local test seed and never runs during migration deployment. Its allowlist is pinned to the dedicated disposable portfolio-demo project, while application remains a deliberate, guarded, idempotent operator action. See [Demo data](docs/DEMO_DATA.md).
 

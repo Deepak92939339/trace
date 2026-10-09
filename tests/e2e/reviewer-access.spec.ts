@@ -14,9 +14,9 @@ test("public reviewer enters in one click and sees only read controls", async ({
     page.getByRole("heading", { name: "Read-only reviewer access" }),
   ).toBeVisible();
   await expect(
-    page.getByText("demo.reviewer@tender.example.test"),
+    page.getByText("demo.reviewer@trace.example.test"),
   ).toBeVisible();
-  await expect(page.getByText("TenderReview2026!")).toBeVisible();
+  await expect(page.getByText("TraceReview2026!")).toBeVisible();
 
   await page.getByRole("button", { name: "Enter reviewer workspace" }).click();
   await expect(page).toHaveURL(/\/quotes$/);

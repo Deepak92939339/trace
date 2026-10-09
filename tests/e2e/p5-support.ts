@@ -24,8 +24,8 @@ export const OUTSIDER = {
 };
 export const REVIEWER = {
   id: "55555555-5555-4555-8555-555555555555",
-  email: "demo.reviewer@tender.example.test",
-  password: "TenderReview2026!",
+  email: "demo.reviewer@trace.example.test",
+  password: "TraceReview2026!",
 };
 export const ORGANIZATION_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 

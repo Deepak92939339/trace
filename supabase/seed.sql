@@ -11,7 +11,7 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', '22222222-2222-4222-8222-222222222222', 'authenticated', 'authenticated', 'manager@tender.local', crypt('TenderLocal1!', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Mira Manager"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '33333333-3333-4333-8333-333333333333', 'authenticated', 'authenticated', 'admin@tender.local', crypt(gen_random_uuid()::text, gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Anika Admin"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-8444-444444444444', 'authenticated', 'authenticated', 'outsider@tender.local', crypt('TenderLocal1!', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Omar Outsider"}', now(), now()),
-  ('00000000-0000-0000-0000-000000000000', '55555555-5555-4555-8555-555555555555', 'authenticated', 'authenticated', 'demo.reviewer@tender.example.test', crypt('TenderReview2026!', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Rhea Reviewer"}', now(), now())
+  ('00000000-0000-0000-0000-000000000000', '55555555-5555-4555-8555-555555555555', 'authenticated', 'authenticated', 'demo.reviewer@trace.example.test', crypt('TraceReview2026!', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Rhea Reviewer"}', now(), now())
 on conflict (id) do nothing;
 
 -- Supabase password sign-in requires an email identity as well as an auth user.

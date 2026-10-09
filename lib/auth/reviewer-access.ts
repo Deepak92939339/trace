@@ -1,4 +1,4 @@
 export const reviewerAccess = {
-  email: "demo.reviewer@tender.example.test",
-  password: "TenderReview2026!",
+  email: "demo.reviewer@trace.example.test",
+  password: "TraceReview2026!",
 } as const;

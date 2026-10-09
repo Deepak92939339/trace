@@ -17,7 +17,7 @@
 
 <br/>
 
-<img src="docs/images/screens/builder.png" alt="Trace quote builder with live document preview and exact totals" width="100%"/>
+<img src="docs/images/screens/approvals.png" alt="Trace approval queue with the decision panel, margin and activity" width="100%"/>
 
 </div>
 
@@ -49,11 +49,11 @@ Trace keeps the whole commitment in one accountable record, from catalog price t
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/screens/approvals.png" alt="Approval queue with decision panel"/></td>
+    <td width="50%"><img src="docs/images/screens/builder.png" alt="Live document preview in the quote builder"/></td>
     <td width="50%"><img src="docs/images/screens/proposal.png" alt="Buyer proposal on a private link"/></td>
   </tr>
   <tr>
-    <td><b>Approval queue.</b> Why each quote is waiting, what changed since the last revision, internal margin, and keyboard-fast decisions.</td>
+    <td><b>Live preview.</b> The draft renders as the buyer will see it while you edit, with exact totals and the payment schedule.</td>
     <td><b>Buyer proposal.</b> A clean, private view of the issued revision with its payment schedule and a recorded response.</td>
   </tr>
   <tr>

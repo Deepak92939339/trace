@@ -15,7 +15,7 @@ const DEFAULT_PROOFS: ProofCardItem[] = [
       "The screen and the database compute every quote independently. Five thousand test cases agree to the cent.",
   },
   {
-    figure: "652",
+    figure: "1,036",
     title: "Database rules under test",
     description:
       "Tenant isolation, approval limits and revision locks are enforced in the database and checked by automated tests.",

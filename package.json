@@ -40,7 +40,7 @@
     "demo:data": "node scripts/seed-cloud-demo.mjs"
   },
   "dependencies": {
-    "@sparticuz/chromium": "153.0.0",
+    "@sparticuz/chromium": "149.0.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
     "next": "16.3.2",

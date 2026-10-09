@@ -21,9 +21,11 @@ const launchLocal: EngineLaunch = Object.assign(
 /**
  * NOT SPIKED. Serverless path (Vercel / Lambda): playwright-core drives the compressed Chromium
  * from @sparticuz/chromium. It is written to the packages' documented API but has not been run
- * on Vercel. Open items for the deploy spike (C2): bundle size against the function limit, cold
- * start, memory and maxDuration, a @sparticuz/chromium build that matches this playwright-core
- * revision, and Node 24 support. Until that spike passes, treat this branch as unverified.
+ * on Vercel. The two packages are pinned to the same Chromium major: playwright-core 1.61.x
+ * targets Chromium 149 (node_modules/playwright-core/browsers.json) and @sparticuz/chromium is
+ * pinned to 149.0.0. Keep them in step when either is upgraded. Open items for the deploy spike
+ * (C2): bundle size against the function limit, cold start, memory and maxDuration. Until that
+ * spike passes, treat this branch as unverified.
  */
 const launchServerless: EngineLaunch = Object.assign(
   async () => {

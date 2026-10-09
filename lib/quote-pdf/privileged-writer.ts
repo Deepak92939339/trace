@@ -127,6 +127,12 @@ export async function storeObject(
   const status = (error as { statusCode?: string }).statusCode;
   if (status === "409" || /already exists|duplicate/i.test(error.message))
     return "exists";
+  // Operational diagnosis only: Storage's status code and message (never a URL or credential).
+  console.error("quote_pdf_storage_upload_failed", {
+    statusCode: status ?? null,
+    name: error.name,
+    message: error.message.slice(0, 200),
+  });
   throw new Error("Storage upload failed.");
 }
 

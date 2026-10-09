@@ -1,11 +1,11 @@
 # Production deployment evidence
 
-Verified on 25 August 2026 against the dedicated disposable portfolio-demo environment.
+Baseline verified on 25 August 2026 against the dedicated disposable portfolio-demo environment (29 migrations, Stage 4 release). This file is a historical record: it is not updated when the deployment is upgraded. The current procedure is in [Deployment](DEPLOYMENT.md). The repository was later renamed from `tender` to `trace`; the Vercel project and URL below keep their original names.
 
 ## Release identity
 
 - Public URL: <https://tender-eta-orpin.vercel.app>
-- GitHub repository: `Deepak92939339/tender`
+- GitHub repository: `Deepak92939339/trace` (named `Deepak92939339/tender` when this baseline was recorded)
 - Deployment source commit: `db48eb74fd0ba585bbc6813c98fc9e058f7824ec`
 - Stage 4 release-candidate commit: `04b3732e3f73652363f8d96e7d22f8803b4e1a41`
 - Supabase project reference: `tjrwqnusxnkcnswbydtn`

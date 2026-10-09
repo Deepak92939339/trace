@@ -4,9 +4,9 @@ Trace is a multi-tenant commercial quotation application for preparing priced of
 
 > Live demo: **[tender-eta-orpin.vercel.app](https://tender-eta-orpin.vercel.app)**
 
-## Release-candidate status
+## Status
 
-The current public-release candidate is local only: branch `feat/issuer-share-link-ui`, checkpoint `4f8686e60f976769dd154fee2eea226ebf7bcfc0`. No Supabase project or Vercel deployment has been created or changed from this repository state. The application currently has 13 App Router pages, 29 ordered migrations, 23 pgTAP files, 22 unit-test files, and 22 Playwright spec files.
+Trace is deployed as a portfolio demo: a Vercel project (Next.js) plus one dedicated Supabase project, linked above. The repository tracks 37 ordered migrations, 16 App Router pages and 5 route handlers, 29 pgTAP files, 46 unit-test files and 26 Playwright spec files. The hosted database is upgraded by applying new migrations in order **before** deploying the matching application version; see [Deployment](docs/DEPLOYMENT.md). Release history and design evidence live outside the repository.
 
 ## What it demonstrates
 
@@ -49,16 +49,16 @@ Run the complete gate only against the repository's disposable local Supabase pr
 npm run verify
 ```
 
-The complete local gate resets the disposable database, applies migrations and the local seed, runs pgTAP, regenerates database types, runs lint, typecheck, unit and parity checks, concurrency runners, a production build, bounded Playwright shards, and tracked/client-asset secret scans. The final Stage 3 public-candidate evidence recorded:
+The complete local gate resets the disposable database, applies migrations and the local seed, runs pgTAP, regenerates database types, runs lint, typecheck, unit and parity checks, concurrency runners, a production build, bounded Playwright shards, and tracked/client-asset secret scans. The latest recorded run of the individual checks:
 
-- Unit: **156/156 passed across 22 files**
-- pgTAP: **24 files, 652 assertions passed**
-- Calculator parity: **5,000/5,000 deterministic cases matched exactly**
-- Concurrency: **40/40 unique quote numbers; one-winner approval decision; commitment races passed**
-- Playwright: **all 96 desktop/mobile assignments covered sequentially; 87 passed and 9 intentional project skips**
-- Reviewer access: **one-click desktop/mobile entry passed with database-enforced read-only controls**
-- Production build: **passed with 13 App Router pages; formatting, ESLint, and TypeScript passed**
-- Security and UX: **signed transport, secret scans, clean-demo isolation, and authenticated responsive audit passed**
+- Unit: **553/553 passed across 46 files**
+- pgTAP: **29 files, 1,036 assertions passed**
+- Calculator parity: **5,000/5,000 deterministic cases and 2,010 payment-milestone allocations matched exactly**
+- Playwright: **170 desktop/mobile assignments: 122 passed, 48 intentional project/mode skips, 0 failed**
+- Production build: **passed with 16 App Router pages and 5 route handlers; ESLint and TypeScript passed**
+- Security: **signed transport, tracked-file and client-asset secret scans, service-role confinement, and a client bundle with no Supabase URL or client passed**
+
+The reviewer-access spec only runs when `TENDER_DEMO_MODE=true`; see [Contributing](CONTRIBUTING.md) for the shell variables the browser suite needs.
 
 Individual checks are available as `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:auth`, `npm run test:db`, `npm run test:parity`, `npm run test:concurrency`, `npm run test:decisions`, `npm run build`, `npm run test:e2e`, and `npm run test:secrets`.
 
@@ -79,21 +79,28 @@ The cloud demo dataset is separate from the local test seed and never runs durin
 
 ## Deployment
 
-The intended deployment is Vercel for Next.js plus one dedicated Supabase project. Application runtime needs:
+The deployment is Vercel for Next.js plus one dedicated Supabase project, an isolated Supabase Edge function for the public recipient broker, a private storage bucket for issued PDFs, and an email outbox drained by a database scheduler. `.env.example` lists every variable name. The application runtime needs:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `TENDER_DEMO_MODE=true` for the public read-only reviewer demo
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`
+- `TENDER_DEMO_MODE=true` for the public read-only reviewer demo (the `TENDER_` prefix is a historical name kept for compatibility)
 - `TENDER_EDGE_BROKER_TRANSPORT_SECRET` for the server-to-server public broker envelope
 - `TENDER_PUBLIC_SESSION_ENCRYPTION_KEY` for the short-lived encrypted recipient session
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only; PDF storage and the email outbox)
+- `TRACE_MAIL_PROVIDER`, `TRACE_MAIL_FROM`, `TRACE_RESEND_API_KEY`, `TRACE_OUTBOX_DRAIN_SECRET` for email
 
-The transport and session secrets are server-only Next.js runtime values; `TENDER_DEMO_MODE` is a server-only non-secret flag. No database URL is used by Next.js or browser runtime, and the browser never sees the service-role key. The isolated Supabase Edge broker receives the service-role credential for its four fixed RPC calls; the Next.js server additionally holds `SUPABASE_SERVICE_ROLE_KEY` for exactly two server-only modules (PDF storage in `lib/quote-pdf/privileged-writer.ts` and the email outbox worker in `lib/outbox/privileged-outbox.ts`), enforced by `npm run test:secrets`. Email uses `TRACE_MAIL_PROVIDER`, `TRACE_MAIL_FROM`, `TRACE_RESEND_API_KEY` and `TRACE_OUTBOX_DRAIN_SECRET` (server-only; see [Deployment](docs/DEPLOYMENT.md)). The database URL is needed only in the operator's local environment for the deliberately invoked cloud demo-data command. No `vercel.json` is required for the current Next.js deployment. Full preparation, migration dry-run, Auth URL settings, smoke checks, and rollback assumptions are in [Deployment](docs/DEPLOYMENT.md); the verified public release is recorded in [Production deployment evidence](docs/DEPLOYMENT_EVIDENCE.md).
+The transport and session secrets are server-only Next.js runtime values; `TENDER_DEMO_MODE` is a server-only non-secret flag. No database URL is used by Next.js or browser runtime, and the browser never sees the service-role key. The isolated Supabase Edge broker receives the service-role credential for its four fixed RPC calls; the Next.js server additionally holds `SUPABASE_SERVICE_ROLE_KEY` for exactly two server-only modules (PDF storage in `lib/quote-pdf/privileged-writer.ts` and the email outbox worker in `lib/outbox/privileged-outbox.ts`), enforced by `npm run test:secrets`. The browser talks only to the application origin: issued PDFs are streamed through the application, never via a Supabase storage URL. See [Deployment](docs/DEPLOYMENT.md) and [Security](docs/SECURITY.md).
+
+## Known demo limits
+
+- **Email goes only to the project owner.** The demo has no custom sending domain, so Resend only delivers from its shared test sender and only to the email address of the Resend account itself. "Email to buyer" works for that address; mail to any other recipient (including the fictional `*.example.test` demo users) fails and is shown as Failed. Real delivery needs a verified domain.
+- **PDF rendering depends on the host.** The first download of an issued revision renders it in a packaged headless Chromium on Vercel; the available function size, memory and duration depend on the Vercel plan. If rendering is unavailable, Print / Save as PDF on the issued view still works and existing PDFs stay downloadable.
+- **The reviewer credential is public by design.** `demo.reviewer@trace.example.test` is read-only and exists only in the fictional demo organization.
 
 ## Current limitations
 
 - This is a portfolio-grade quotation workflow, not a tax, accounting, ERP, or legal-compliance system.
 - Issued means the commercial snapshot was finalized; it does not mean delivered to a customer.
-- There is no email delivery, generated immutable PDF asset, outbox, retry/DLQ, webhook automation, or external integration layer.
+- Email is a transactional outbox with retries and dead-lettering, and each issued revision has one immutable PDF; there is no webhook automation or external integration layer, and delivery beyond the provider hand-off (bounces, opens) is not tracked.
 - The demo has one active organization context per user and no membership administration UI.
 - Signup mode is deployment configuration; changing it requires a rebuild/redeploy.
 - Migrations are forward-only: rollback is a forward fix or a backup-and-restore/recreated-demo decision, not a down-migration command.

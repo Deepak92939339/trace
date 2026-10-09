@@ -27,3 +27,7 @@ This project has not been independently penetration-tested and is not approved f
 - Keep Supabase Auth site/redirect URLs exact and disable unused providers.
 - Recheck table grants, RLS policies, function execution grants, and composite tenant keys after schema changes.
 - Rotate and revoke any credential that reaches source, logs, screenshots, or issue content.
+
+## Issued PDFs
+
+Each issued revision has at most one immutable PDF, stored in the private `quote-pdfs` bucket and registered with its SHA-256, size and the revision's snapshot hash. Browser roles cannot write to the bucket and can read an object only when it is registered and they hold `quote.read` in that organization. The PDF route reads the object with the caller's own session, verifies it against the register, and serves it from the application origin, so no signed storage URL is ever handed to the browser. Rendering and registration are server-only and use the service-role key through one confined module (`lib/quote-pdf/privileged-writer.ts`).

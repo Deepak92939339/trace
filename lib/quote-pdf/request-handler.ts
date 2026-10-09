@@ -12,10 +12,11 @@ import {
   type RegisteredPdf,
 } from "./ensure-pdf";
 import {
-  QUOTE_PDF_BUCKET,
-  QUOTE_PDF_SIGNED_URL_SECONDS,
-  quotePdfFilename,
-} from "./path";
+  PdfIntegrityError,
+  pdfDownloadPath,
+  pdfDownloadResponse,
+} from "./download-response";
+import { QUOTE_PDF_BUCKET, quotePdfFilename } from "./path";
 import { buildPrintHtml } from "./print-html";
 import {
   claimRender,
@@ -47,10 +48,12 @@ function revisionNumberFrom(value: string) {
  *
  *  - quote.read is required for any response; the lookup is scoped to the caller's own
  *    organization through RLS, so another tenant's quote is simply "not found".
- *  - An already-registered PDF is signed and returned by anyone with quote.read.
+ *  - An already-registered PDF is returned to anyone with quote.read.
  *  - A missing PDF is rendered once, and only for a holder of quote.print.
- *  - 302 to a 120-second signed URL by default; `?format=json` returns the URL and the
- *    registered hash and size instead.
+ *  - The PDF is served from this origin (200, attachment): the stored bytes are read with the
+ *    caller's own session and checked against the register. The browser is never redirected
+ *    to Supabase Storage. `?format=json` returns this route's own path as `url`, plus the
+ *    registered hash and size, so the page can show progress and errors before downloading.
  */
 export async function handleQuotePdfRequest(
   request: Request,
@@ -173,25 +176,12 @@ export async function handleQuotePdfRequest(
     );
 
     const filename = quotePdfFilename(quote.number, revision.revision_number);
-    const { data: signed, error: signError } = await supabase.storage
-      .from(QUOTE_PDF_BUCKET)
-      .createSignedUrl(pdf.storagePath, QUOTE_PDF_SIGNED_URL_SECONDS, {
-        download: filename,
-      });
-    if (signError || !signed?.signedUrl)
-      return failure(
-        503,
-        "pdf_unavailable",
-        "The PDF exists but a download link could not be created. Try again shortly.",
-        2,
-      );
 
     if (new URL(request.url).searchParams.get("format") === "json")
       return Response.json(
         {
-          url: signed.signedUrl,
+          url: pdfDownloadPath(request.url),
           filename,
-          expiresInSeconds: QUOTE_PDF_SIGNED_URL_SECONDS,
           pdf: {
             revisionId: pdf.revisionId,
             sha256: pdf.sha256,
@@ -202,13 +192,25 @@ export async function handleQuotePdfRequest(
         },
         { headers: { "Cache-Control": "no-store" } },
       );
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: signed.signedUrl,
-        "Cache-Control": "no-store",
-      },
-    });
+
+    // Same authorization as before: the object policy lets a member with quote.read read only a
+    // registered file of their own organization, so the user's session (not the service role)
+    // reads it.
+    const { data: stored, error: downloadError } = await supabase.storage
+      .from(QUOTE_PDF_BUCKET)
+      .download(pdf.storagePath);
+    if (downloadError || !stored)
+      return failure(
+        503,
+        "pdf_unavailable",
+        "The PDF exists but could not be read. Try again shortly.",
+        2,
+      );
+    return pdfDownloadResponse(
+      new Uint8Array(await stored.arrayBuffer()),
+      pdf,
+      filename,
+    );
   } catch (error) {
     if (error instanceof QuotePdfError)
       return failure(
@@ -217,6 +219,14 @@ export async function handleQuotePdfRequest(
         error.message,
         error.retryAfterSeconds,
       );
+    if (error instanceof PdfIntegrityError) {
+      console.error("quote_pdf_integrity_mismatch");
+      return failure(
+        500,
+        "pdf_unavailable",
+        "The PDF could not be prepared. Try again shortly.",
+      );
+    }
     if (error instanceof PrivilegedWriterUnavailableError)
       return failure(
         503,

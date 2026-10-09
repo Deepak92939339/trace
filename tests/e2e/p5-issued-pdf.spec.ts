@@ -5,7 +5,6 @@ import {
   attempts,
   beginSuccessorAndEdit,
   inr,
-  jwtLifetimeSeconds,
   localApi,
   MANAGER,
   OPERATOR,
@@ -49,7 +48,6 @@ async function getJson(role: RoleName, path: string) {
     body: (await response.json().catch(() => null)) as {
       url?: string;
       filename?: string;
-      expiresInSeconds?: number;
       pdf?: {
         revisionId: string;
         sha256: string;
@@ -137,6 +135,9 @@ test("operator opens Download PDF on the issued quote; the first request renders
     link.click(),
   ]);
   expect(download.suggestedFilename()).toBe(`${quote.number}-rev1.pdf`);
+  // The browser never leaves the application origin for the file.
+  expect(new URL(download.url()).origin).toBe(new URL(page.url()).origin);
+  expect(download.url()).not.toContain("supabase");
   const bytes = new Uint8Array(readFileSync((await download.path())!));
   expect(Buffer.from(bytes.slice(0, 5)).toString()).toBe("%PDF-");
   if (process.env.P5_SAMPLE_PDF)
@@ -198,7 +199,7 @@ test("operator opens Download PDF on the issued quote; the first request renders
   for (const line of lines) expect(content.collapsed).toContain(line);
 });
 
-test("a second request returns the same stored file: same hash, same generated_at, no new render, 120 s signed URL", async () => {
+test("a second request returns the same stored file: same hash, same generated_at, no new render, served from this origin", async () => {
   const quote = fixtures.base!;
   const before = registerRows(quote.revisionId)[0]!;
   const first = await getJson("operator", pdfPath(quote));
@@ -210,22 +211,24 @@ test("a second request returns the same stored file: same hash, same generated_a
       new Date(before.generated_at).getTime(),
     );
     expect(result.body!.filename).toBe(`${quote.number}-rev1.pdf`);
-    expect(result.body!.expiresInSeconds).toBe(120);
-    expect(jwtLifetimeSeconds(result.body!.url!)).toBe(120);
+    expect(result.body!.url).toBe(pdfPath(quote));
     expect(result.headers["cache-control"]).toBe("no-store");
   }
   expect(attempts(quote.revisionId)).toHaveLength(1);
   expect(registerRows(quote.revisionId)).toHaveLength(1);
   expect(storageObjects(quote.revisionId)).toHaveLength(1);
 
-  // Without ?format=json the route redirects to the signed URL, which serves the same bytes.
-  const redirect = await roles.operator.context.request.get(pdfPath(quote), {
+  // Without ?format=json the route serves the same bytes itself: no redirect, no Storage URL.
+  const direct = await roles.operator.context.request.get(pdfPath(quote), {
     maxRedirects: 0,
   });
-  expect(redirect.status()).toBe(302);
-  const location = redirect.headers().location!;
-  expect(location).toContain("/storage/v1/object/sign/quote-pdfs/");
-  const stored = await fetchBytes(location);
+  expect(direct.status()).toBe(200);
+  expect(direct.headers().location).toBeUndefined();
+  expect(direct.headers()["cache-control"]).toBe("no-store");
+  const stored = {
+    bytes: new Uint8Array(await direct.body()),
+    headers: direct.headers(),
+  };
   expect(sha256(stored.bytes)).toBe(known.base!.sha256);
   expect(stored.headers["content-type"]).toContain("application/pdf");
   expect(stored.headers["content-disposition"]).toContain(

@@ -57,7 +57,8 @@ export function PdfDownload({
       if (
         !response.ok ||
         typeof body?.url !== "string" ||
-        !/^https?:\/\//.test(body.url)
+        !body.url.startsWith("/") ||
+        body.url.startsWith("//")
       ) {
         setMessage(
           typeof body?.error?.message === "string"

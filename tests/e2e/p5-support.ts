@@ -337,14 +337,6 @@ export function inr(minor: number) {
   })}`;
 }
 
-export function jwtLifetimeSeconds(signedUrl: string) {
-  const token = new URL(signedUrl).searchParams.get("token") ?? "";
-  const payload = JSON.parse(
-    Buffer.from(token.split(".")[1] ?? "", "base64url").toString("utf8"),
-  ) as { iat: number; exp: number };
-  return payload.exp - payload.iat;
-}
-
 /** Operational log only; lets a matrix of renders run without tripping the per-minute limit. */
 export function clearRenderAttempts() {
   psql("delete from public.quote_pdf_render_attempts");

@@ -1,7 +1,8 @@
 /** Pure helpers shared by the PDF route, the writer and the tests. */
 
 export const QUOTE_PDF_BUCKET = "quote-pdfs";
-/** How long a signed download URL stays valid. */
+/** Lifetime of a signed storage URL. The PDF route no longer issues them (downloads are served
+ * from the application origin); still pinned by tests/unit/quote-pdf-path.test.ts. */
 export const QUOTE_PDF_SIGNED_URL_SECONDS = 120;
 /** Matches the bucket's file_size_limit and the register's byte_length check. */
 export const QUOTE_PDF_MAX_BYTES = 10 * 1024 * 1024;

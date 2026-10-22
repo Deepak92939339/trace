@@ -56,8 +56,9 @@
 
 .qtyInput:focus {
   border-color: var(--accent);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(33, 107, 70, 0.12);
+  background: var(--surface);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .unitCode {
@@ -84,7 +85,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 2px;
 }
 
 .removeAction {
@@ -125,4 +126,46 @@
   min-height: 0;
   height: 28px;
   padding: 0 6px;
+}
+
+.row:focus-within {
+  box-shadow: inset 2px 0 var(--accent);
+}
+.descWrap {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.actions {
+  flex-direction: column;
+  align-items: flex-end;
+}
+.removeAction,
+.refreshAction {
+  white-space: normal;
+  text-align: right;
+  line-height: 1.25;
+}
+.removeAction:focus-visible,
+.refreshAction:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .qtyWrap .qtyInput,
+  .removeAction,
+  .refreshAction {
+    min-height: 44px;
+  }
+}
+.actions:global(.table-row-actions) {
+  min-width: 0;
+}
+.actions .removeAction,
+.actions .refreshAction {
+  font-size: 11px;
+  padding: 2px;
+}
+.descWrap .description {
+  color: var(--ink);
+  font-size: 13px;
 }

@@ -1,12 +1,16 @@
 .container {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 1fr);
-  gap: 20px;
-  padding: 16px 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .eyebrow {
@@ -20,7 +24,7 @@
 
 .name {
   margin: 0 0 4px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -40,7 +44,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
   gap: 10px;
   font-size: 12.5px;
   align-items: baseline;
@@ -69,4 +73,13 @@
   .container {
     display: none !important;
   }
+}
+.container .name {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+.details .row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 10px;
+  padding: 2px 0;
 }

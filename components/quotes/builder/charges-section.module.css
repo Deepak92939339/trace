@@ -2,8 +2,8 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
-  padding: 14px;
-  margin-bottom: 16px;
+  padding: 12px 14px;
+  margin-bottom: 0;
 }
 
 .header {
@@ -58,7 +58,7 @@
 }
 
 .empty {
-  padding: 20px 0;
+  padding: 8px 0;
   text-align: center;
   color: var(--muted);
   font-size: 13px;
@@ -69,4 +69,19 @@
   .container {
     display: none !important;
   }
+}
+
+@media (max-width: 700px) {
+  .addChargeButton {
+    min-height: 44px;
+  }
+}
+.container > .header {
+  margin-bottom: 10px;
+  align-items: center;
+}
+.header .heading {
+  font-size: 13px;
+  margin: 0;
+  letter-spacing: 0;
 }

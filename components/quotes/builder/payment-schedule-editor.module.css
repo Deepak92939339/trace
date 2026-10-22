@@ -3,7 +3,8 @@
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
   padding: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  container-type: inline-size;
 }
 
 .header {
@@ -90,9 +91,7 @@
 
 .rowGrid {
   display: grid;
-  grid-template-columns:
-    minmax(140px, 2fr) minmax(90px, 1fr) minmax(130px, 1.2fr)
-    minmax(130px, 1.2fr) minmax(100px, 1fr) auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items: flex-end;
 }
@@ -352,7 +351,7 @@
   padding: 6px 8px;
   border-top: 0;
   border-bottom: 1px solid var(--line);
-  white-space: nowrap;
+  white-space: normal;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -409,5 +408,49 @@
 @media print {
   .container {
     display: none !important;
+  }
+}
+
+.rowGrid > :first-child {
+  grid-column: 1 / -1;
+}
+.rowGrid > [aria-hidden="true"] {
+  display: none;
+}
+.rowActions {
+  grid-column: 2;
+  justify-content: flex-end;
+}
+.rowItem {
+  background: var(--surface);
+}
+.control:focus-visible,
+.iconButton:focus-visible,
+.saveButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.readOnlyTable {
+  table-layout: fixed;
+}
+.readOnlyTable th,
+.readOnlyTable td {
+  overflow-wrap: anywhere;
+  padding: 6px 4px;
+}
+@media (max-width: 700px) {
+  .control,
+  .addButton,
+  .saveButton,
+  .removeScheduleButton,
+  .reloadButton {
+    min-height: 44px;
+  }
+  .rowActions {
+    height: 44px;
+  }
+  .iconButton {
+    width: 44px;
+    height: 44px;
   }
 }

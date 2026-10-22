@@ -56,7 +56,7 @@
 
 .track {
   position: relative;
-  height: 6px;
+  height: 5px;
   border-radius: 999px;
   background: var(--sunken);
   overflow: visible;
@@ -126,4 +126,9 @@
   background: var(--red-soft);
   color: var(--red);
   border: 1px solid var(--red-line);
+}
+
+.header {
+  gap: 10px;
+  flex-wrap: wrap;
 }

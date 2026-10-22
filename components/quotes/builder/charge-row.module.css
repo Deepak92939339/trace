@@ -58,7 +58,8 @@
 
 .control:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(33, 107, 70, 0.12);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .numInput {
@@ -95,4 +96,12 @@
 
 .removeButton:hover {
   background: var(--red-soft);
+}
+
+@media (max-width: 700px) {
+  .control,
+  .checkboxField,
+  .removeButton {
+    min-height: 44px;
+  }
 }

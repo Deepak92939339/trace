@@ -1,13 +1,13 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 16px;
-  padding: 16px 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  padding: 0 0 14px;
+  background: transparent;
+  border: 0;
   border-radius: var(--r-panel);
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .titles {
@@ -57,7 +57,7 @@
 
 .stateDraft {
   background: var(--slate-pill);
-  color: #4b5866;
+  color: var(--ink-2);
 }
 
 .stateWaiting {
@@ -93,5 +93,82 @@
 @media print {
   .header {
     display: none !important;
+  }
+}
+
+/* The existing work section keeps its DOM and handlers. Its children form the
+   workbench grid, with the read-only document in the second column. */
+@media screen {
+  :global(.app-main):has(.header) {
+    padding: 22px 24px 32px;
+  }
+
+  :global(.quote-builder):has(.header) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) !important;
+    gap: 16px 20px !important;
+    align-items: start !important;
+  }
+
+  :global(.quote-builder):has(.header) > :global(.quote-document) {
+    display: contents;
+  }
+
+  .header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  :global(.quote-builder):has(.header) :global(.quote-edit-fieldset) {
+    grid-column: 1;
+    grid-row: 3;
+    gap: 16px;
+  }
+
+  :global(.quote-builder):has(.header) > :global(.quote-summary) {
+    grid-column: 1;
+    grid-row: 4;
+    position: static !important;
+    width: auto !important;
+    min-width: 0;
+    padding: 16px;
+    box-shadow: none;
+  }
+}
+
+@media screen and (max-width: 1180px) {
+  :global(.quote-builder):has(.header) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  :global(.app-main):has(.header) {
+    padding: 16px 16px 28px;
+  }
+  .heading {
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+  .header {
+    gap: 10px;
+  }
+}
+.header .heading {
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+@media screen {
+  :global(.quote-builder):has(.header) :global(.notes-field) {
+    margin: 0;
+  }
+  :global(.quote-builder):has(.header) > :global(.quote-summary) {
+    margin-top: 0;
+  }
+}
+@media (max-width: 700px) {
+  .header .heading {
+    font-size: 18px;
   }
 }

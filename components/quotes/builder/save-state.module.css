@@ -3,11 +3,11 @@
   flex-direction: row !important;
   align-items: center !important;
   gap: 8px !important;
-  padding: 8px 12px !important;
+  padding: 8px 0 !important;
   border-radius: var(--r-ctl) !important;
-  background: var(--sunken) !important;
-  border: 1px solid var(--line) !important;
-  border-left: 1px solid var(--line) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 0 !important;
   margin: 14px 0 10px !important;
   font-size: 12.5px !important;
   line-height: 1.4 !important;
@@ -67,4 +67,13 @@
 
 .reloadButton:hover {
   background: var(--sunken);
+}
+
+.saveIndicator {
+  flex-wrap: wrap;
+}
+@media (max-width: 700px) {
+  .reloadButton {
+    min-height: 44px;
+  }
 }

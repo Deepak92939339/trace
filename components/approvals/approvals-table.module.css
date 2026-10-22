@@ -274,3 +274,35 @@
     transition: none;
   }
 }
+
+/* Override legacy destination-header mobile flex rules without global changes. */
+.header.header {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+}
+.container .title {
+  font-size: 20px;
+  letter-spacing: -0.015em;
+}
+.filterChip {
+  position: relative;
+  min-height: 28px;
+}
+.filterChip > span {
+  overflow-wrap: anywhere;
+}
+.filterChip select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  opacity: 0;
+}
+@media (max-width: 700px) {
+  .filterChip {
+    min-height: 44px;
+  }
+}

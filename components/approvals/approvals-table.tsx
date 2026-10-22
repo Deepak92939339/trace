@@ -200,7 +200,9 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
           </header>
           <div className={styles.filters} aria-label="Filter loaded approvals">
             <label className={styles.filterChip}>
-              <span>+ Reason</span>
+              <span>
+                {reason ? `Reason: ${reason.replaceAll("_", " ")}` : "+ Reason"}
+              </span>
               <select
                 aria-label="Reason"
                 value={reason}
@@ -220,7 +222,7 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
               </select>
             </label>
             <label className={styles.filterChip}>
-              <span>+ Requested by</span>
+              <span>{submitter ? `By: ${submitter}` : "+ Requested by"}</span>
               <select
                 aria-label="Requested by"
                 value={submitter}
@@ -246,7 +248,7 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
               </select>
             </label>
             <label className={styles.filterChip}>
-              <span>+ Value</span>
+              <span>{value ? `Value: ${value}` : "+ Value"}</span>
               <select
                 aria-label="Value"
                 value={value}

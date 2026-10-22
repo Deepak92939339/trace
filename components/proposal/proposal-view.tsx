@@ -18,9 +18,11 @@ function getChipToneClass(quote: RecipientQuoteViewModel): string {
   const label = stateLabel(quote);
   if (label === "Accepted") return styles.stateAccepted ?? "";
   if (label === "Declined") return styles.stateDeclined ?? "";
-  if (label === "Change request recorded") return styles.stateChangeRequested ?? "";
+  if (label === "Change request recorded")
+    return styles.stateChangeRequested ?? "";
   if (label === "Issued") return styles.stateIssued ?? "";
-  if (label === "expired" || quote.effectiveState === "expired") return styles.stateExpired ?? "";
+  if (label === "expired" || quote.effectiveState === "expired")
+    return styles.stateExpired ?? "";
   return styles.stateDefault ?? "";
 }
 
@@ -40,7 +42,8 @@ export function ProposalView({
   onDecline,
   onAccept,
 }: ProposalViewProps) {
-  const stampVariant = quote.responseType === "accepted" ? "accepted" : "issued";
+  const stampVariant =
+    quote.responseType === "accepted" ? "accepted" : "issued";
 
   return (
     <>
@@ -85,6 +88,22 @@ export function ProposalView({
           ) : null}
 
           <div className={styles.parties}>
+            <address>
+              <span className={styles.eyebrow}>From</span>
+              <b>{quote.seller.legal_name}</b>
+              <span>
+                {[
+                  quote.seller.address_line1,
+                  quote.seller.address_line2,
+                  quote.seller.city,
+                  quote.seller.region,
+                  quote.seller.postal_code,
+                  quote.seller.country_code,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </span>
+            </address>
             <address>
               <span className={styles.eyebrow}>Prepared for</span>
               <b>{quote.buyer.name}</b>

@@ -118,9 +118,11 @@ function Dialog({
       panel
     )?.focus();
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) {
+      if (event.key === "Escape") {
+        // Always swallow it: a native close request while pending would drop
+        // the dialog out of modal mode.
         event.preventDefault();
-        onClose();
+        if (!pending) onClose();
         return;
       }
       if (event.key !== "Tab") return;

@@ -221,7 +221,18 @@ export function AcceptanceReceipt({
           <button
             className={styles.printBtn}
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              // Only this button prints the receipt; a plain browser print
+              // still prints the accepted quotation, as before.
+              const root = document.documentElement;
+              root.setAttribute("data-print-record", "");
+              window.addEventListener(
+                "afterprint",
+                () => root.removeAttribute("data-print-record"),
+                { once: true },
+              );
+              window.print();
+            }}
           >
             Print this record
           </button>

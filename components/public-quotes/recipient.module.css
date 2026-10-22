@@ -280,6 +280,9 @@
   z-index: 20;
   color: var(--muted);
 }
+.dialogBackdrop:not([open]) {
+  display: none;
+}
 .dialogBackdrop::backdrop {
   background: transparent;
 }
@@ -339,9 +342,8 @@
   }
 }
 @media print {
-  /* After acceptance the receipt's print control prints that record only. */
-  .shell:has(:global(.recipient-acceptance-evidence))
-    :global(.recipient-document) {
+  /* "Print this record" prints the receipt only; a plain print keeps the document. */
+  :global(html[data-print-record]) :global(.recipient-document) {
     display: none !important;
   }
 }

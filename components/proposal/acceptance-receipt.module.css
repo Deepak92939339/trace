@@ -378,8 +378,8 @@
   }
 }
 @media print {
-  /* Legacy globals hide acceptance evidence; this record is now printable. */
-  .receipt.receipt {
+  /* Legacy globals hide acceptance evidence; "Print this record" shows it. */
+  :global(html[data-print-record]) .receipt.receipt {
     display: block !important;
   }
 }

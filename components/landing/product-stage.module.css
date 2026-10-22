@@ -137,8 +137,8 @@
 }
 .stampSpot {
   position: absolute;
-  left: 20px;
-  top: -18px;
+  right: 52px;
+  top: 4px;
 }
 .docHead {
   display: flex;

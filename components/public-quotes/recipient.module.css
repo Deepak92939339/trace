@@ -338,3 +338,10 @@
     display: none;
   }
 }
+@media print {
+  /* After acceptance the receipt's print control prints that record only. */
+  .shell:has(:global(.recipient-acceptance-evidence))
+    :global(.recipient-document) {
+    display: none !important;
+  }
+}

@@ -377,3 +377,9 @@
     stroke-dashoffset: 0;
   }
 }
+@media print {
+  /* Legacy globals hide acceptance evidence; this record is now printable. */
+  .receipt.receipt {
+    display: block !important;
+  }
+}

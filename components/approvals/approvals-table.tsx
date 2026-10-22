@@ -196,7 +196,11 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
               </p>
             </div>
           </header>
-          <div className={styles.filters} aria-label="Filter loaded approvals">
+          <div
+            className={styles.filters}
+            role="group"
+            aria-label="Filter loaded approvals"
+          >
             <label className={styles.filterChip}>
               <span>
                 {reason ? `Reason: ${reason.replaceAll("_", " ")}` : "+ Reason"}

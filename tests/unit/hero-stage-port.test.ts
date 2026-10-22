@@ -20,7 +20,7 @@ test("hero edits recalculate the live specimen, invalid inputs do not retain a s
     '[data-testid="hero-total"]',
   )!.textContent;
   const input = host.querySelector<HTMLInputElement>(
-    'input[aria-label="Hero quantity"]',
+    'input[aria-label="First line qty (hero specimen)"]',
   )!;
   const set = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,

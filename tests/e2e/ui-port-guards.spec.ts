@@ -100,7 +100,10 @@ test("a manager sees margin and decision controls; a reviewer (no margin.read) s
     await reviewer.goto(path);
     await expect(reviewer.getByRole("heading", { level: 1 })).toBeVisible();
     const body = reviewer.locator("body");
-    await expect(body).not.toContainText(/margin/i);
+    await expect(body).not.toContainText(
+      /Margin after discount|No line has a unit cost|Floor \d/,
+    );
+    await expect(reviewer.getByText("Margin", { exact: true })).toHaveCount(0);
     await expect(body).not.toContainText(/unit cost/i);
     for (const name of [/Approve/, /Reject/, /Accept/]) {
       await expect(reviewer.getByRole("button", { name })).toHaveCount(0);

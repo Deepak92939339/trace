@@ -58,7 +58,7 @@ export function ProductStage() {
           <label>
             First line qty
             <input
-              aria-label="Hero quantity"
+              aria-label="First line qty (hero specimen)"
               inputMode="decimal"
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
@@ -69,7 +69,7 @@ export function ProductStage() {
           <label>
             Discount %
             <input
-              aria-label="Hero discount"
+              aria-label="Discount % (hero specimen)"
               inputMode="decimal"
               value={discount}
               onChange={(event) => setDiscount(event.target.value)}
@@ -164,7 +164,7 @@ export function ProductStage() {
         </a>
       </Paper>
       <span className="sr-only" aria-live="polite">
-        {quote ? <>Specimen total: {money(quote.total_minor, true)}</> : error}
+        {quote ? <>Specimen total: {money(quote.total_minor, true)}</> : null}
       </span>
     </div>
   );

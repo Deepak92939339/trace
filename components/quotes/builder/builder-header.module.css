@@ -113,6 +113,42 @@
   :global(.quote-builder):has(.header) > :global(.quote-document) {
     display: contents;
   }
+  /* display:contents can drop the labelled region from the accessibility tree
+     in older browsers; where subgrid exists the region stays a real box. */
+  @supports (grid-template-columns: subgrid) {
+    :global(.quote-builder):has(.header) > :global(.quote-document) {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-row: 1 / span calc(5 + var(--row-shift, 0));
+      grid-template-columns: subgrid;
+      grid-template-rows: subgrid;
+      align-items: start;
+      min-width: 0;
+      max-width: none;
+      /* The legacy document frame (rule, border, scroll clipping) only suited
+         the old single box; the sticky preview needs a visible overflow. */
+      border: 0;
+      background: transparent;
+      overflow: visible;
+    }
+  }
+
+  /* An expired notice takes the row under the header; every explicitly placed
+     row below it moves down by one (--row-shift) so it never drops to the end. */
+  :global(.quote-builder):has(.header) {
+    --row-shift: 0;
+  }
+  :global(.quote-builder):has(.header):has(
+      > :global(.quote-document) > [class*="expired-notice"]
+    ) {
+    --row-shift: 1;
+  }
+  :global(.quote-builder):has(.header)
+    > :global(.quote-document)
+    > [class*="expired-notice"] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 
   .header {
     grid-column: 1 / -1;
@@ -121,13 +157,13 @@
 
   :global(.quote-builder):has(.header) :global(.quote-edit-fieldset) {
     grid-column: 1;
-    grid-row: 3;
+    grid-row: calc(3 + var(--row-shift, 0));
     gap: 16px;
   }
 
   :global(.quote-builder):has(.header) > :global(.quote-summary) {
     grid-column: 1;
-    grid-row: 4;
+    grid-row: calc(4 + var(--row-shift, 0));
     position: static !important;
     width: auto !important;
     min-width: 0;
@@ -139,6 +175,12 @@
 @media screen and (max-width: 1180px) {
   :global(.quote-builder):has(.header) {
     grid-template-columns: minmax(0, 1fr) !important;
+  }
+  /* The preview moves to row 6 in the single column. */
+  @supports (grid-template-columns: subgrid) {
+    :global(.quote-builder):has(.header) > :global(.quote-document) {
+      grid-row: 1 / span calc(6 + var(--row-shift, 0));
+    }
   }
 }
 

@@ -8,7 +8,7 @@
   border-radius: var(--r-panel);
   margin-bottom: 0;
   grid-column: 1;
-  grid-row: 2;
+  grid-row: calc(2 + var(--row-shift, 0));
   min-width: 0;
   overflow-wrap: anywhere;
 }

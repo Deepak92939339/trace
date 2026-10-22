@@ -150,7 +150,9 @@ export function DecisionDrawer({
           Submitted by {quote.submitter || "—"}
         </p>
         <div className={styles.totalRow}>
-          <span className={styles.totalLabel}>Total</span>
+          <span className={styles.totalLabel}>
+            Total · discount {quote.discount}
+          </span>
           <span className={`num ${styles.totalValue}`}>{quote.total}</span>
         </div>
       </div>
@@ -181,53 +183,6 @@ export function DecisionDrawer({
           )}
         </div>
       </div>
-
-      {/* Margin */}
-      {quote.margin && (
-        <div className={styles.section}>
-          <h3 className={styles.sectionHeading}>Margin</h3>
-          <div className={styles.marginDisplay}>
-            <span
-              className={`${styles.marginValue} ${
-                styles[`marginTone_${quote.margin.tone}`]
-              }`}
-            >
-              {quote.margin.value}
-            </span>
-            <span className={styles.marginFloor}>
-              {quote.margin.floor ? `Floor ${quote.margin.floor}` : "No floor"}
-            </span>
-          </div>
-          <div
-            className={styles.marginMeter}
-            style={
-              {
-                "--margin-pct": `${quote.margin.percent}%`,
-                ...(quote.margin.floorPercent !== null
-                  ? { "--floor-pct": `${quote.margin.floorPercent}%` }
-                  : {}),
-              } as React.CSSProperties
-            }
-            aria-hidden="true"
-          >
-            <div
-              className={`${styles.marginTrackFill} ${
-                styles[`marginFill_${quote.margin.tone}`]
-              }`}
-            />
-            {quote.margin.floorPercent !== null && (
-              <div className={styles.marginFloorTick} />
-            )}
-          </div>
-          {quote.margin.linesWithoutCost > 0 && (
-            <p className={styles.marginExcludedNote}>
-              {quote.margin.linesWithoutCost} line
-              {quote.margin.linesWithoutCost === 1 ? "" : "s"} without cost —
-              excluded
-            </p>
-          )}
-        </div>
-      )}
 
       {/* c. What changed */}
       <div className={styles.section}>
@@ -273,68 +228,127 @@ export function DecisionDrawer({
         )}
       </div>
 
+      {/* Margin */}
+      {quote.margin && (
+        <div className={styles.section}>
+          <h3 className={styles.sectionHeading}>Margin after discount</h3>
+          <div className={styles.marginDisplay}>
+            <span
+              className={`${styles.marginValue} ${
+                styles[`marginTone_${quote.margin.tone}`]
+              }`}
+            >
+              {quote.margin.value}
+            </span>
+            <span className={styles.marginFloor}>
+              {quote.margin.floor ? `Floor ${quote.margin.floor}` : "No floor"}
+            </span>
+          </div>
+          <div
+            className={styles.marginMeter}
+            style={
+              {
+                "--margin-pct": `${quote.margin.percent}%`,
+                ...(quote.margin.floorPercent !== null
+                  ? { "--floor-pct": `${quote.margin.floorPercent}%` }
+                  : {}),
+              } as React.CSSProperties
+            }
+            aria-hidden="true"
+          >
+            <div
+              className={`${styles.marginTrackFill} ${
+                styles[`marginFill_${quote.margin.tone}`]
+              }`}
+            />
+            {quote.margin.floorPercent !== null && (
+              <div className={styles.marginFloorTick} />
+            )}
+          </div>
+          {quote.margin.linesWithoutCost > 0 && (
+            <p className={styles.marginExcludedNote}>
+              {quote.margin.linesWithoutCost} line
+              {quote.margin.linesWithoutCost === 1 ? "" : "s"} without cost —
+              excluded
+            </p>
+          )}
+        </div>
+      )}
+
       {/* d. Activity */}
       <div className={styles.section}>
-        <h3 className={styles.sectionHeading}>Activity</h3>
+        <h3 className={styles.sectionHeading}>History</h3>
         <HistoryTimeline events={quote.history} />
+        {quote.history.length === 0 && (
+          <p className={styles.emptyNotice}>No history recorded.</p>
+        )}
       </div>
 
       {/* e. Decision (only when canDecide and not yet decided) */}
       {canDecide && !decidedState && (
-        <div className={styles.decisionSection}>
-          {staleMessage && (
-            <ConflictBanner
-              title="Quotation changed"
-              body={staleMessage}
-              className={styles.conflictBanner}
-              action={
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setStaleMessage(null);
-                    router.refresh();
-                  }}
-                >
-                  Reload queue
-                </Button>
-              }
-            />
-          )}
-
-          {failedMessage && (
-            <div className={styles.failedBanner}>
-              <p className={styles.failedTitle}>Decision failed</p>
-              <p className={styles.failedBody}>{failedMessage}</p>
-            </div>
-          )}
-
-          <div className={styles.noteGroup}>
-            <label htmlFor="decision-note" className={styles.noteLabel}>
-              Decision note
-            </label>
-            <textarea
-              id="decision-note"
-              className={`${styles.noteTextarea} ${
-                noteError ? styles.noteTextareaError : ""
-              }`}
-              placeholder="Optional for approve, required for reject."
-              value={note}
-              onChange={(e) => {
-                setNote(e.target.value);
-                if (noteError && e.target.value.trim().length >= 3) {
-                  setNoteError(null);
+        <>
+          <div className={styles.decisionSection}>
+            {staleMessage && (
+              <ConflictBanner
+                title="Quotation changed"
+                body={staleMessage}
+                className={styles.conflictBanner}
+                action={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setStaleMessage(null);
+                      router.refresh();
+                    }}
+                  >
+                    Reload queue
+                  </Button>
                 }
-              }}
-              disabled={isPending}
-            />
-            {noteError && (
-              <p className={styles.noteErrorText} id="decision-note-error">
-                {noteError}
-              </p>
+              />
             )}
-          </div>
 
+            {failedMessage && (
+              <div className={styles.failedBanner}>
+                <p className={styles.failedTitle}>Decision failed</p>
+                <p className={styles.failedBody}>{failedMessage}</p>
+              </div>
+            )}
+
+            <div className={styles.noteGroup}>
+              <label htmlFor="decision-note" className={styles.noteLabel}>
+                Decision note
+              </label>
+              <textarea
+                id="decision-note"
+                className={`${styles.noteTextarea} ${
+                  noteError ? styles.noteTextareaError : ""
+                }`}
+                placeholder="Optional for approve, required for reject."
+                value={note}
+                onChange={(e) => {
+                  setNote(e.target.value);
+                  if (noteError && e.target.value.trim().length >= 3) {
+                    setNoteError(null);
+                  }
+                }}
+                disabled={isPending}
+                aria-invalid={noteError ? true : undefined}
+                aria-describedby={
+                  noteError ? "decision-note-error" : "decision-note-hint"
+                }
+              />
+              {noteError && (
+                <p className={styles.noteErrorText} id="decision-note-error">
+                  {noteError}
+                </p>
+              )}
+            </div>
+
+            <p className={styles.noteHint} id="decision-note-hint">
+              Approve with A · reject with R. A note is required to reject.
+            </p>
+          </div>
           <div className={styles.decisionActions}>
             <Button
               variant="danger"
@@ -359,7 +373,7 @@ export function DecisionDrawer({
               </span>
             </Button>
           </div>
-        </div>
+        </>
       )}
     </aside>
   );

@@ -106,7 +106,7 @@
 }
 .table {
   width: 100%;
-  min-width: 760px;
+  table-layout: fixed;
   border-collapse: collapse;
   font: 13px/1.45 var(--sans);
   white-space: normal;
@@ -178,8 +178,8 @@
 }
 .customer {
   display: block;
-  min-width: 110px;
-  max-width: 180px;
+  min-width: 0;
+  max-width: 100%;
   overflow-wrap: anywhere;
 }
 .discount,
@@ -195,7 +195,7 @@
   display: block;
   color: var(--muted);
   font-size: 11px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .num {
   font-variant-numeric: tabular-nums;
@@ -216,23 +216,6 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-.button {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 8px;
-  font-size: 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-ctl);
-  background: var(--surface);
-  color: var(--ink);
-  white-space: nowrap;
-  text-decoration: none;
-}
-.managerText {
-  color: var(--muted);
-  font-size: 12px;
 }
 .table .empty {
   padding: 40px 16px;
@@ -264,9 +247,6 @@
   }
   .table {
     min-width: 760px;
-  }
-  .button {
-    min-height: 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -305,4 +285,52 @@
   .filterChip {
     min-height: 44px;
   }
+}
+
+/* Seven columns fit beside the 224px shell and 400px decision panel. */
+.table th:nth-child(1) {
+  width: 17%;
+}
+.table th:nth-child(2) {
+  width: 19%;
+}
+.table th:nth-child(3) {
+  width: 11%;
+}
+.table th:nth-child(4) {
+  width: 15%;
+}
+.table th:nth-child(5) {
+  width: 18%;
+}
+.table th:nth-child(6) {
+  width: 11%;
+}
+.table th:nth-child(7) {
+  width: 9%;
+}
+.table th,
+.table td {
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow-wrap: anywhere;
+}
+.table th {
+  white-space: normal;
+}
+.table .num,
+.time {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.reasonsList > * {
+  max-width: 100%;
+  min-height: 22px;
+  height: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.submittedBy {
+  overflow-wrap: anywhere;
 }

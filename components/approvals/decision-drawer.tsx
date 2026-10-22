@@ -149,6 +149,16 @@ export function DecisionDrawer({
         <p className={styles.submitted}>
           Submitted by {quote.submitter || "—"}
         </p>
+        {canDecide && (
+          <Button
+            href={quote.href}
+            variant="secondary"
+            size="sm"
+            aria-label={`Open quote ${quote.number}`}
+          >
+            Open quote
+          </Button>
+        )}
         <div className={styles.totalRow}>
           <span className={styles.totalLabel}>
             Total · discount {quote.discount}

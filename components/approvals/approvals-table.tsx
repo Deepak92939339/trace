@@ -294,15 +294,12 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
               <thead>
                 <tr>
                   <th>Quotation</th>
-                  <th className={styles.wideOnly}>Customer</th>
-                  <th>Discount</th>
+                  <th>Customer</th>
+                  <th className={styles.r}>Discount</th>
                   <th className={styles.r}>Total</th>
-                  <th className={styles.wideOnly}>Why it&apos;s here</th>
-                  <th className={styles.wideOnly} aria-label="Submitted by">
-                    By
-                  </th>
+                  <th>Why it&apos;s here</th>
+                  <th aria-label="Submitted by">By</th>
                   <th>Waiting</th>
-                  <th>Decision</th>
                 </tr>
               </thead>
               <tbody>
@@ -338,12 +335,12 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
                           {row.revisionLabel}
                         </small>
                       </td>
-                      <td data-label="Customer" className={styles.wideOnly}>
+                      <td data-label="Customer">
                         <span className={styles.customer}>
                           {row.customer || "—"}
                         </span>
                       </td>
-                      <td data-label="Discount">
+                      <td data-label="Discount" className={styles.r}>
                         <div>
                           <span
                             className={
@@ -367,10 +364,7 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
                       >
                         {row.total}
                       </td>
-                      <td
-                        data-label="Why it's here"
-                        className={styles.wideOnly}
-                      >
+                      <td data-label="Why it's here">
                         <div className={styles.reasonsList}>
                           {row.reasons.length > 0 ? (
                             row.reasons.map((code) => (
@@ -381,7 +375,7 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
                           )}
                         </div>
                       </td>
-                      <td data-label="Submitted by" className={styles.wideOnly}>
+                      <td data-label="Submitted by">
                         <span className={styles.submittedBy}>
                           {row.submitter || "—"}
                         </span>
@@ -410,27 +404,13 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
                           </span>
                         )}
                       </td>
-                      <td data-label="Decision">
-                        {decidedState ? null : canDecide ? (
-                          <Link
-                            className={`button ${styles.button}`}
-                            href={row.href}
-                          >
-                            Inspect decision
-                          </Link>
-                        ) : (
-                          <span className={styles.managerText}>
-                            Manager decision required
-                          </span>
-                        )}
-                      </td>
                     </tr>
                   );
                 })}
 
                 {visibleRows.length === 0 && (
                   <tr>
-                    <td colSpan={8} className={`table-empty ${styles.empty}`}>
+                    <td colSpan={7} className={`table-empty ${styles.empty}`}>
                       <EmptyState
                         icon="check"
                         title={

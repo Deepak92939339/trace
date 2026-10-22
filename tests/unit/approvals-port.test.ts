@@ -110,3 +110,21 @@ test("reject shortcut without a note focuses the note and does not call the serv
   expect(document.activeElement?.id).toBe("decision-note");
   expect(decide).not.toHaveBeenCalled();
 });
+
+test.each([true, false])(
+  "Open quote is limited to deciders (%s) and the Decision column is absent",
+  async (canDecide) => {
+    await render(canDecide);
+    const link = host.querySelector('aside a[aria-label="Open quote Q-1"]');
+    expect(link !== null).toBe(canDecide);
+    if (link) expect(link.getAttribute("href")).toBe("#one");
+    expect(
+      [...host.querySelectorAll("thead th")].map((th) =>
+        th.textContent?.trim(),
+      ),
+    ).not.toContain("Decision");
+    expect(host.querySelector("a.record-link")?.getAttribute("href")).toBe(
+      "#one",
+    );
+  },
+);

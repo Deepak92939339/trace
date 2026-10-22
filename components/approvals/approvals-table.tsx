@@ -92,7 +92,6 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
 
   const [reason, setReason] = useState("");
   const [submitter, setSubmitter] = useState("");
-  const [value, setValue] = useState("");
   const minute = useSyncExternalStore(
     subscribeClock,
     clockSnapshot,
@@ -101,8 +100,7 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
   const visibleRows = rows.filter(
     (row) =>
       (!reason || row.reasons.includes(reason)) &&
-      (!submitter || row.submitter === submitter) &&
-      (!value || row.total === value),
+      (!submitter || row.submitter === submitter),
   );
   const pendingRows = rows.filter((row) => !decidedMap[row.id]);
   const oldest = pendingRows.reduce<ApprovalRow | null>((oldest, row) => {
@@ -247,32 +245,13 @@ export function ApprovalsTable({ rows, canDecide }: ApprovalsTableProps) {
                   ))}
               </select>
             </label>
-            <label className={styles.filterChip}>
-              <span>{value ? `Value: ${value}` : "+ Value"}</span>
-              <select
-                aria-label="Value"
-                value={value}
-                onChange={(event) => {
-                  setValue(event.target.value);
-                  setSelectedIndex(0);
-                }}
-              >
-                <option value="">All values</option>
-                {[...new Set(rows.map((row) => row.total))].map((total) => (
-                  <option key={total} value={total}>
-                    {total}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {(reason || submitter || value) && (
+            {(reason || submitter) && (
               <button
                 className={styles.clearFilter}
                 type="button"
                 onClick={() => {
                   setReason("");
                   setSubmitter("");
-                  setValue("");
                   setSelectedIndex(0);
                 }}
               >

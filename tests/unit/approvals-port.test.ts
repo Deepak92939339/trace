@@ -128,3 +128,23 @@ test.each([true, false])(
     );
   },
 );
+
+test("only Reason and Requested by filter loaded approvals", async () => {
+  await render();
+  expect(
+    [...host.querySelectorAll("select")].map((select) =>
+      select.getAttribute("aria-label"),
+    ),
+  ).toEqual(["Reason", "Requested by"]);
+  const reason = host.querySelector<HTMLSelectElement>(
+    'select[aria-label="Reason"]',
+  )!;
+  await act(async () => {
+    reason.value = "successor_revision";
+    reason.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  expect(host.querySelectorAll("tbody tr[aria-selected]")).toHaveLength(1);
+  expect(
+    host.querySelector('aside[aria-label="Decision panel"]')?.textContent,
+  ).toContain("Customer Two");
+});

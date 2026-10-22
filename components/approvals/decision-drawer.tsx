@@ -154,6 +154,7 @@ export function DecisionDrawer({
             href={quote.href}
             variant="secondary"
             size="sm"
+            className={styles.openQuote}
             aria-label={`Open quote ${quote.number}`}
           >
             Open quote

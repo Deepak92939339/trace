@@ -287,27 +287,25 @@
   }
 }
 
-/* Seven columns fit beside the 224px shell and 400px decision panel. */
+/* Seven columns fit beside the 224px shell and 400px decision panel.
+   Customer takes whatever width the fixed columns leave over. */
 .table th:nth-child(1) {
-  width: 17%;
-}
-.table th:nth-child(2) {
-  width: 19%;
+  width: 15%;
 }
 .table th:nth-child(3) {
-  width: 11%;
+  width: 12%;
 }
 .table th:nth-child(4) {
   width: 15%;
 }
 .table th:nth-child(5) {
-  width: 18%;
+  width: 20%;
 }
 .table th:nth-child(6) {
-  width: 11%;
+  width: 10%;
 }
 .table th:nth-child(7) {
-  width: 9%;
+  width: 80px;
 }
 .table th,
 .table td {
@@ -318,17 +316,19 @@
 .table th {
   white-space: normal;
 }
-.table .num,
+.table .num {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
 .time {
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 .reasonsList > * {
   max-width: 100%;
   min-height: 22px;
   height: auto;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
   line-height: 1.35;
 }
 .submittedBy {

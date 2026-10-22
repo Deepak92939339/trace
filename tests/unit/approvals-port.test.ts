@@ -148,3 +148,93 @@ test("only Reason and Requested by filter loaded approvals", async () => {
     host.querySelector('aside[aria-label="Decision panel"]')?.textContent,
   ).toContain("Customer Two");
 });
+
+function press(key: string, init: KeyboardEventInit = {}) {
+  return act(async () => {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key, bubbles: true, ...init }),
+    );
+  });
+}
+function selectedNumber() {
+  return host
+    .querySelector('aside[aria-label="Decision panel"]')
+    ?.textContent?.match(/Q-\d/)?.[0];
+}
+
+test("J and K move the selection, stop at the ends, and ignore modifiers and form fields", async () => {
+  await render();
+  expect(selectedNumber()).toBe("Q-1");
+  await press("k");
+  expect(selectedNumber()).toBe("Q-1");
+  await press("j", { ctrlKey: true });
+  await press("j", { metaKey: true });
+  await press("j", { altKey: true });
+  expect(selectedNumber()).toBe("Q-1");
+  const field = document.createElement("input");
+  host.append(field);
+  field.focus();
+  await press("j");
+  expect(selectedNumber()).toBe("Q-1");
+  field.blur();
+  field.remove();
+  await press("j");
+  expect(selectedNumber()).toBe("Q-2");
+  await press("J");
+  expect(selectedNumber()).toBe("Q-2");
+  await press("k");
+  expect(selectedNumber()).toBe("Q-1");
+});
+
+test("A approves the selected quote once; modifiers, form fields and held keys never reach the server", async () => {
+  decide.mockResolvedValue({ status: "ok" });
+  await render();
+  await press("a", { ctrlKey: true });
+  await press("a", { metaKey: true });
+  await press("a", { altKey: true });
+  await press("a", { repeat: true });
+  const note = host.querySelector<HTMLTextAreaElement>("#decision-note")!;
+  note.focus();
+  await press("a");
+  expect(decide).not.toHaveBeenCalled();
+  note.blur();
+  await press("a");
+  expect(decide).toHaveBeenCalledTimes(1);
+  expect(decide).toHaveBeenCalledWith(
+    expect.objectContaining({
+      quoteId: "one",
+      expectedVersion: 1,
+      decision: "approve",
+    }),
+  );
+});
+
+test("a reviewer pressing A or R never reaches the server and sees no reject-note prompt", async () => {
+  await render(false);
+  await press("a");
+  await press("r");
+  expect(decide).not.toHaveBeenCalled();
+  expect(host.textContent).not.toContain("Add a note to reject");
+});
+
+test("R with a note rejects with that note", async () => {
+  decide.mockResolvedValue({ status: "ok" });
+  await render();
+  const note = host.querySelector<HTMLTextAreaElement>("#decision-note")!;
+  await act(async () => {
+    const set = Object.getOwnPropertyDescriptor(
+      HTMLTextAreaElement.prototype,
+      "value",
+    )!.set!;
+    set.call(note, "Discount is too deep");
+    note.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  note.blur();
+  await press("r");
+  expect(decide).toHaveBeenCalledWith(
+    expect.objectContaining({
+      decision: "reject",
+      reason: "Discount is too deep",
+    }),
+  );
+});

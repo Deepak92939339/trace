@@ -354,6 +354,11 @@ textarea {
   border-color: var(--accent-dark);
   background: var(--accent-dark);
 }
+@media (max-width: 640px) {
+  .button-primary {
+    min-height: 44px;
+  }
+}
 .button-row {
   display: flex;
   flex-wrap: wrap;

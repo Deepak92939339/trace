@@ -285,19 +285,23 @@
   text-transform: none;
 }
 .linesTable th:first-child {
-  width: 40%;
+  width: 32%;
 }
 .linesTable th:nth-child(2) {
-  width: 16%;
+  width: 14%;
 }
 .linesTable th:nth-child(3),
 .linesTable th:nth-child(4) {
-  width: 22%;
+  width: 27%;
 }
 .linesTable .numRight,
 .scheduleTable .numRight {
   text-align: right;
   padding-left: 8px;
+}
+.linesTable td.numRight {
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 .paperDoc > :first-child {
   padding-bottom: 16px;

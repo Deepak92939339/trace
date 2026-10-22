@@ -7,7 +7,7 @@
   gap: 10px;
   height: 52px;
   padding: 0 20px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--surface);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
   font-family: var(--sans);
@@ -61,12 +61,14 @@
   border: 1px solid var(--line);
   border-radius: var(--r-ctl, 6px);
   background: var(--canvas);
-  color: var(--faint);
+  color: var(--muted);
   font: inherit;
   font-size: 12.5px;
   cursor: pointer;
   text-align: left;
-  transition: border-color var(--t, 150ms ease), background var(--t, 150ms ease);
+  transition:
+    border-color var(--t, 150ms ease),
+    background var(--t, 150ms ease);
 }
 
 .search:hover {
@@ -118,6 +120,13 @@
     gap: 8px;
   }
   .search {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+  .search kbd {
     display: none;
   }
   .crumb {
@@ -131,5 +140,11 @@
   .actions button:not([class*="primary"]),
   .actions a:not([class*="primary"]) {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top * {
+    transition: none;
   }
 }

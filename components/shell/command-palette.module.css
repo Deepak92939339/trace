@@ -46,7 +46,7 @@
 }
 
 .input::placeholder {
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .results {
@@ -89,7 +89,9 @@
   color: var(--ink);
   text-decoration: none;
   font-size: 13px;
-  transition: background var(--t, 150ms ease), color var(--t, 150ms ease);
+  transition:
+    background var(--t, 150ms ease),
+    color var(--t, 150ms ease);
 }
 
 .item:hover {
@@ -165,7 +167,7 @@
   background: var(--canvas);
   border-top: 1px solid var(--line);
   font-size: 11.5px;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .keys {

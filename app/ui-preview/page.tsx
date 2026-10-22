@@ -58,6 +58,7 @@ function PreviewContent() {
               Dev-only Preview (/ui-preview)
             </span>
           </div>
+          <a href="/ui-preview/port-shell">Port: shell fixture</a>
           <h1 className={styles.title}>Trace UI Primitives (Batch B1)</h1>
           <p className={styles.sub}>
             Interactive testing harness for all foundation and primitive

@@ -1,0 +1,12 @@
+.page.page {
+  max-width: none;
+  background:
+    radial-gradient(ellipse at 22% 18%, var(--paper), transparent 65%),
+    linear-gradient(180deg, var(--paper), var(--paper-edge));
+  color: var(--ink);
+}
+@media print {
+  .page.page {
+    background: var(--surface);
+  }
+}

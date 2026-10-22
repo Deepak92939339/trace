@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
+import styles from "./sample-quote-builder.module.css";
 import { SampleDocumentPreview } from "./sample-document-preview";
 import {
   calculateSampleQuote,
@@ -13,7 +14,7 @@ import {
   type SampleQuoteState,
 } from "@/lib/demo/sample-quote-adapter";
 
-const initialState: SampleQuoteState = {
+export const SAMPLE_QUOTE_INITIAL_STATE: SampleQuoteState = {
   marketId: "india",
   taxPresentation: "india-intra",
   taxMode: "exclusive",
@@ -56,7 +57,7 @@ function ErrorText({ error }: { error: string | null }) {
 }
 
 export function SampleQuoteBuilder() {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState(SAMPLE_QUOTE_INITIAL_STATE);
   const [tab, setTab] = useState<"form" | "document">("form");
   const [error, setError] = useState<string | null>(null);
   const formTab = useRef<HTMLButtonElement>(null);
@@ -130,7 +131,7 @@ export function SampleQuoteBuilder() {
   };
   return (
     <section
-      className="sample-builder"
+      className={`sample-builder ${styles.builder}`}
       id="sample-builder"
       aria-labelledby="sample-builder-title"
     >

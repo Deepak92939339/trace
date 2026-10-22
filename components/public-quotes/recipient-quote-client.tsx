@@ -98,7 +98,14 @@ function Dialog({
         ? document.activeElement
         : null;
     const panel = ref.current;
-    if (panel && !panel.open) panel.showModal();
+    if (panel && !panel.open) {
+      try {
+        if (typeof panel.showModal === "function") panel.showModal();
+        else panel.setAttribute("open", "");
+      } catch {
+        panel.setAttribute("open", "");
+      }
+    }
     const focusable = () =>
       Array.from(
         panel?.querySelectorAll<HTMLElement>(
@@ -136,7 +143,11 @@ function Dialog({
     document.addEventListener("keydown", keydown, true);
     return () => {
       document.removeEventListener("keydown", keydown, true);
-      panel?.close();
+      try {
+        panel?.close();
+      } catch {
+        panel?.removeAttribute("open");
+      }
       previous?.focus();
     };
   }, [open, pending, onClose]);

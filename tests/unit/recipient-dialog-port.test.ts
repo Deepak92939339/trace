@@ -87,3 +87,49 @@ test("empty acceptance remains invalid and never reaches submission", async () =
   );
   expect(submit).not.toHaveBeenCalled();
 });
+
+test.each(["throws", "unsupported"])(
+  "dialog remains open and focused when showModal %s",
+  async (failure) => {
+    await act(async () =>
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      ),
+    );
+    if (failure === "throws")
+      HTMLDialogElement.prototype.showModal = () => {
+        throw new Error("Modal unavailable");
+      };
+    else
+      Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+        configurable: true,
+        writable: true,
+        value: undefined,
+      });
+    HTMLDialogElement.prototype.close = () => {
+      throw new Error("Close unavailable");
+    };
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>("#trigger")!.click(),
+    );
+    const dialog = host.querySelector("dialog")!;
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(dialog.textContent).toContain("Exact statement");
+    expect(document.activeElement).toBe(dialog.querySelector("input"));
+    await act(async () =>
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      ),
+    );
+    expect(host.querySelector("dialog")).toBeNull();
+    expect(document.activeElement?.id).toBe("trigger");
+  },
+);

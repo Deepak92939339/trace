@@ -296,6 +296,7 @@ textarea {
 }
 :focus-visible {
   outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 .skip-link {
   position: fixed;
@@ -303,8 +304,11 @@ textarea {
   inset: 8px auto auto 8px;
   transform: translateY(-160%);
   padding: 8px 12px;
+  border-radius: var(--r-ctl);
+  text-decoration: none;
+  font-weight: 500;
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
 }
 .skip-link:focus {
   transform: translateY(0);
@@ -349,6 +353,11 @@ textarea {
 .button-primary:hover {
   border-color: var(--accent-dark);
   background: var(--accent-dark);
+}
+@media (max-width: 640px) {
+  .button-primary {
+    min-height: 44px;
+  }
 }
 .button-row {
   display: flex;

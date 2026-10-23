@@ -1,6 +1,6 @@
 .receipt {
   max-width: 600px;
-  margin: 36px auto 48px;
+  margin: 40px auto 56px;
   padding: 0 16px;
 }
 
@@ -83,9 +83,8 @@
 
 .kv {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  margin-top: 24px;
-  border-top: 1px solid var(--paper-rule);
+  grid-template-columns: 150px 1fr;
+  margin-top: 6px;
 }
 
 .kv dt,
@@ -172,7 +171,7 @@
 .statement {
   padding: 12px 16px;
   border-left: 3px solid var(--line-strong);
-  background: var(--sunken, #eef1f3);
+  background: var(--sunken);
   color: var(--ink-2);
   border-radius: 0 var(--r-ctl, 4px) var(--r-ctl, 4px) 0;
   font-size: 13px;
@@ -246,5 +245,141 @@
   .kv dd {
     text-align: left;
     padding-top: 2px;
+  }
+}
+
+.amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 6px;
+  padding: 16px 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--paper-rule);
+}
+.amount > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.amount strong {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.schedule,
+.next {
+  margin-top: 24px;
+}
+.schedule h3,
+.next h3 {
+  margin: 0 0 8px;
+  font: 600 16px var(--serif);
+  color: var(--ink);
+}
+.milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.milestones li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--paper-rule);
+  font-size: 13px;
+}
+.milestones li:last-child {
+  border-bottom: 0;
+}
+.milestones small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.milestoneDot {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+}
+.next ol {
+  padding-left: 18px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-ctl);
+  background: var(--accent);
+  color: var(--surface);
+  font: 500 13px var(--sans);
+  cursor: pointer;
+}
+.printBtn:hover {
+  background: var(--accent-hover);
+}
+@media (max-width: 560px) {
+  .amount strong {
+    font-size: 22px;
+  }
+  .viewLink,
+  .printBtn,
+  .copyBtn {
+    min-height: 44px;
+  }
+  .num {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .receipt * {
+    transition: none;
+  }
+}
+@media print {
+  .receipt {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  .card {
+    box-shadow: none;
+    border: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .actions,
+  .copyBtn {
+    display: none;
+  }
+  .amount,
+  .kv dd,
+  .milestones li,
+  .statementSection,
+  .next {
+    break-inside: avoid;
+  }
+  .ok circle,
+  .ok path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+@media print {
+  /* Legacy globals hide acceptance evidence; "Print this record" shows it. */
+  :global(html[data-print-record]) .receipt.receipt {
+    display: block !important;
   }
 }

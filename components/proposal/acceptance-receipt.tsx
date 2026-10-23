@@ -88,6 +88,10 @@ export function AcceptanceReceipt({
           </p>
         )}
 
+        <div className={styles.amount}>
+          <span>Total</span>
+          <strong className={styles.num}>{quote.totals.total}</strong>
+        </div>
         <dl className={styles.kv}>
           <dt>Quotation</dt>
           <dd>
@@ -96,9 +100,6 @@ export function AcceptanceReceipt({
 
           <dt>Revision accepted</dt>
           <dd>Revision {quote.revisionNumber}</dd>
-
-          <dt>Total</dt>
-          <dd className={styles.num}>{quote.totals.total}</dd>
 
           <dt>Accepted by</dt>
           <dd>
@@ -174,15 +175,75 @@ export function AcceptanceReceipt({
           </blockquote>
         </section>
 
+        {quote.paymentSchedule?.length > 0 && (
+          <section
+            className={styles.schedule}
+            aria-labelledby={`${headingId}-schedule`}
+          >
+            <h3 id={`${headingId}-schedule`}>Payment schedule</h3>
+            <ul className={styles.milestones}>
+              {quote.paymentSchedule.map((row) => (
+                <li key={row.position}>
+                  <span className={styles.milestoneDot} aria-hidden="true" />
+                  <div>
+                    {row.label} · {row.percentDisplay}
+                    <small>{row.dueText}</small>
+                  </div>
+                  <span className={styles.num}>{row.amountDisplay}</span>
+                </li>
+              ))}
+              <li className={styles.scheduleTotal}>
+                <span aria-hidden="true" />
+                <b>Total</b>
+                <b className={styles.num}>{quote.totals.total}</b>
+              </li>
+            </ul>
+          </section>
+        )}
+        <section className={styles.next} aria-labelledby={`${headingId}-next`}>
+          <h3 id={`${headingId}-next`}>What happens next</h3>
+          <ol>
+            <li>Contact {quote.seller.legal_name} about next steps.</li>
+            <li>
+              Invoicing and payment happen outside Trace
+              {quote.paymentSchedule?.length > 0
+                ? ", following the schedule above"
+                : ""}
+              .
+            </li>
+            <li>
+              Any change to the quotation creates a new revision, which would
+              need its own acceptance.
+            </li>
+          </ol>
+        </section>
         <div className={styles.actions}>
+          <button
+            className={styles.printBtn}
+            type="button"
+            onClick={() => {
+              // Only this button prints the receipt; a plain browser print
+              // still prints the accepted quotation, as before.
+              const root = document.documentElement;
+              root.setAttribute("data-print-record", "");
+              window.addEventListener(
+                "afterprint",
+                () => root.removeAttribute("data-print-record"),
+                { once: true },
+              );
+              window.print();
+            }}
+          >
+            Print this record
+          </button>
           <a className={styles.viewLink} href="#quotation-document">
             View the accepted quotation
           </a>
         </div>
 
         <p className={styles.finePrint}>
-          This record cannot be edited. Any change to the quotation creates a new
-          revision, which would need its own acceptance.
+          This record cannot be edited. Any change to the quotation creates a
+          new revision, which would need its own acceptance.
         </p>
       </Paper>
     </section>

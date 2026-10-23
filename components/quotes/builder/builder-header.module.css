@@ -1,13 +1,13 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 16px;
-  padding: 16px 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  padding: 0 0 14px;
+  background: transparent;
+  border: 0;
   border-radius: var(--r-panel);
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .titles {
@@ -57,7 +57,7 @@
 
 .stateDraft {
   background: var(--slate-pill);
-  color: #4b5866;
+  color: var(--ink-2);
 }
 
 .stateWaiting {
@@ -93,5 +93,124 @@
 @media print {
   .header {
     display: none !important;
+  }
+}
+
+/* The existing work section keeps its DOM and handlers. Its children form the
+   workbench grid, with the read-only document in the second column. */
+@media screen {
+  :global(.app-main):has(.header) {
+    padding: 22px 24px 32px;
+  }
+
+  :global(.quote-builder):has(.header) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) !important;
+    gap: 16px 20px !important;
+    align-items: start !important;
+  }
+
+  :global(.quote-builder):has(.header) > :global(.quote-document) {
+    display: contents;
+  }
+  /* display:contents can drop the labelled region from the accessibility tree
+     in older browsers; where subgrid exists the region stays a real box. */
+  @supports (grid-template-columns: subgrid) {
+    :global(.quote-builder):has(.header) > :global(.quote-document) {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-row: 1 / span calc(5 + var(--row-shift, 0));
+      grid-template-columns: subgrid;
+      grid-template-rows: subgrid;
+      align-items: start;
+      min-width: 0;
+      max-width: none;
+      /* The legacy document frame (rule, border, scroll clipping) only suited
+         the old single box; the sticky preview needs a visible overflow. */
+      border: 0;
+      background: transparent;
+      overflow: visible;
+    }
+  }
+
+  /* An expired notice takes the row under the header; every explicitly placed
+     row below it moves down by one (--row-shift) so it never drops to the end. */
+  :global(.quote-builder):has(.header) {
+    --row-shift: 0;
+  }
+  :global(.quote-builder):has(.header):has(
+      > :global(.quote-document) > [class*="expired-notice"]
+    ) {
+    --row-shift: 1;
+  }
+  :global(.quote-builder):has(.header)
+    > :global(.quote-document)
+    > [class*="expired-notice"] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  :global(.quote-builder):has(.header) :global(.quote-edit-fieldset) {
+    grid-column: 1;
+    grid-row: calc(3 + var(--row-shift, 0));
+    gap: 16px;
+  }
+
+  :global(.quote-builder):has(.header) > :global(.quote-summary) {
+    grid-column: 1;
+    grid-row: calc(4 + var(--row-shift, 0));
+    position: static !important;
+    width: auto !important;
+    min-width: 0;
+    padding: 16px;
+    box-shadow: none;
+  }
+}
+
+@media screen and (max-width: 1180px) {
+  :global(.quote-builder):has(.header) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  /* The preview moves to row 6 in the single column. */
+  @supports (grid-template-columns: subgrid) {
+    :global(.quote-builder):has(.header) > :global(.quote-document) {
+      grid-row: 1 / span calc(6 + var(--row-shift, 0));
+    }
+  }
+}
+
+@media screen and (max-width: 700px) {
+  :global(.app-main):has(.header) {
+    padding: 16px 16px 28px;
+  }
+  .heading {
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+  .header {
+    gap: 10px;
+  }
+}
+.header .heading {
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+@media screen {
+  :global(.quote-builder):has(.header) :global(.notes-field) {
+    margin: 0;
+  }
+  :global(.quote-builder):has(.header) > :global(.quote-summary) {
+    margin-top: 0;
+  }
+}
+@media (max-width: 700px) {
+  .header .heading {
+    font-size: 18px;
   }
 }

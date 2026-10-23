@@ -89,7 +89,7 @@ function Dialog({
   onClose(): void;
   children: ReactNode;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   useEffect(() => {
     if (!open) return;
@@ -98,6 +98,14 @@ function Dialog({
         ? document.activeElement
         : null;
     const panel = ref.current;
+    if (panel && !panel.open) {
+      try {
+        if (typeof panel.showModal === "function") panel.showModal();
+        else panel.setAttribute("open", "");
+      } catch {
+        panel.setAttribute("open", "");
+      }
+    }
     const focusable = () =>
       Array.from(
         panel?.querySelectorAll<HTMLElement>(
@@ -110,9 +118,11 @@ function Dialog({
       panel
     )?.focus();
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) {
+      if (event.key === "Escape") {
+        // Always swallow it: a native close request while pending would drop
+        // the dialog out of modal mode.
         event.preventDefault();
-        onClose();
+        if (!pending) onClose();
         return;
       }
       if (event.key !== "Tab") return;
@@ -135,26 +145,35 @@ function Dialog({
     document.addEventListener("keydown", keydown, true);
     return () => {
       document.removeEventListener("keydown", keydown, true);
+      try {
+        panel?.close();
+      } catch {
+        panel?.removeAttribute("open");
+      }
       previous?.focus();
     };
   }, [open, pending, onClose]);
   if (!open) return null;
   return (
-    <div className={`recipient-dialog-backdrop ${styles.dialogBackdrop}`}>
-      <section
-        ref={ref}
-        className={`recipient-dialog ${styles.dialogPanel}`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
+    <dialog
+      ref={ref}
+      className={`recipient-dialog-backdrop ${styles.dialogBackdrop}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!pending) onClose();
+      }}
+    >
+      <section className={`recipient-dialog ${styles.dialogPanel}`}>
         <h2 id={titleId} className={styles.dialogTitle}>
           {title}
         </h2>
         {children}
       </section>
-    </div>
+    </dialog>
   );
 }
 
@@ -425,7 +444,7 @@ export function RecipientQuoteClient({ selector }: { selector: string }) {
   );
 }
 
-function ChangeDialog({
+export function ChangeDialog({
   open,
   pending,
   status,
@@ -509,7 +528,7 @@ function ChangeDialog({
   );
 }
 
-function DeclineDialog({
+export function DeclineDialog({
   open,
   pending,
   status,
@@ -557,7 +576,7 @@ function DeclineDialog({
   );
 }
 
-function AcceptanceDialog({
+export function AcceptanceDialog({
   open,
   pending,
   status,

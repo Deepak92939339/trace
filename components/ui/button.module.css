@@ -56,6 +56,12 @@
   font-size: var(--text-14);
 }
 
+@media (max-width: 700px) {
+  .lg {
+    height: 44px;
+  }
+}
+
 /* Variants */
 .secondary {
   background: var(--surface);

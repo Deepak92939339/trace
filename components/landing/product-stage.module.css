@@ -1,246 +1,281 @@
 .stage {
   position: relative;
-  height: 540px;
   width: 100%;
-}
-
-.bench {
-  position: absolute;
-  left: 0;
-  top: 26px;
-  width: 88%;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-panel, 8px);
-  box-shadow: 0 24px 50px -30px rgba(23, 33, 43, 0.35);
-  overflow: hidden;
+  min-width: 0;
+  min-height: 540px;
   font-family: var(--sans);
 }
-
+.bench {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 88%;
+  background: var(--surface);
+  border: 1px solid var(--paper-rule);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
 .benchTop {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 12px;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 14px;
+  background: var(--sunken);
   border-bottom: 1px solid var(--line);
-  background: var(--canvas);
 }
-
-.dot {
+.dots {
+  display: flex;
+  gap: 5px;
+}
+.dots i {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
   background: var(--line-strong);
+  border-radius: 50%;
 }
-
 .mono {
-  margin-left: 10px;
+  font: 11px var(--mono);
   color: var(--muted);
-  font-family: var(--mono);
-  font-size: 11px;
 }
-
-/* Explicit table resets per standing rule */
+.live {
+  margin-left: auto;
+  font: 10px var(--mono);
+  color: var(--accent);
+}
+.controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.controls label {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.controls input {
+  width: 84px;
+  min-height: 36px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.controls input[aria-invalid="true"] {
+  border-color: var(--red);
+}
+.controls button {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 12px var(--sans);
+  cursor: pointer;
+}
+.tableWrap {
+  overflow-x: auto;
+}
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
   background: transparent;
-  text-transform: none;
-  letter-spacing: normal;
   white-space: normal;
 }
-
 .table th {
-  height: 28px;
-  padding: 0 10px;
-  text-align: left;
+  height: 30px;
+  padding: 4px 14px;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
   color: var(--muted);
-  font-weight: 500;
-  font-size: 12px;
-  border-top: 0;
+  text-align: left;
+  background: var(--paper);
+  border: 0;
   border-bottom: 1px solid var(--line);
-  background: #fcfcfd;
-  text-transform: none;
-  letter-spacing: normal;
 }
-
 .table td {
-  height: 34px;
-  padding: 0 10px;
-  border-top: 0;
-  border-bottom: 1px solid var(--line);
-  white-space: nowrap;
-  background: transparent;
-  text-transform: none;
-  letter-spacing: normal;
+  height: 42px;
+  padding: 6px 14px;
   font-size: 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
 }
-
-.r {
+.table tbody tr:nth-child(2) {
+  background: var(--accent-soft);
+}
+.table .r {
   text-align: right;
-}
-
-.num {
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-
-.rowFocus td {
-  background: #f6faf7;
-}
-
-.rowFocus td:first-child {
-  box-shadow: inset 2px 0 0 var(--accent);
-}
-
-.discountLabel {
-  color: var(--muted);
-}
-
-.approvalNotice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
+.demoNote {
+  margin: 0;
+  padding: 12px 14px;
   color: var(--amber);
   background: var(--amber-soft);
-  border-top: 1px solid var(--amber-line);
+  font-size: 11px;
 }
-
-.approvalNotice svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
 .record {
   position: absolute;
+  top: 220px;
   right: 0;
-  top: 120px;
-  width: 58%;
-  padding: 24px 24px 18px;
+  width: 62%;
+  padding: 30px 24px 22px;
+  min-width: 0;
   transform: rotate(0.6deg);
-  box-shadow: 0 2px 2px rgba(23, 33, 43, 0.04),
-    0 30px 60px -24px rgba(23, 33, 43, 0.35);
-  background: var(--paper);
+  box-shadow: var(--shadow-pop);
 }
-
 .stampSpot {
   position: absolute;
-  left: 22px;
-  top: -24px;
-  z-index: 10;
+  right: 52px;
+  top: 4px;
 }
-
 .docHead {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: flex-start;
   gap: 10px;
 }
-
 .sellerName {
-  font-family: var(--serif);
-  font-size: 15px;
-  font-weight: 600;
+  font: 600 15px var(--serif);
   color: var(--ink);
 }
-
 .docMeta {
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: right;
-  color: var(--ink);
-}
-
-.docMeta .mono {
-  display: block;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 400;
+  font: 11px var(--mono);
   color: var(--muted);
 }
-
 .rule {
-  margin: 10px 0;
+  margin: 16px 0;
 }
-
 .docTitle {
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1.25;
+  font: 600 16px/1.35 var(--serif);
   color: var(--ink);
-  margin: 0;
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
 }
-
 .totalsRows {
-  margin-top: 10px;
-  font-size: 11.5px;
+  margin: 0;
+  font-size: 12px;
 }
-
-.totalRow {
+.totalsRows > div {
   display: flex;
   justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--paper-rule, #d9d3c6);
-  color: var(--ink);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--paper-rule);
 }
-
+.totalsRows dt {
+  color: var(--muted);
+}
+.totalsRows dd {
+  margin: 0;
+}
 .grandTotal {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 2px solid var(--ink);
-  font-weight: 700;
-  font-size: 13.5px;
-  color: var(--ink);
-}
-
-.acceptedNote {
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 10px;
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.4;
+  padding-top: 10px;
+  border-top: 2px solid var(--ink);
+  font-size: 14px;
+  font-weight: 700;
 }
-
+.recordNote {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.openBuilder {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  min-height: 32px;
+  color: var(--accent);
+  font-size: 11px;
+}
+.error {
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 1100px) {
+  .stage {
+    min-height: 600px;
+  }
+  .record {
+    width: 70%;
+    top: 245px;
+  }
+}
 @media (max-width: 980px) {
   .stage {
-    height: 480px;
-    overflow: hidden;
+    max-width: 650px;
+    margin: 0 auto;
+    min-height: 580px;
   }
 }
-
 @media (max-width: 560px) {
   .stage {
-    height: auto;
-    overflow: visible;
-    padding-top: 20px;
-    padding-bottom: 8px;
+    min-height: 0;
+    display: grid;
+    gap: 24px;
   }
-
-  .bench {
-    display: none;
-  }
-
+  .bench,
   .record {
     position: relative;
-    top: 0;
+    top: auto;
+    left: auto;
     right: auto;
     width: 100%;
     transform: none;
-    padding: 38px 18px 18px;
-    box-sizing: border-box;
   }
-
-  .stampSpot {
-    position: absolute;
-    left: 16px;
-    top: -16px;
-    z-index: 10;
+  .record {
+    padding: 28px 20px 20px;
+  }
+  .controls {
+    gap: 10px;
+  }
+  .controls input,
+  .controls button {
+    min-height: 44px;
+  }
+  .openBuilder {
+    min-height: 44px;
+  }
+  .table th,
+  .table td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .table td:first-child {
+    overflow-wrap: anywhere;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage * {
+    transition: none;
+  }
+}
+@media print {
+  .stage {
+    display: none;
+  }
+}
+/* Reserve the full foreground paper height so it never overlaps proof cards. */
+@media (min-width: 981px) {
+  .stage {
+    min-height: 650px;
   }
 }

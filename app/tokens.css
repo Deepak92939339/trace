@@ -10,8 +10,8 @@
   /* Ink and typography */
   --ink: #17212B;
   --ink-2: #3A4654;
-  --muted: #647184;
-  --faint: #8A95A3; /* non-text only: borders/icons, never text */
+  --muted: #586475;
+  --faint: #647184; /* non-text only: borders/icons, never text */
 
   /* Hairlines and borders */
   --line: #E3E7EB;

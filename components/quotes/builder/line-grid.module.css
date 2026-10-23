@@ -3,7 +3,8 @@
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  min-width: 0;
 }
 
 .header {
@@ -11,8 +12,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -60,12 +61,15 @@
   font-size: 13px;
   color: var(--ink);
   outline: none;
-  max-width: 320px;
+  max-width: 220px;
+  width: 100%;
+  min-width: 0;
 }
 
 .selectProduct:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(33, 107, 70, 0.12);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .addProductButton {
@@ -73,7 +77,7 @@
   padding: 0 12px;
   border-radius: var(--r-ctl);
   background: var(--accent);
-  color: #ffffff;
+  color: var(--surface);
   font-size: 13px;
   font-weight: 500;
   border: none;
@@ -100,7 +104,8 @@
 /* Reset globals.css table rules per Standing Rule R1 */
 .table {
   width: 100%;
-  min-width: 0; /* description column wraps; numbers stay on one line */
+  min-width: 650px; /* only the table region scrolls on narrow workbenches */
+  table-layout: fixed;
   border-collapse: collapse;
   margin: 0;
 }
@@ -109,7 +114,7 @@
 .table td {
   text-transform: none !important;
   background: transparent;
-  padding: 8px 10px;
+  padding: 7px 8px;
   border-top: none !important;
   border-bottom: 1px solid var(--line);
   white-space: normal !important;
@@ -118,12 +123,12 @@
 
 .table th {
   height: 32px;
-  padding: 0 10px;
+  padding: 0 8px;
   font-size: 12px;
   font-weight: 500;
   color: var(--muted);
   text-align: left;
-  background: var(--canvas) !important;
+  background: var(--sunken) !important;
   border-bottom: 1px solid var(--line);
 }
 
@@ -174,5 +179,103 @@
 @media print {
   .container {
     display: none !important;
+  }
+}
+
+.table th:first-child {
+  width: 29%;
+}
+.table th:nth-child(2) {
+  width: 17%;
+}
+.table th:nth-child(3) {
+  width: 15%;
+}
+.table th:nth-child(4) {
+  width: 10%;
+}
+.table th:nth-child(5) {
+  width: 15%;
+}
+.table th:last-child {
+  width: 14%;
+}
+.inlineAdd {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.inlineAddLabel {
+  flex: 1;
+}
+
+@media (max-width: 700px) {
+  .selectProduct,
+  .addProductButton {
+    min-height: 44px;
+  }
+  .inlineAddLabel {
+    flex-wrap: wrap;
+  }
+}
+
+.container:global(.quote-lines) {
+  padding: 0;
+  overflow: hidden;
+}
+.container > .header {
+  margin-bottom: 0;
+  align-items: center;
+}
+.header .heading {
+  font-size: 13px;
+  margin: 0;
+  letter-spacing: 0;
+}
+.tableRegion:global(.table-region) {
+  overflow-x: auto;
+  border: 0;
+  background: var(--surface);
+}
+.tableRegion .table {
+  display: table;
+  width: 100%;
+}
+.tableRegion .table thead {
+  display: table-header-group;
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+}
+.tableRegion .table tbody {
+  display: table-row-group;
+}
+.tableRegion .table tr {
+  display: table-row;
+  width: auto;
+  border: 0;
+  padding: 0;
+}
+.tableRegion .table td {
+  display: table-cell;
+  width: auto;
+  padding: 7px 8px;
+}
+.tableRegion .table td:first-child {
+  padding-left: 14px;
+  min-width: 0;
+}
+.tableRegion .table td::before {
+  display: none;
+  content: none;
+}
+.tableRegion .table td[colspan] {
+  display: table-cell;
+  min-height: 0;
+}
+@media (max-width: 700px) {
+  .inlineAdd .selectProduct {
+    min-height: 44px;
   }
 }

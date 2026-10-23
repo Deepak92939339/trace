@@ -1,11 +1,17 @@
 .preview {
-  display: none;
+  display: block;
+  min-width: 0;
+  grid-column: 2;
+  grid-row: calc(2 + var(--row-shift, 0)) / span 4;
+  position: sticky;
+  top: 68px;
+  align-self: start;
 }
 
 @media (min-width: 1360px) {
   .preview {
     display: block;
-    margin-top: 24px;
+    margin-top: 0;
   }
 }
 
@@ -38,7 +44,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(33, 107, 70, 0.15);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .mono {
@@ -52,11 +58,14 @@
   border: 1px solid var(--paper-edge) !important;
   border-radius: 4px;
   box-shadow: var(--shadow-paper);
+  padding: 26px 26px 18px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .parties {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
   padding-bottom: 12px;
   margin-bottom: 16px;
@@ -156,7 +165,7 @@
 
 .previewTotals {
   margin: 14px 0 0 auto;
-  width: 240px;
+  width: min(240px, 100%);
   font-size: 12px;
 }
 
@@ -254,5 +263,89 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 10.5px;
-  color: var(--faint);
+  color: var(--muted);
+}
+
+/* Explicit cell rules defeat the legacy global nowrap/uppercase table styles. */
+.linesTable,
+.scheduleTable {
+  table-layout: fixed;
+}
+.linesTable th,
+.linesTable td,
+.scheduleTable th,
+.scheduleTable td {
+  border-top: 0;
+  background: transparent;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.linesTable td,
+.scheduleTable td {
+  text-transform: none;
+}
+.linesTable th:first-child {
+  width: 32%;
+}
+.linesTable th:nth-child(2) {
+  width: 14%;
+}
+.linesTable th:nth-child(3),
+.linesTable th:nth-child(4) {
+  width: 27%;
+}
+.linesTable .numRight,
+.scheduleTable .numRight {
+  text-align: right;
+  padding-left: 8px;
+}
+.linesTable td.numRight {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.paperDoc > :first-child {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+.preview + div {
+  grid-column: 1;
+  grid-row: calc(5 + var(--row-shift, 0));
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 1180px) {
+  .preview {
+    grid-column: 1;
+    grid-row: calc(6 + var(--row-shift, 0));
+    position: static;
+    margin-top: 12px;
+  }
+}
+@media (max-width: 700px) {
+  .paperDoc {
+    padding: 20px 18px 14px;
+  }
+  .parties {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .linesTable {
+    font-size: 11px;
+  }
+  .itemDesc {
+    font-size: 11px;
+  }
+  .linesTable th {
+    font-size: 10px;
+  }
+  .previewTotals {
+    width: 100%;
+  }
+  .preview + div button {
+    min-height: 44px;
+  }
+  .docFoot {
+    flex-wrap: wrap;
+  }
 }

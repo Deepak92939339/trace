@@ -54,7 +54,7 @@
 
 .totalRow {
   gap: 12px;
-  border-top: 3px double var(--line-strong) !important;
+  border-top: 2px solid var(--ink) !important;
   margin-top: 8px !important;
   padding-top: 10px !important;
   display: flex;
@@ -74,7 +74,7 @@
 
 .totalDd {
   white-space: nowrap; /* the total must never break across lines */
-  font-size: 20px !important;
+  font-size: 22px !important;
   font-weight: 700 !important;
   color: var(--ink);
   font-variant-numeric: tabular-nums lining-nums !important;
@@ -87,4 +87,30 @@
   color: var(--muted);
   line-height: 1.45;
   margin-top: 10px;
+}
+
+.row {
+  gap: 12px;
+}
+.dt {
+  min-width: 0;
+}
+.dd {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.totalDd {
+  font-family: var(--sans);
+}
+.heading.heading {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+.list.list {
+  margin: 12px 0;
+}
+.list .row {
+  padding: 2px 0;
+  gap: 12px;
+  border-bottom: 0;
 }

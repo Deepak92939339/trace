@@ -71,7 +71,7 @@ export const showcase = {
       "id": "b-notes",
       "type": "notes",
       "props": {
-        "text": "Refer to the specifications listed above."
+        "text": "Refer to the line items above."
       }
     },
     {

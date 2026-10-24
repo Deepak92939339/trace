@@ -35,7 +35,7 @@ describe("Studio sealed adapter and renderer", () => {
     const bad = {...SYSTEM_TEMPLATES[0].layout,v:2} as unknown as Layout;
     expect(studio(propsFor(canonicalV2Vectors[0]!.snapshot),bad)).toBe("");
   });
-  it("emits one table with 200 rows and paged-media constraints (physical pagination UNVERIFIED-HOME)", () => {
+  it("emits one table with 200 rows and paged-media constraints (physical pagination is checked separately in Chromium)", () => {
     const data = printDataFromIssued(propsFor(canonicalV2Vectors[0]!.snapshot));
     data.items = Array.from({length:200},(_,i)=>({...data.items[0]!,id:String(i)}));
     const html=renderStaticMarkup(createElement(DocumentRenderer,{layout:SYSTEM_TEMPLATES[0].layout,brand:DEFAULT_BRAND,data}));

@@ -103,7 +103,7 @@ export async function listActivity(limit = 50): Promise<ActivityRow[]> {
   return data.map(row => { if (!isRecord(row) || row.organization_id !== context.membership.organizationId || typeof row.action !== "string" || typeof row.subject_type !== "string" || typeof row.created_at !== "string") throw new StudioError("studio_data_invalid"); return {id:uuid(row.id),action:row.action,subject_type:row.subject_type,created_at:row.created_at}; });
 }
 
-export type AssetRow = {id:string;mime:string;byte_length:number;created_at:string;is_brand_logo:boolean;pinned_revision_count:number;logo:{mime:string;bytes:number[]}|null};
+export type AssetRow = {id:string;mime:string;byte_length:number;created_at:string;is_brand_logo:boolean;pinned_revision_count:number;logo:{mime:string;base64:string}|null};
 export async function listAssets(): Promise<AssetRow[]> {
   await studioContext("template.read");
   const data = await studioRpc("list_document_assets");
@@ -112,7 +112,7 @@ export async function listAssets(): Promise<AssetRow[]> {
     if (!isRecord(row) || typeof row.mime !== "string" || !["image/png","image/jpeg","image/webp","image/svg+xml"].includes(row.mime) || typeof row.byte_length !== "number" || !Number.isSafeInteger(row.byte_length) || row.byte_length < 1 || row.byte_length > (row.mime === "image/svg+xml" ? 131072 : 524288) || typeof row.created_at !== "string" || typeof row.is_brand_logo !== "boolean" || typeof row.pinned_revision_count !== "number" || !Number.isSafeInteger(row.pinned_revision_count) || row.pinned_revision_count < 0) throw new StudioError("studio_data_invalid");
     const id = uuid(row.id);
     let logo: AssetRow["logo"] = null;
-    try { const safe = await readAsset(id); logo = {mime:safe.mime,bytes:Array.from(safe.bytes)}; }
+    try { const safe = await readAsset(id); logo = {mime:safe.mime,base64:Buffer.from(safe.bytes).toString("base64")}; }
     catch (error) { if (!["studio_asset_svg_invalid","studio_asset_magic_invalid","studio_asset_invalid"].includes(studioFailure(error).code)) throw error; console.warn("studio_gallery_asset_rejected",{id}); }
     return {id,mime:row.mime,byte_length:row.byte_length,created_at:row.created_at,is_brand_logo:row.is_brand_logo,pinned_revision_count:row.pinned_revision_count,logo};
   }));

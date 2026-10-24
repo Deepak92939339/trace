@@ -46,7 +46,7 @@ if (
 
 console.log(`Demo project recognized: ${projectRef}.`);
 console.log(
-  "Preview: one fictional organization, 14 products, 6 customers, and 14 quotes; no deletes or truncation.",
+  "Preview: one fictional organization, 14 products, 6 customers, 14 quotes and one sealed issued quotation for Document Studio; no deletes or truncation.",
 );
 console.log(
   "Quote lifecycle mix: draft, submitted/waiting, approved, rejected, issued, and date-derived expired.",

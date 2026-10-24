@@ -85,7 +85,10 @@ create function public.pin_revision_layout(p_revision_id uuid) returns public.qu
 language plpgsql security definer set search_path = '' as $$
 declare r public.quote_revisions; t public.document_templates; pinned public.quote_revision_layouts; b jsonb; logo uuid; org uuid := public.studio_current_org('quote.print');
 begin
- -- Organization lock precedes all row locks, matching Studio save/default/brand/asset RPCs.
+ -- Fast path without the organization lock: an already pinned revision is immutable, so a plain read is safe and views never serialise.
+ select * into pinned from public.quote_revision_layouts where revision_id = p_revision_id and organization_id = org;
+ if pinned.revision_id is not null then return pinned; end if;
+ -- Organization lock precedes all row locks, matching Studio save/default/brand/asset RPCs; the existence check is repeated under it.
  perform public.studio_lock(org);
  select * into r from public.quote_revisions where id = p_revision_id and organization_id = org;
  if r.id is null then raise exception using errcode = '42501', message = 'studio_forbidden'; end if;

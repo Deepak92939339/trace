@@ -2,6 +2,7 @@ import { issuedHtml } from "@/lib/studio/issued-document";
 import { studioErrorResponse } from "@/lib/studio/errors";
 export const runtime = "nodejs";
 export async function GET(request: Request,{params}:{params:Promise<{number:string;revisionNumber:string}>}) {
+  if (request.headers.get("next-router-prefetch") || request.headers.get("rsc")) return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } }); // a prefetch must never pin, render or spend the export slot
   try {
     const result = await issuedHtml(await params);
     const disposition=new URL(request.url).searchParams.get("view")==="print"?"inline":"attachment";

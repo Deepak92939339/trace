@@ -286,8 +286,14 @@ export default async function QuotePage({
         issuedActor: issuedActorForRevision(activity, currentRevision.id),
         timeZone: timezone,
       });
-      if (context.capabilities.includes("quote.print")) studioPrint = await pinRevisionLayout(currentRevision.id);
-      else if (context.capabilities.includes("template.read")) studioPrint = await readRevisionLayout(currentRevision.id);
+      // A Studio fault must never take the issued quote page down: show the standard document on screen and log. The PDF/HTML routes stay strict.
+      try {
+        if (context.capabilities.includes("quote.print")) studioPrint = await pinRevisionLayout(currentRevision.id);
+        else if (context.capabilities.includes("template.read")) studioPrint = await readRevisionLayout(currentRevision.id);
+      } catch (error) {
+        console.warn("studio_layout_unavailable_on_quote_page", error instanceof Error ? error.message : "unknown");
+        studioPrint = null;
+      }
       pdfDownload = {
         href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
         available: Boolean(pdfResult?.data),

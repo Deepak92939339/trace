@@ -10,6 +10,8 @@ export type ButtonProps = {
   size?: ButtonSize;
   loading?: boolean;
   href?: string;
+  /** Set false for links to routes with side effects (downloads, exports): Link prefetch issues a GET. */
+  prefetch?: boolean;
   disabled?: boolean;
   children?: React.ReactNode;
   className?: string;
@@ -25,6 +27,7 @@ export function Button({
   size = "md",
   loading = false,
   href,
+  prefetch,
   disabled = false,
   children,
   className,
@@ -63,6 +66,7 @@ export function Button({
     return (
       <Link
         href={href}
+        prefetch={prefetch}
         className={classNames}
         aria-label={ariaLabel}
         id={id}

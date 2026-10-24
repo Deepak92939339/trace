@@ -137,8 +137,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .actions button:not([class*="primary"]),
-  .actions a:not([class*="primary"]) {
+  .actions button:not([class*="primary"]):not([data-profile-trigger]):not([role="menuitem"]),
+  .actions a:not([class*="primary"]):not([role="menuitem"]) {
     display: none;
   }
 }

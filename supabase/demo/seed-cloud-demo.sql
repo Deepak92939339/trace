@@ -295,3 +295,78 @@ end;
 $demo$;
 
 commit;
+
+-- BEGIN DOCUMENT STUDIO — Verified on a disposable local Supabase; never applied to a hosted database.
+-- Appended only. The existing seed transaction/guards above remain byte-identical.
+-- scripts/seed-cloud-demo.mjs performs target allowlisting; the reviewer lock is last below.
+-- Never run this as an unguarded standalone seed.
+begin;
+create temporary table studio_demo_seed_input(user_id uuid not null) on commit drop;
+insert into studio_demo_seed_input values (:'demo_user_id'::uuid);
+do $studio_demo$
+declare
+ actor uuid := (select user_id from studio_demo_seed_input); org uuid;
+ logo public.document_assets; t public.document_templates; revision_id uuid;
+ cust uuid; gst uuid; created jsonb; lines jsonb; qid uuid; rid uuid; extra record;
+ svg bytea := convert_to('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#216b46"/><path d="M8 24V8h4l8 12V8h4v16h-4L12 12v12z" fill="#ffffff"/></svg>','UTF8');
+begin
+ select o.id into org from public.organizations o
+ join public.organization_memberships m on m.organization_id=o.id and m.user_id=actor and m.status='active'
+ where o.slug='northstar-industrial-demo' and o.created_by=actor;
+ if org is null then raise exception 'studio_demo_seed_identity_mismatch'; end if;
+ -- Preserve the original one-time behavior: never overwrite a previously configured Studio.
+ if exists(select 1 from public.document_templates where organization_id=org)
+   or exists(select 1 from public.organization_brand where organization_id=org) then
+   raise notice 'Studio already configured; no Studio changes made.'; return;
+ end if;
+ if (select count(*) from public.quotes where organization_id=org)<>14 then raise exception 'studio_demo_seed_dataset_mismatch'; end if;
+ perform set_config('request.jwt.claims',json_build_object('sub',actor,'role','authenticated')::text,true);
+ -- Only the guarded seed owner temporarily restores the creator's admin role for brand RPCs.
+ -- The final step locks the dedicated demo user to reviewer. Exceptions roll this transaction back.
+ update public.organization_memberships set role_id=(select id from public.roles where key='organization_admin') where organization_id=org and user_id=actor;
+ logo:=public.create_document_asset('image/svg+xml',svg,public.sha256_hex(svg));
+ perform public.save_organization_brand(jsonb_build_object('primary','#216b46','accent','#b45309','font','sans','logo_asset_id',logo.id,'footer_line','Northstar Industrial Supply Private Limited · 27 Foundry Park, Unit 4, Pune 411019 · Fictional demonstration','registration_line','Demo company, fictional registration DEMO-0000'));
+ t:=public.duplicate_document_template('classic','Northstar · Classic');
+ perform public.set_default_document_template(t.id);
+ perform public.duplicate_document_template('industrial','Northstar · Industrial');
+ perform public.duplicate_document_template('project','Northstar · Project');
+ -- The base seed issues through the legacy quote workflow (no sealed revisions), so create one real sealed issued
+ -- quotation here with the revision commands; it is what the reviewer previews, prints and downloads in Studio.
+ -- Three more catalogue rows (units M, KG, L; the catalogue unit enum is EA/M/KG/L/BOX) go through the same create_product command the app uses.
+ select id into gst from public.tax_profiles where organization_id=org and code='GST18';
+ select id into cust from public.customers where organization_id=org and name='Aster Process Systems';
+ if gst is null or cust is null then raise exception 'studio_demo_seed_missing_fixture'; end if;
+ for extra in select * from (values
+     ('CAB-3C15','Shielded instrumentation cable, 3-core 1.5 mm²','M',18500),
+     ('PWD-7016','Epoxy-polyester powder coating, RAL 7016','KG',84000),
+     ('LUB-VG220','Gearbox oil, ISO VG 220','L',31000)) as extra_rows(sku,description,unit_code,price) loop
+   perform public.create_product(org,jsonb_build_object('sku',extra.sku,'description',extra.description,'unit_code',extra.unit_code,'quantity_precision',0,'unit_price_minor',extra.price,'currency_code','INR','tax_profile_id',gst,'active',true),gen_random_uuid());
+ end loop;
+ created := public.create_verified_quote_draft(org,cust,'INR','en-IN','GST 18%','exclusive'::public.tax_price_basis,current_date,current_date+30,gen_random_uuid());
+ qid := (created ->> 'id')::uuid; rid := (created ->> 'current_revision_id')::uuid;
+ select jsonb_agg(jsonb_build_object('line_id',null,'product_id',pr.id,'position',line_rows.pos,'quantity_scaled',line_rows.qty,'quantity_scale',1) order by line_rows.pos) into lines
+   from (values (1,'DRV-220',1),(2,'MTR-075',4),(3,'CAB-3C15',24),(4,'PWD-7016',12),(5,'LUB-VG220',4),(6,'BRG-210',1)) as line_rows(pos,sku,qty)
+   join public.products pr on pr.organization_id=org and pr.sku=line_rows.sku;
+ if jsonb_array_length(lines)<>6 then raise exception 'studio_demo_seed_missing_fixture'; end if;
+ -- Per-line discounts do not exist in the command set; the quote-level 5% discount stays below the 10% approval threshold.
+ perform public.save_quote_draft(qid,1,gen_random_uuid(),jsonb_build_object('customer_id',cust,'currency_code','INR','locale','en-IN','tax_label','GST 18%','tax_mode','exclusive','discount_bps',500,'issue_date',current_date,'valid_until',current_date+30,'notes','Fictional demonstration quotation for Document Studio.','items',lines,
+   'charges',jsonb_build_array(jsonb_build_object('charge_id',null,'position',1,'charge_type','freight','description','Freight and insurance, Pune dispatch','amount_minor',325000,'tax_profile_id',gst,'discount_applies',false))));
+ -- Same write path the schedule editor uses.
+ update public.quote_payment_schedule_editor set milestones = jsonb_build_array(
+   jsonb_build_object('label','Deposit','basis_points',5000,'trigger','on_acceptance','due_date',null),
+   jsonb_build_object('label','On delivery','basis_points',3000,'trigger','on_delivery','due_date',null),
+   jsonb_build_object('label','Final instalment','basis_points',2000,'trigger','on_date','due_date',(current_date+60)::text))
+   where quote_id = qid and version = (select version from public.quotes where id=qid);
+ perform public.submit_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
+ perform public.issue_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
+ -- Pin every issued demo revision as admin before the reviewer lock.
+ for revision_id in select id from public.quote_revisions where organization_id=org and state='issued' loop
+   -- A legacy marker here would permanently hide the Studio layout from the reviewer; fail loudly instead.
+   if (public.pin_revision_layout(revision_id)).kind <> 'studio' then raise exception 'studio_demo_seed_legacy_pin'; end if;
+ end loop;
+ -- Final reviewer lock comes after all issued revisions are pinned.
+ update public.organization_memberships set role_id=(select id from public.roles where key='reviewer') where organization_id=org and user_id=actor;
+end;
+$studio_demo$;
+commit;
+-- END DOCUMENT STUDIO

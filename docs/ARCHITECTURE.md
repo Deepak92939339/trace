@@ -28,3 +28,7 @@ Every organization-owned relationship includes `organization_id`, with composite
 ## Concurrency and auditability
 
 Commands use UUID identifiers and scoped request hashes for safe replay. Version checks prevent stale overwrites, while transaction/advisory locks serialize conflicting decisions. Quote activity records successful commercial transitions and is append-only to application roles.
+
+## Document Studio
+
+Document Studio stores closed layout JSON, separate brand/logo data, historical template versions and an append-only Studio trail. A presentation-only adapter reads IssuedPrintProps; the shared block renderer serves previews and pinned issued output. First print preparation copies the server-selected default and brand into an immutable revision/snapshot-anchored row. Existing PDFs and the legacy renderer remain fallback paths, and the PDF engine/register are unchanged. Workspace ZIP export reuses those document paths and explicit CSV field allowlists. [STUDIO.md](STUDIO.md) describes schema, RPCs, wipe integration, extension points and unverified/partial items.

@@ -29,6 +29,9 @@ export function studioPageCss(layout: Layout, brand: Brand, tokens: TokenValues)
   // cannot print there): 7 pt lines are about 3.1 mm tall, so the bottom margin grows only when the footer needs it.
   const footerLines = pieces.reduce((count,piece) => count + 1 + (piece.length > 90 ? 1 : 0),0) + (numbers !== "none" && pieces.length === 0 ? 1 : 0);
   const bottomMm = footerLines ? Math.max(marginMm,Math.ceil(footerLines * 3.1 + 8)) : marginMm;
+  // Margin boxes are laid out after the page body, so a face used only there can still be loading (font-display: block makes it
+  // invisible). Use the family the body itself uses, which is guaranteed to be loaded: Source Serif 4 for a serif brand, Inter otherwise.
+  const family = brand.font === "serif" ? '"Source Serif 4",Georgia,"Times New Roman",serif' : "Inter,ui-sans-serif,Arial,sans-serif";
   const margin = `${marginMm}mm ${marginMm}mm ${bottomMm}mm ${marginMm}mm`;
-  return `@page studio-page{size:${layout.page.size};margin:${margin};@bottom-center{content:${content};white-space:pre-wrap;font-size:7pt;font-family:var(--font-sans,sans-serif);color:#586475;}@bottom-right{content:${numbers};font-size:7pt;font-family:var(--font-sans,sans-serif);color:#586475;}}`;
+  return `@page studio-page{size:${layout.page.size};margin:${margin};@bottom-center{content:${content};white-space:pre-wrap;font-size:7pt;font-family:${family};color:#586475;}@bottom-right{content:${numbers};font-size:7pt;font-family:${family};color:#586475;}}`;
 }

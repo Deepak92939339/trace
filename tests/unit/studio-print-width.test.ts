@@ -28,8 +28,8 @@ let browser: Browser;
 beforeAll(async () => { browser = await chromium.launch(); });
 afterAll(async () => { await browser?.close(); });
 
-async function render(layout: Layout, rows: number) {
-  const html = await buildPrintHtml({ props: props(rows), revisionNumber: 1, studio: { layout, brand: { ...DEFAULT_BRAND, footer_line: "Northstar Industrial Supply Private Limited · 27 Foundry Park, Unit 4, Pune 411019 · Fictional demonstration", registration_line: "Demo company, fictional registration DEMO-0000" }, logo: null, layoutHash: "0".repeat(64) } });
+async function render(layout: Layout, rows: number, font: "sans" | "serif" | "mono-accent" = "sans") {
+  const html = await buildPrintHtml({ props: props(rows), revisionNumber: 1, studio: { layout, brand: { ...DEFAULT_BRAND, font, footer_line: "Northstar Industrial Supply Private Limited · 27 Foundry Park, Unit 4, Pune 411019 · Fictional demonstration", registration_line: "Demo company, fictional registration DEMO-0000" }, logo: null, layoutHash: "0".repeat(64) } });
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: "load" });
@@ -42,17 +42,17 @@ async function render(layout: Layout, rows: number) {
 
 async function textBounds(pdf: Buffer) {
   const doc = await pdfjs.getDocument({ data: new Uint8Array(pdf), useSystemFonts: false }).promise;
-  const pages: { width: number; left: number; right: number; lowest: number }[] = [];
+  const pages: { width: number; left: number; right: number; lowest: number; text: string }[] = [];
   for (let n = 1; n <= doc.numPages; n++) {
     const page = await doc.getPage(n);
     const width = page.view[2]! - page.view[0]!;
     const content = await page.getTextContent();
-    let left = Infinity, right = -Infinity, lowest = Infinity;
+    let left = Infinity, right = -Infinity, lowest = Infinity, text = "";
     for (const item of content.items) {
       if (!("str" in item) || !item.str.trim()) continue;
-      left = Math.min(left, item.transform[4]!); right = Math.max(right, item.transform[4]! + item.width); lowest = Math.min(lowest, item.transform[5]!);
+      left = Math.min(left, item.transform[4]!); right = Math.max(right, item.transform[4]! + item.width); lowest = Math.min(lowest, item.transform[5]!); text += item.str + " ";
     }
-    pages.push({ width, left, right, lowest });
+    pages.push({ width, left, right, lowest, text });
   }
   await doc.destroy();
   return pages;
@@ -78,4 +78,15 @@ describe("Studio PDF stays inside the chosen page margins", () => {
       }
     }
   }, 240_000);
+  // A face that only the page margin boxes use may still be loading at print time (font-display: block hides it), so the
+  // footer and counters must use a family the body already loaded. Check they print for every brand font.
+  it.each(["sans", "serif", "mono-accent"] as const)("prints the footer and Page x of y on every page with the %s brand font", async font => {
+    const pdf = await render({ ...SYSTEM_TEMPLATES[0].layout, page: { size: "A4", margin: "normal" } }, 60, font);
+    const pages = await textBounds(pdf);
+    expect(pages.length).toBeGreaterThan(1);
+    pages.forEach((page, index) => {
+      expect(page.text.replace(/\s+/g, " "), `${font} page ${index + 1}`).toContain(`Page ${index + 1} of ${pages.length}`);
+      expect(page.text.replace(/\s+/g, "")).toContain("registrationDEMO-0000");
+    });
+  }, 120_000);
 });

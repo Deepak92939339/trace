@@ -7,6 +7,8 @@ import { validateAsset } from "@/lib/studio/assets";
 import { studioContext, studioRpc, templateRow, uuid } from "@/lib/studio/server";
 import { StudioError, studioFailure } from "@/lib/studio/errors";
 import type { Json } from "@/lib/supabase/database.types";
+import { loadIssuedDocument } from "@/lib/studio/issued-document";
+import { printDataFromIssued, type PrintData } from "@/lib/studio/print-data";
 import type { TemplateRow } from "@/lib/studio/server";
 
 type Result<T = undefined> = { ok: true; value: T } | { ok: false; code: string; message: string };
@@ -44,4 +46,9 @@ export async function deleteLogoAction(id: string): Promise<Result> { return mut
 export async function workspaceExportAction(): Promise<Result<{ href: string }>> {
   // Actual export records/throttles its request in GET; this action only gives an authorized link.
   return mutation("workspace.export",async () => { await studioContext("organization.manage"); return {href:"/api/studio/workspace"}; });
+}
+
+export async function previewQuotationAction(params: { number: string; revisionNumber: string }): Promise<Result<PrintData>> {
+  try { const doc = await loadIssuedDocument(params,"preview"); return {ok:true,value:printDataFromIssued(doc.props)}; }
+  catch(error) { const e=studioFailure(error); return {ok:false,code:e.code,message:e.message}; }
 }

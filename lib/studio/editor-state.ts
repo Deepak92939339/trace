@@ -1,9 +1,10 @@
 import { parseLayout, type Block, type Layout } from "./layout-schema.ts";
 export type EditorState = { layout: Layout; past: readonly Layout[]; future: readonly Layout[]; selected: string | null; saved: string; announcement: string };
-export type EditorAction = { type: "select"; id: string | null } | { type: "replace"; layout: Layout } | { type: "add"; block: Block } | { type: "remove"; id: string } | { type: "move"; id: string; to: number } | { type: "update"; block: Block } | { type: "undo" } | { type: "redo" } | { type: "saved" };
+export type EditorAction = { type: "load"; layout: Layout } | { type: "select"; id: string | null } | { type: "replace"; layout: Layout } | { type: "add"; block: Block } | { type: "remove"; id: string } | { type: "move"; id: string; to: number } | { type: "update"; block: Block } | { type: "undo" } | { type: "redo" } | { type: "saved" };
 export function initialEditorState(layout: Layout): EditorState { const clean = parseLayout(layout); return { layout: clean, past: [], future: [], selected: null, saved: JSON.stringify(clean), announcement: "" }; }
 export function isDirty(state: EditorState) { return JSON.stringify(state.layout) !== state.saved; }
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
+  if (action.type === "load") return initialEditorState(action.layout);
   if (action.type === "select") return { ...state, selected: state.layout.blocks.some(b => b.id === action.id) ? action.id : null };
   if (action.type === "saved") return { ...state, saved: JSON.stringify(state.layout), announcement: "Template saved." };
   if (action.type === "undo") {

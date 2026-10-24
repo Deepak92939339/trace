@@ -5,6 +5,7 @@ export const protectedPaths = [
   "/customers",
   "/onboarding",
   "/settings",
+  "/studio",
 ] as const;
 
 export function isProtectedPath(pathname: string): boolean {

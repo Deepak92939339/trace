@@ -41,7 +41,7 @@ export const STUDIO_PRINT_CSS = `
 .studio-document .studio-totals[data-full=true]{width:100%}
 .studio-document .studio-totals div{display:flex;justify-content:space-between;gap:4mm;padding:1mm 0}
 .studio-document .studio-grand{border-top:2px solid var(--studio-primary);font-weight:700;font-size:12pt}
-.studio-document .studio-cover{min-height:220mm;break-after:page;padding-top:15mm}
+.studio-document .studio-cover{padding:6mm 0 4mm;margin-bottom:6mm;break-inside:avoid}
 .studio-document .studio-cover[data-tone=dark]{background:#17212b;color:#fff;padding:12mm}
 .studio-document .studio-cover[data-tone=dark] small{color:#e7ecf1}
 .studio-document .studio-token{background:#e8f1eb;color:#216b46;border-radius:3px;padding:1px 3px;font-size:8pt}
@@ -51,7 +51,7 @@ export const STUDIO_PRINT_CSS = `
 .studio-document .studio-tint{background:#f1efe7;padding:4mm}
 .studio-document[data-corners=rounded] .studio-tint,.studio-document[data-corners=rounded] .studio-band{border-radius:3mm}
 .studio-preview{display:block!important;width:100%;padding:8mm}
-@media print{.studio-document{display:block!important;padding:0!important;background:white}.studio-document .studio-cover{min-height:220mm}.studio-document .studio-token{background:transparent;color:inherit}}
+@media print{.studio-document{display:block!important;padding:0!important;background:white}.studio-document .studio-token{background:transparent;color:inherit}}
 `;
 const LABELS: Record<Column, string> = { sku: "SKU", description: "Description", spec: "Specification", qty: "Qty", unit: "Unit", rate: "Rate", tax_code: "Tax code", amount: "Amount" };
 export function DocumentRenderer({ layout, brand, data, logo, fields = false, preview = false, includePageCss = true }: {
@@ -74,7 +74,7 @@ export function DocumentRenderer({ layout, brand, data, logo, fields = false, pr
       case "totals": return <section className="studio-totals" data-full={b.props.layout === "full"}><div><span>Subtotal</span><span>{data.totals.subtotal}</span></div><div><span>Discount</span><span>− {data.totals.discount}</span></div><div><span>{data.quote.taxLabel}</span><span>{data.totals.tax}</span></div>{b.props.showExtras !== false && <div><span>Charges</span><span>{data.totals.charges}</span></div>}<div className="studio-grand"><span>Total {data.quote.currency}</span><span>{data.totals.grand}</span></div><small>{data.quote.taxMode === "inclusive" ? "Line prices include tax." : "Tax is added to line prices."}</small></section>;
       case "extra_charges": return data.charges.length ? <section><h2>Extra charges</h2><table><thead><tr><th>Charge</th><th>Amount</th><th>Tax</th><th>Total</th></tr></thead><tbody>{data.charges.map(c => <tr key={c.id}><td>{c.description}</td><td>{c.amount}</td><td>{c.tax}</td><td>{c.total}</td></tr>)}</tbody></table></section> : null;
       case "payment_schedule": return data.paymentSchedule.length ? <section><h2>Payment schedule</h2>{b.props.layout === "cards" ? <div className="studio-pair">{data.paymentSchedule.map((p, i) => <section className="studio-tint" key={i}><strong>{p.label}</strong><p>{p.share} · {p.amount}</p>{b.props.showNotes !== false && <small>{p.when} {p.date}</small>}</section>)}</div> : <table><thead><tr><th>Milestone</th><th>When</th><th>Share</th><th>Amount</th></tr></thead><tbody>{data.paymentSchedule.map((p, i) => <tr key={i}><td>{p.label}</td><td>{p.when} {p.date}</td><td>{p.share}</td><td>{p.amount}</td></tr>)}</tbody></table>}</section> : null;
-      case "terms": return <section style={{ columnCount: String(b.props.columns ?? 1) }}><h2>Terms</h2><p>{text(b.props.text ?? "")}</p></section>;
+      case "terms": return (b.props.text ?? "").trim() ? <section style={{ columnCount: String(b.props.columns ?? 1) }}><h2>Terms</h2><p>{text(b.props.text ?? "")}</p></section> : null;
       case "acceptance": return <section className="studio-acceptance"><h2>Acceptance</h2><p>{text(b.props.text ?? "Use the secure buyer link to record your decision against this revision.")}</p>{b.props.showExpiry !== false && <small>Valid until {data.quote.validUntil}</small>}</section>;
       case "spacer": return <div style={{ height: `${b.props.height ?? 18}px`, borderBottom: b.props.rule ? "1px solid #d9d3c6" : "none" }} />;
       case "footer": return preview ? <footer className={`studio-footer ${b.props.rule !== false ? "studio-rule" : ""}`}><span>{text(b.props.text ?? "")}{brand.footer_line && <><br />{brand.footer_line}</>}<br />{brand.registration_line}</span><span>{text(b.props.right ?? "")}</span></footer> : null;

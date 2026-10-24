@@ -44,7 +44,6 @@ export const showcase = {
         "columns": [
           "sku",
           "description",
-          "spec",
           "qty",
           "unit",
           "rate",

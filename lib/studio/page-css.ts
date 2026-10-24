@@ -25,5 +25,5 @@ export function studioPageCss(layout: Layout, brand: Brand, tokens: TokenValues)
   const numbering = last?.props.pageNumbers ?? "none";
   const numbers = numbering === "x_of_y" ? '"Page " counter(page) " of " counter(pages)' : numbering === "x" ? '"Page " counter(page)' : "none";
   const margin = {narrow:"10mm",normal:"16mm",wide:"22mm"}[layout.page.margin];
-  return `@page studio-page{size:${layout.page.size};margin:${margin};@bottom-center{content:${content};white-space:pre-wrap;font-size:7pt;}@bottom-right{content:${numbers};font-size:7pt;}}`;
+  return `@page studio-page{size:${layout.page.size};margin:${margin};@bottom-center{content:${content};white-space:pre-wrap;font-size:7pt;font-family:var(--font-sans,sans-serif);color:#586475;}@bottom-right{content:${numbers};font-size:7pt;font-family:var(--font-sans,sans-serif);color:#586475;}}`;
 }

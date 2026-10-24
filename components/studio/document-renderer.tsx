@@ -23,6 +23,8 @@ export const STUDIO_PRINT_CSS = `
 .studio-document th{text-align:left;text-transform:uppercase;font-size:7pt;letter-spacing:.04em;color:#586475}
 .studio-document td,.studio-document th{padding:2mm 1mm;border-bottom:1px solid #d9d3c6;overflow-wrap:anywhere}
 .studio-document thead{display:table-header-group}
+.studio-document .studio-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.studio-document td.studio-num+td:not(.studio-num),.studio-document th.studio-num+th:not(.studio-num){padding-left:3mm}
 .studio-document tr{break-inside:avoid;page-break-inside:avoid}
 .studio-document .studio-pair,.studio-document .studio-meta{display:flex;gap:6mm;justify-content:space-between}
 .studio-document .studio-pair section{flex:1;min-width:0}
@@ -39,7 +41,7 @@ export const STUDIO_PRINT_CSS = `
 .studio-document .studio-totals,.studio-document .studio-acceptance{break-inside:avoid;page-break-inside:avoid}
 .studio-document .studio-totals{margin-left:auto;width:55%}
 .studio-document .studio-totals[data-full=true]{width:100%}
-.studio-document .studio-totals div{display:flex;justify-content:space-between;gap:4mm;padding:1mm 0}
+.studio-document .studio-totals div{display:flex;justify-content:space-between;gap:4mm;padding:1mm 1mm}
 .studio-document .studio-grand{border-top:2px solid var(--studio-primary);font-weight:700;font-size:12pt}
 .studio-document .studio-cover{padding:6mm 0 4mm;margin-bottom:6mm;break-inside:avoid}
 .studio-document .studio-cover[data-tone=dark]{background:#17212b;color:#fff;padding:12mm}
@@ -53,6 +55,7 @@ export const STUDIO_PRINT_CSS = `
 .studio-preview{display:block!important;width:100%;padding:8mm}
 @media print{.studio-document{display:block!important;padding:0!important;background:white}.studio-document .studio-token{background:transparent;color:inherit}}
 `;
+const NUMERIC = new Set<Column>(["qty", "rate", "amount"]);
 const LABELS: Record<Column, string> = { sku: "SKU", description: "Description", spec: "Specification", qty: "Qty", unit: "Unit", rate: "Rate", tax_code: "Tax code", amount: "Amount" };
 export function DocumentRenderer({ layout, brand, data, logo, fields = false, preview = false, includePageCss = true }: {
   layout: Layout; brand: Brand; data: PrintData; logo?: LogoBytes | null; fields?: boolean; preview?: boolean; includePageCss?: boolean;
@@ -70,10 +73,10 @@ export function DocumentRenderer({ layout, brand, data, logo, fields = false, pr
       case "quote_meta": return meta(b.props.labels !== false, b.props.direction === "stack", b.props.fields);
       case "parties": return <div className={`studio-pair ${b.props.tint ? "studio-tint" : ""}`} data-stack={b.props.layout === "stacked"}><section><small>From</small><strong>{data.seller.name}</strong><p>{data.seller.address}</p><small>{data.seller.taxId}</small></section><section><small>Prepared for</small><strong>{data.customer.name}</strong><p>{data.customer.address}</p><small>{data.customer.contact} · {data.customer.email}</small><small>{data.customer.taxId}</small></section></div>;
       case "intro": case "notes": case "free_text": return <p style={{ textAlign: b.type === "free_text" ? b.props.align ?? "left" : "left" }}>{text(b.props.text ?? (b.type === "notes" ? data.quote.notes : ""))}</p>;
-      case "line_items": { const columns = b.props.columns ?? ["description", "qty", "unit", "rate", "amount"]; return <table className={`${b.props.zebra ? "studio-zebra" : ""} ${b.props.boxed ? "studio-boxed" : ""}`}><thead><tr>{columns.map(c => <th key={c}>{LABELS[c]}</th>)}</tr></thead><tbody>{data.items.map(item => <tr key={item.id}>{columns.map(c => <td key={c}>{item[c]}{c === "description" && b.props.specs && item.spec && <small>{item.spec}</small>}</td>)}</tr>)}</tbody></table>; }
+      case "line_items": { const columns = b.props.columns ?? ["description", "qty", "unit", "rate", "amount"]; return <table className={`${b.props.zebra ? "studio-zebra" : ""} ${b.props.boxed ? "studio-boxed" : ""}`}><thead><tr>{columns.map(c => <th key={c} className={NUMERIC.has(c) ? "studio-num" : undefined}>{LABELS[c]}</th>)}</tr></thead><tbody>{data.items.map(item => <tr key={item.id}>{columns.map(c => <td key={c} className={NUMERIC.has(c) ? "studio-num" : undefined}>{item[c]}{c === "description" && b.props.specs && item.spec && <small>{item.spec}</small>}</td>)}</tr>)}</tbody></table>; }
       case "totals": return <section className="studio-totals" data-full={b.props.layout === "full"}><div><span>Subtotal</span><span>{data.totals.subtotal}</span></div><div><span>Discount</span><span>− {data.totals.discount}</span></div><div><span>{data.quote.taxLabel}</span><span>{data.totals.tax}</span></div>{b.props.showExtras !== false && <div><span>Charges</span><span>{data.totals.charges}</span></div>}<div className="studio-grand"><span>Total {data.quote.currency}</span><span>{data.totals.grand}</span></div><small>{data.quote.taxMode === "inclusive" ? "Line prices include tax." : "Tax is added to line prices."}</small></section>;
-      case "extra_charges": return data.charges.length ? <section><h2>Extra charges</h2><table><thead><tr><th>Charge</th><th>Amount</th><th>Tax</th><th>Total</th></tr></thead><tbody>{data.charges.map(c => <tr key={c.id}><td>{c.description}</td><td>{c.amount}</td><td>{c.tax}</td><td>{c.total}</td></tr>)}</tbody></table></section> : null;
-      case "payment_schedule": return data.paymentSchedule.length ? <section><h2>Payment schedule</h2>{b.props.layout === "cards" ? <div className="studio-pair">{data.paymentSchedule.map((p, i) => <section className="studio-tint" key={i}><strong>{p.label}</strong><p>{p.share} · {p.amount}</p>{b.props.showNotes !== false && <small>{p.when} {p.date}</small>}</section>)}</div> : <table><thead><tr><th>Milestone</th><th>When</th><th>Share</th><th>Amount</th></tr></thead><tbody>{data.paymentSchedule.map((p, i) => <tr key={i}><td>{p.label}</td><td>{p.when} {p.date}</td><td>{p.share}</td><td>{p.amount}</td></tr>)}</tbody></table>}</section> : null;
+      case "extra_charges": return data.charges.length ? <section><h2>Extra charges</h2><table><thead><tr><th>Charge</th><th className="studio-num">Amount</th><th className="studio-num">Tax</th><th className="studio-num">Total</th></tr></thead><tbody>{data.charges.map(c => <tr key={c.id}><td>{c.description}</td><td className="studio-num">{c.amount}</td><td className="studio-num">{c.tax}</td><td className="studio-num">{c.total}</td></tr>)}</tbody></table></section> : null;
+      case "payment_schedule": return data.paymentSchedule.length ? <section><h2>Payment schedule</h2>{b.props.layout === "cards" ? <div className="studio-pair">{data.paymentSchedule.map((p, i) => <section className="studio-tint" key={i}><strong>{p.label}</strong><p>{p.share} · {p.amount}</p>{b.props.showNotes !== false && <small>{p.when} {p.date}</small>}</section>)}</div> : <table><thead><tr><th>Milestone</th><th>When</th><th className="studio-num">Share</th><th className="studio-num">Amount</th></tr></thead><tbody>{data.paymentSchedule.map((p, i) => <tr key={i}><td>{p.label}</td><td>{p.when} {p.date}</td><td className="studio-num">{p.share}</td><td className="studio-num">{p.amount}</td></tr>)}</tbody></table>}</section> : null;
       case "terms": return (b.props.text ?? "").trim() ? <section style={{ columnCount: String(b.props.columns ?? 1) }}><h2>Terms</h2><p>{text(b.props.text ?? "")}</p></section> : null;
       case "acceptance": return <section className="studio-acceptance"><h2>Acceptance</h2><p>{text(b.props.text ?? "Use the secure buyer link to record your decision against this revision.")}</p>{b.props.showExpiry !== false && <small>Valid until {data.quote.validUntil}</small>}</section>;
       case "spacer": return <div style={{ height: `${b.props.height ?? 18}px`, borderBottom: b.props.rule ? "1px solid #d9d3c6" : "none" }} />;

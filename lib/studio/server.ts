@@ -63,12 +63,21 @@ export async function readAsset(id: string) {
 export type PinnedDocument = { layout: Layout; brand: Brand; logo: { mime: string; bytes: Uint8Array } | null; layoutHash: string };
 export async function pinRevisionLayout(revisionId: string): Promise<PinnedDocument | null> {
   const context = await studioContext("quote.print");
-  const raw = single(await studioRpc("pin_revision_layout",{p_revision_id:uuid(revisionId)}));
+  return parseRevisionLayout(await studioRpc("pin_revision_layout",{p_revision_id:uuid(revisionId)}),revisionId,context.membership.organizationId);
+}
+/** Read-only: never pins or logs; absent rows retain the existing legacy rendering. */
+export async function readRevisionLayout(revisionId: string): Promise<PinnedDocument | null> {
+  const context = await studioContext("quote.read");
+  await studioContext("template.read");
+  return parseRevisionLayout(await studioRpc("get_revision_layout",{p_revision_id:uuid(revisionId)}),revisionId,context.membership.organizationId);
+}
+async function parseRevisionLayout(value: unknown, revisionId: string, organizationId: string): Promise<PinnedDocument | null> {
+  const raw = single(value);
   if (raw === null || isRecord(raw) && raw.revision_id === null) return null;
   // Invalid layouts always use the unchanged legacy renderer, with a server-side warning.
   let layout: Layout, brand: Brand;
   try {
-    if (!isRecord(raw) || raw.revision_id !== revisionId || raw.organization_id !== context.membership.organizationId || typeof raw.layout_hash !== "string" || !/^[0-9a-f]{64}$/.test(raw.layout_hash) || !brandIsValid(raw.brand)) throw new StudioError("studio_data_invalid");
+    if (!isRecord(raw) || raw.revision_id !== revisionId || raw.organization_id !== organizationId || typeof raw.layout_hash !== "string" || !/^[0-9a-f]{64}$/.test(raw.layout_hash) || !brandIsValid(raw.brand)) throw new StudioError("studio_data_invalid");
     layout = parseLayout(raw.layout); brand = raw.brand;
   } catch {
     console.warn("studio_pinned_layout_invalid",{revisionId}); return null;

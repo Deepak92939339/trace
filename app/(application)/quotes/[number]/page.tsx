@@ -1,6 +1,6 @@
 import { DocumentRenderer } from "@/components/studio/document-renderer";
 import { printDataFromIssued } from "@/lib/studio/print-data";
-import { pinRevisionLayout, type PinnedDocument } from "@/lib/studio/server";
+import { pinRevisionLayout, readRevisionLayout, type PinnedDocument } from "@/lib/studio/server";
 import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/quotes/quote-builder";
 import { HistoryTimeline } from "@/components/quotes/history-timeline";
@@ -287,6 +287,7 @@ export default async function QuotePage({
         timeZone: timezone,
       });
       if (context.capabilities.includes("quote.print")) studioPrint = await pinRevisionLayout(currentRevision.id);
+      else if (context.capabilities.includes("template.read")) studioPrint = await readRevisionLayout(currentRevision.id);
       pdfDownload = {
         href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
         available: Boolean(pdfResult?.data),

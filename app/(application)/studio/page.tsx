@@ -8,5 +8,5 @@ export default async function StudioPage() {
  const [templates,brand,activity,previews]=await Promise.all([listTemplates(),getBrand(),listActivity(),recentIssuedPreviews()]);
  let logo:{mime:string;bytes:number[]}|null=null;
  if(brand.logo_asset_id){try{const asset=await readAsset(brand.logo_asset_id);logo={mime:asset.mime,bytes:Array.from(asset.bytes)};}catch{console.warn("studio_brand_logo_unavailable");}}
- return <StudioWorkspace templates={templates} brand={brand} activity={activity} previews={previews} logo={logo} canManage={context.capabilities.includes("template.manage")} canBrand={context.capabilities.includes("brand.manage")} canPrint={context.capabilities.includes("quote.print")} canExport={context.capabilities.includes("workspace.export")&&context.capabilities.includes("organization.manage")} />;
+ return <StudioWorkspace templates={templates} brand={brand} activity={activity} previews={previews} logo={logo} canManage={context.capabilities.includes("template.manage")} canBrand={context.capabilities.includes("brand.manage")} canPrint={context.capabilities.includes("quote.read")&&context.capabilities.includes("template.read")} canExport={context.capabilities.includes("workspace.export")&&context.capabilities.includes("organization.manage")} />;
 }

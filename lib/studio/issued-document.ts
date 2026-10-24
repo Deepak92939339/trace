@@ -3,12 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { issuedActorForRevision, printPropsFromRevision, verifiedSealedSnapshot } from "@/lib/quotes/issued-print-props";
 import { buildPrintHtml } from "@/lib/quote-pdf/print-html";
 import { quotePdfFilename } from "@/lib/quote-pdf/path";
-import { pinRevisionLayout, studioContext } from "./server.ts";
+import { pinRevisionLayout, readRevisionLayout, studioContext } from "./server.ts";
 import { StudioError } from "./errors.ts";
 
 export async function loadIssuedDocument(params: { number: string; revisionNumber: string }, purpose: "print" | "preview" = "print") {
-  const context = await studioContext(purpose === "preview" ? "template.read" : "quote.print");
-  if (purpose === "preview") await studioContext("quote.read");
+  const context = await studioContext("quote.read");
+  await studioContext("template.read");
   const organization = context.membership.organization;
   if (!/^[1-9][0-9]{0,5}$/.test(params.revisionNumber) || params.number.length > 200) throw new StudioError("studio_not_found",404);
   // Dynamic route params have already been decoded by Next. No second decoding of user text.
@@ -26,7 +26,7 @@ export async function loadIssuedDocument(params: { number: string; revisionNumbe
   return {
     quote, revision,
     props: printPropsFromRevision({snapshot,issuedAt:revision.issued_at,issuedActor:issuedActorForRevision(activity ?? [],revision.id),timeZone:organization.timezone}),
-    studio: purpose === "preview" ? null : await pinRevisionLayout(revision.id),
+    studio: purpose === "preview" ? null : context.capabilities.includes("quote.print") ? await pinRevisionLayout(revision.id) : await readRevisionLayout(revision.id),
   };
 }
 export async function issuedHtml(params: { number: string; revisionNumber: string }) {

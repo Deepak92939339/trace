@@ -306,7 +306,7 @@ insert into studio_demo_seed_input values (:'demo_user_id'::uuid);
 do $studio_demo$
 declare
  actor uuid := (select user_id from studio_demo_seed_input); org uuid;
- logo public.document_assets; t public.document_templates;
+ logo public.document_assets; t public.document_templates; revision_id uuid;
  svg bytea := convert_to('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#216b46"/><path d="M8 24V8h4l8 12V8h4v16h-4L12 12v12z" fill="#ffffff"/></svg>','UTF8');
 begin
  select o.id into org from public.organizations o
@@ -329,7 +329,11 @@ begin
  perform public.set_default_document_template(t.id);
  perform public.duplicate_document_template('industrial','Northstar · Industrial');
  perform public.duplicate_document_template('project','Northstar · Project');
- -- Final reviewer lock comes after the three templates and brand have been seeded.
+ -- Pin every issued demo revision as admin before the reviewer lock.
+ for revision_id in select id from public.quote_revisions where organization_id=org and state='issued' loop
+   perform public.pin_revision_layout(revision_id);
+ end loop;
+ -- Final reviewer lock comes after all issued revisions are pinned.
  update public.organization_memberships set role_id=(select id from public.roles where key='reviewer') where organization_id=org and user_id=actor;
 end;
 $studio_demo$;

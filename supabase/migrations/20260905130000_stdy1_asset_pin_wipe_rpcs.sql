@@ -91,9 +91,10 @@ end;
 $$;
 create function public.get_revision_layout(p_revision_id uuid) returns public.quote_revision_layouts
 language plpgsql stable security definer set search_path = '' as $$
-declare org uuid := public.studio_current_org('quote.print'); result public.quote_revision_layouts;
+declare org uuid := public.studio_current_org('quote.read'); result public.quote_revision_layouts;
 begin
- if not exists (select 1 from public.quote_revisions where id = p_revision_id and organization_id = org) then
+ perform public.studio_require(org,'template.read');
+ if not exists (select 1 from public.quote_revisions where id = p_revision_id and organization_id = org and state = 'issued' and snapshot_hash is not null and issued_at is not null) then
    raise exception using errcode = '42501', message = 'studio_forbidden';
  end if;
  select * into result from public.quote_revision_layouts where revision_id = p_revision_id and organization_id = org;

@@ -1,3 +1,4 @@
+import { readOnlyIssuedPdf } from "@/lib/studio/read-only-pdf";
 import { pinRevisionLayout } from "@/lib/studio/server";
 import { getApplicationContext } from "@/lib/auth/context";
 import {
@@ -106,6 +107,12 @@ export async function handleQuotePdfRequest(
         "pdf_revision_not_renderable",
         "Only an issued, sealed quotation revision has a PDF.",
       );
+
+    // Read-only render/download never enters the writer/register state machine.
+    if (!context.capabilities.includes("quote.print")) {
+      if (!context.capabilities.includes("template.read")) return failure(403,"forbidden","You cannot read document templates.");
+      return readOnlyIssuedPdf(request,{number:quote.number,revisionNumber:String(revisionNumber)});
+    }
 
     const deps: EnsurePdfDeps = {
       async readRegistered(revisionId): Promise<RegisteredPdf | null> {

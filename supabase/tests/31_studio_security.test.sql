@@ -128,7 +128,7 @@ select is(public.s31_state('select public.create_document_asset(''image/png'',de
 select is(public.s31_state('select public.delete_document_asset((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''unused_asset''))'), '42501', 'reviewer brand.manage delete_document_asset');
 select is(public.s31_state('select public.read_document_asset((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''asset''))'), '00000', 'reviewer template.read read_document_asset');
 select is(public.s31_state('select public.pin_revision_layout((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''issued''))'), '42501', 'reviewer quote.print pin_revision_layout');
-select is(public.s31_state('select public.get_revision_layout((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''issued''))'), '42501', 'reviewer quote.print get_revision_layout');
+select is(public.s31_state('select public.get_revision_layout((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''issued''))'), '00000', 'reviewer quote.read and template.read get_revision_layout');
 select is(public.s31_state('select public.list_studio_activity(50)'), '00000', 'reviewer template.read list_studio_activity');
 select is(public.s31_state('select public.request_workspace_export()'), '42501', 'reviewer workspace.export request_workspace_export');
 reset role;

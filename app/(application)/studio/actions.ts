@@ -11,7 +11,7 @@ import { loadIssuedDocument } from "@/lib/studio/issued-document";
 import { printDataFromIssued, type PrintData } from "@/lib/studio/print-data";
 import type { TemplateRow } from "@/lib/studio/server";
 
-type Result<T = undefined> = { ok: true; value: T } | { ok: false; code: string; message: string };
+type Result<T = void> = { ok: true; value: T } | { ok: false; code: string; message: string };
 async function mutation<T>(capability: string, run: () => Promise<T>): Promise<Result<T>> {
   try { await studioContext(capability); const value = await run(); revalidatePath("/studio"); return { ok:true,value }; }
   catch (error) { const e = studioFailure(error); return { ok:false,code:e.code,message:e.message }; }

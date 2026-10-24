@@ -31,3 +31,7 @@ This project has not been independently penetration-tested and is not approved f
 ## Issued PDFs
 
 Each issued revision has at most one immutable PDF, stored in the private `quote-pdfs` bucket and registered with its SHA-256, size and the revision's snapshot hash. Browser roles cannot write to the bucket and can read an object only when it is registered and they hold `quote.read` in that organization. The PDF route reads the object with the caller's own session, verifies it against the register, and serves it from the application origin, so no signed storage URL is ever handed to the browser. Rendering and registration are server-only and use the service-role key through one confined module (`lib/quote-pdf/privileged-writer.ts`).
+
+## Document Studio
+
+Studio uses capability-checked definer RPCs, composite tenant foreign keys, closed JSON validation and immutable pinned layout/brand copies. Logo bytes have no direct application grants; uploads and every render validate a strict static SVG subset and images use embedded data URLs. HTML/workspace exports are organization-scoped; workspace export has database-backed caps/throttling and uses the existing PDF pipeline. Owner-only destruction hooks default to false. These new SQL guards and export paths are written but not database-verified; see [STUDIO.md](STUDIO.md) and the bundle report for pending tests and the reviewer quote.print policy conflict.

@@ -201,7 +201,7 @@ select public.set_default_document_template((select (value ->> 'id')::uuid from 
 reset role;
 select throws_ok('update public.quote_revision_layouts set organization_id = organization_id','55000','studio_immutable','quote_revision_layouts refuses update even for owner');
 select throws_ok('delete from public.quote_revision_layouts','55000','studio_immutable','quote_revision_layouts refuses delete even for owner');
-select throws_ok('truncate public.quote_revision_layouts','55000','studio_immutable','quote_revision_layouts refuses truncate even for owner');
+select throws_ok('truncate public.quote_revision_layouts cascade','55000','studio_immutable','quote_revision_layouts refuses truncate even for owner');
 select throws_ok('update public.quote_revision_layout_assets set organization_id = organization_id','55000','studio_immutable','quote_revision_layout_assets refuses update even for owner');
 select throws_ok('delete from public.quote_revision_layout_assets','55000','studio_immutable','quote_revision_layout_assets refuses delete even for owner');
 select throws_ok('truncate public.quote_revision_layout_assets','55000','studio_immutable','quote_revision_layout_assets refuses truncate even for owner');
@@ -210,7 +210,7 @@ select throws_ok('delete from public.studio_activity','55000','studio_immutable'
 select throws_ok('truncate public.studio_activity','55000','studio_immutable','studio_activity refuses truncate even for owner');
 select throws_ok('update public.document_template_versions set organization_id = organization_id','55000','studio_immutable','document_template_versions refuses update even for owner');
 select throws_ok('delete from public.document_template_versions','55000','studio_immutable','document_template_versions refuses delete even for owner');
-select throws_ok('truncate public.document_template_versions','55000','studio_immutable','document_template_versions refuses truncate even for owner');
+select throws_ok('truncate public.document_template_versions cascade','55000','studio_immutable','document_template_versions refuses truncate even for owner');
 select is((select count(*)::integer from public.document_templates where organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' and is_default and archived_at is null),1,'one default per organization');
 select throws_ok($$select public.studio_wipe_organization('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')$$,'55000','studio_wipe_not_allowed','main wipe refuses');
 select public.s31_claims('33333333-3333-4333-8333-333333333333');

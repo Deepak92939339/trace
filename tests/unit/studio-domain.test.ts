@@ -27,6 +27,7 @@ describe("studio layout twin", () => {
     expect(layoutIsValid({ ...base, blocks: [{ id: "a", type: "free_text", props: { text: "😀".repeat(2000) } }] })).toBe(true);
     expect(layoutIsValid({ ...base, blocks: [{ id: "a", type: "line_items", props: { columns: ["hsn"] } }] })).toBe(false);
     expect(layoutIsValid({ ...base, blocks: [{ id: "a", type: "line_items", props: { columns: ["qty", "qty"] } }] })).toBe(false);
+    expect(layoutIsValid({ ...base, blocks: [{ id: "a", type: "free_text", props: { text: "\ud800" } }] })).toBe(false);
     const clone = parseLayout(base); expect(clone).toEqual(base); expect(clone).not.toBe(base);
   });
   it("validates a closed brand", () => { expect(brandIsValid(DEFAULT_BRAND)).toBe(true); expect(brandIsValid({ ...DEFAULT_BRAND, primary: "red" })).toBe(false); expect(brandIsValid({ ...DEFAULT_BRAND, url: "https://evil.test" })).toBe(false); });

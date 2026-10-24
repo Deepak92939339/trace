@@ -183,6 +183,7 @@ const object = (v: unknown): v is Record<string, unknown> =>
 const closed = (v: unknown, keys: readonly string[]): v is Record<string, unknown> => object(v) && Object.keys(v).every(k => keys.includes(k));
 const oneOf = (v: unknown, options: readonly unknown[]) => options.includes(v);
 const length = (v: string) => [...v].length;
+const validText = (v: string) => !v.includes("\u0000") && new TextDecoder().decode(new TextEncoder().encode(v)) === v;
 /** Same normalization as canonical_json_v1; ordering doesn't affect byte length. */
 function normalized(value: unknown): unknown {
   if (typeof value === "string") return value.normalize("NFC");
@@ -210,7 +211,7 @@ export function layoutIsValid(value: unknown): value is Layout {
         if (!own(rules, key)) return false;
         const rule = rules[key]!;
         if (rule === "boolean") { if (typeof v !== "boolean") return false; }
-        else if (typeof rule === "number") { if (typeof v !== "string" || length(v) > rule || v.includes("\u0000")) return false; }
+        else if (typeof rule === "number") { if (typeof v !== "string" || length(v) > rule || !validText(v)) return false; }
         else if (Array.isArray(rule)) { if (!rule.includes(v as never)) return false; }
         else {
           const allowed = (rule as { array: readonly string[] }).array;
@@ -230,6 +231,6 @@ export function brandIsValid(value: unknown): value is Brand {
     typeof value.primary === "string" && /^#[0-9a-f]{6}$/.test(value.primary) && typeof value.accent === "string" && /^#[0-9a-f]{6}$/.test(value.accent) &&
     oneOf(value.font, ["sans", "serif", "mono-accent"]) &&
     (value.logo_asset_id === null || typeof value.logo_asset_id === "string" && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value.logo_asset_id)) &&
-    typeof value.footer_line === "string" && length(value.footer_line) <= 200 && !value.footer_line.includes("\u0000") &&
-    typeof value.registration_line === "string" && length(value.registration_line) <= 200 && !value.registration_line.includes("\u0000");
+    typeof value.footer_line === "string" && length(value.footer_line) <= 200 && validText(value.footer_line) &&
+    typeof value.registration_line === "string" && length(value.registration_line) <= 200 && validText(value.registration_line);
 }

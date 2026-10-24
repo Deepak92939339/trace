@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     // The PDF route reads the application's stylesheets, the bundled font files and (on a
     // serverless host) the packaged Chromium by path at runtime, so the file tracer cannot
     // discover them from imports.
-    "/api/studio/*": [
+    "/api/studio/**": [
       "./app/globals.css",
       "./app/tokens.css",
       "./lib/quote-pdf/fonts/**/*",

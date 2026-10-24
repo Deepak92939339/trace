@@ -1,9 +1,10 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { handleQuotePdfRequest } from "@/lib/quote-pdf/request-handler";
-import { quotePdfFilename } from "@/lib/quote-pdf/path";
+import { createHash } from "node:crypto";
+import { QUOTE_PDF_BUCKET, QUOTE_PDF_MAX_BYTES, quotePdfFilename } from "@/lib/quote-pdf/path";
 import { getBrand, isRecord, listTemplates, readAsset, studioContext, studioRpc } from "./server.ts";
-import { issuedHtml } from "./issued-document.ts";
+import { issuedHtmlReadOnly } from "./issued-document.ts";
+import { collectRevisionFiles, workspaceReadme, type ExportRevision } from "./workspace-export.ts";
 import { StudioError } from "./errors.ts";
 import { csv, storedZip, WORKSPACE_MAX_BYTES, WORKSPACE_MAX_REVISIONS, type ZipEntry } from "./zip.ts";
 
@@ -26,6 +27,18 @@ async function collect(read: (after: string | null) => PromiseLike<PageResult>, 
     if (result.data.length < 500) return rows;
   }
 }
+/** Copies the already registered PDF from storage after the same digest/anchor checks as a download. Never renders. */
+async function registeredPdfFor(client: Awaited<ReturnType<typeof createClient>>, revision: ExportRevision, snapshotHash: string | null) {
+  const { data: row, error } = await client.from("quote_revision_pdfs").select("storage_path,sha256,byte_length,snapshot_hash").eq("revision_id", revision.id).maybeSingle();
+  if (error) throw new StudioError("studio_unavailable", 503);
+  if (!row) return null;
+  const { data, error: downloadError } = await client.storage.from(QUOTE_PDF_BUCKET).download(row.storage_path);
+  if (downloadError || !data) throw new StudioError("studio_unavailable", 503);
+  const bytes = new Uint8Array(await data.arrayBuffer());
+  if (!snapshotHash || row.snapshot_hash !== snapshotHash || bytes.length !== row.byte_length || bytes.length > QUOTE_PDF_MAX_BYTES
+    || createHash("sha256").update(bytes).digest("hex") !== row.sha256 || Buffer.from(bytes.subarray(0, 5)).toString("ascii") !== "%PDF-") throw new StudioError("studio_data_invalid");
+  return { filename: quotePdfFilename(revision.number, revision.revisionNumber), bytes };
+}
 export async function workspaceResponse(request: Request): Promise<Response> {
   const context = await studioContext("workspace.export");
   for (const capability of ["organization.manage","quote.print","quote.read","catalog.read","customer.read","template.read"]) await studioContext(capability);
@@ -34,7 +47,7 @@ export async function workspaceResponse(request: Request): Promise<Response> {
   // Atomic database throttle and activity event apply even if an oversized/failed export aborts.
   await studioRpc("request_workspace_export");
   const client = await createClient(), org = context.membership.organization;
-  const revisionResult = await client.from("quote_revisions").select("id,quote_id,revision_number").eq("organization_id",org.id).eq("state","issued").not("snapshot_hash","is",null).order("id").limit(WORKSPACE_MAX_REVISIONS + 1);
+  const revisionResult = await client.from("quote_revisions").select("id,quote_id,revision_number,snapshot_hash").eq("organization_id",org.id).eq("state","issued").not("snapshot_hash","is",null).order("id").limit(WORKSPACE_MAX_REVISIONS + 1);
   if (revisionResult.error) throw new StudioError("studio_unavailable",503);
   if ((revisionResult.data?.length ?? 0) > WORKSPACE_MAX_REVISIONS) throw new StudioError("studio_export_too_large",413);
   const entries: ZipEntry[] = []; let used = 22;
@@ -58,21 +71,17 @@ export async function workspaceResponse(request: Request): Promise<Response> {
     add(`studio/logo.${ext}`,logo.bytes);
   }
   const byId = new Map(quotes.map(q=>[q.id,q]));
-  for (const revision of revisionResult.data ?? []) {
+  const revisions: ExportRevision[] = (revisionResult.data ?? []).map(revision => {
     const quote = byId.get(revision.quote_id); if (!quote || typeof quote.number !== "string") throw new StudioError("studio_data_invalid");
-    const params = {number:quote.number,revisionNumber:String(revision.revision_number)};
-    // HTML pins before PDF generation; both subsequently read the exact same copied layout.
-    const html = await issuedHtml(params); add(`quotes/${html.filename}`,html.html);
-    const path = `/quotes/${encodeURIComponent(quote.number)}/revisions/${revision.revision_number}/pdf`;
-    const pdf = await handleQuotePdfRequest(new Request(new URL(path,request.url)),{...params,number:encodeURIComponent(quote.number)});
-    // Preserve existing PDF rate/lease/failure responses, including Retry-After. Never bypass P5.
-    if (!pdf.ok) return pdf;
-    const length = Number(pdf.headers.get("Content-Length"));
-    if (!Number.isSafeInteger(length) || length < 1 || length > WORKSPACE_MAX_BYTES - used) throw new StudioError("studio_export_too_large",413);
-    const bytes = new Uint8Array(await pdf.arrayBuffer()); if (bytes.length !== length) throw new StudioError("studio_data_invalid");
-    add(`quotes/${quotePdfFilename(quote.number,revision.revision_number)}`,bytes);
-  }
-  add("README.txt",`Trace workspace export\nOrganization: ${org.name}\nGenerated: ${new Date().toISOString()}\nGenerated by Trace\n\nIssued sealed revisions include PDF and self-contained HTML. Drafts appear only in data/quotes.csv.\nCSV fields exclude internal costs and approval data. Templates include active saved layouts and current brand.\nRecords are read in pages; this ZIP is not a transactional database backup.\n`);
+    return { id: revision.id, number: quote.number, revisionNumber: revision.revision_number };
+  });
+  const snapshotHashes = new Map((revisionResult.data ?? []).map(r => [r.id, r.snapshot_hash]));
+  const { files, missingPdf } = await collectRevisionFiles(revisions, {
+    html: revision => issuedHtmlReadOnly({ number: revision.number, revisionNumber: String(revision.revisionNumber) }),
+    registeredPdf: revision => registeredPdfFor(client, revision, snapshotHashes.get(revision.id) ?? null),
+  });
+  for (const file of files) add(file.name, file.content);
+  add("README.txt", workspaceReadme({ organization: org.name, generatedAt: new Date().toISOString(), missingPdf }));
   const zip = storedZip(entries);
   const body = new ReadableStream<Uint8Array>({start(controller){controller.enqueue(zip);controller.close();}});
   return new Response(body,{headers:{"Content-Type":"application/zip","Content-Disposition":'attachment; filename="trace-workspace.zip"',"Content-Length":String(zip.length),"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});

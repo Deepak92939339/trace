@@ -24,16 +24,6 @@ export const exec = {
       }
     },
     {
-      "id": "b-letterhead",
-      "type": "letterhead",
-      "props": {
-        "align": "split",
-        "showAddress": true,
-        "showContact": true,
-        "variant": "plain"
-      }
-    },
-    {
       "id": "b-intro",
       "type": "intro",
       "props": {

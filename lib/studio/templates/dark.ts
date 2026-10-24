@@ -24,31 +24,6 @@ export const dark = {
       }
     },
     {
-      "id": "b-letterhead",
-      "type": "letterhead",
-      "props": {
-        "align": "split",
-        "showAddress": true,
-        "showContact": true,
-        "variant": "plain"
-      }
-    },
-    {
-      "id": "b-quote-meta",
-      "type": "quote_meta",
-      "props": {
-        "fields": [
-          "number",
-          "revision",
-          "date",
-          "valid_until",
-          "currency"
-        ],
-        "direction": "row",
-        "labels": true
-      }
-    },
-    {
       "id": "b-line-items",
       "type": "line_items",
       "props": {

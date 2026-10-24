@@ -7,7 +7,7 @@ import { exec } from "./exec.ts";
 import { project } from "./project.ts";
 import { showcase } from "./showcase.ts";
 import { dark } from "./dark.ts";
-export const SYSTEM_TEMPLATE_VERSION = 1;
+export const SYSTEM_TEMPLATE_VERSION = 2; // 2: Executive and Premium Dark carry the company in the cover; no standalone letterhead
 export const SYSTEM_TEMPLATES = [
   { key: "classic", name: "Classic Formal", layout: classic },
   { key: "modern", name: "Modern Minimal", layout: modern },

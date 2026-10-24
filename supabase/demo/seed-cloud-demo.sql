@@ -307,6 +307,7 @@ do $studio_demo$
 declare
  actor uuid := (select user_id from studio_demo_seed_input); org uuid;
  logo public.document_assets; t public.document_templates; revision_id uuid;
+ cust uuid; prod uuid; prod2 uuid; created jsonb; qid uuid; rid uuid;
  svg bytea := convert_to('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#216b46"/><path d="M8 24V8h4l8 12V8h4v16h-4L12 12v12z" fill="#ffffff"/></svg>','UTF8');
 begin
  select o.id into org from public.organizations o
@@ -329,6 +330,17 @@ begin
  perform public.set_default_document_template(t.id);
  perform public.duplicate_document_template('industrial','Northstar · Industrial');
  perform public.duplicate_document_template('project','Northstar · Project');
+ -- The base seed issues through the legacy quote workflow (no sealed revisions), so create one real sealed issued
+ -- quotation here with the revision commands; it is what the reviewer previews, prints and downloads in Studio.
+ select id into cust from public.customers where organization_id=org and active order by created_at,id limit 1;
+ select id into prod from public.products where organization_id=org and active and currency_code='INR' and quantity_precision=0 order by created_at,id limit 1;
+ select id into prod2 from public.products where organization_id=org and active and currency_code='INR' and quantity_precision=0 and id<>prod order by created_at,id limit 1;
+ if cust is null or prod is null or prod2 is null then raise exception 'studio_demo_seed_missing_fixture'; end if;
+ created := public.create_verified_quote_draft(org,cust,'INR','en-IN','GST 18%','exclusive'::public.tax_price_basis,current_date,current_date+30,gen_random_uuid());
+ qid := (created ->> 'id')::uuid; rid := (created ->> 'current_revision_id')::uuid;
+ perform public.save_quote_draft(qid,1,gen_random_uuid(),jsonb_build_object('customer_id',cust,'currency_code','INR','locale','en-IN','tax_label','GST 18%','tax_mode','exclusive','discount_bps',0,'issue_date',current_date,'valid_until',current_date+30,'notes','Fictional demonstration quotation for Document Studio.','items',jsonb_build_array(jsonb_build_object('line_id',null,'product_id',prod,'position',1,'quantity_scaled',2,'quantity_scale',1),jsonb_build_object('line_id',null,'product_id',prod2,'position',2,'quantity_scaled',1,'quantity_scale',1)),'charges','[]'::jsonb));
+ perform public.submit_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
+ perform public.issue_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
  -- Pin every issued demo revision as admin before the reviewer lock.
  for revision_id in select id from public.quote_revisions where organization_id=org and state='issued' loop
    -- A legacy marker here would permanently hide the Studio layout from the reviewer; fail loudly instead.

@@ -24,7 +24,7 @@ test("author, upload, save, pin, download and reprint the exact old layout",asyn
  await page.locator("article").filter({has:page.getByRole("heading",{name:"Classic Formal",exact:true})}).getByRole("button",{name:"Duplicate to edit"}).click();
  await expect(page.getByRole("tab",{name:"Editor",exact:true})).toHaveAttribute("aria-selected","true");
  await page.getByRole("button",{name:"free text",exact:true}).click();
- await page.getByLabel("text",{exact:true}).fill(marker);
+ await page.getByRole("textbox",{name:"text",exact:true}).fill(marker);
  await page.getByRole("button",{name:"Save layout",exact:true}).click();
  await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
  await page.getByRole("tab",{name:"Templates",exact:true}).click();
@@ -48,7 +48,7 @@ test("author, upload, save, pin, download and reprint the exact old layout",asyn
  await page.locator("article").filter({has:page.getByRole("heading",{name:new RegExp(marker)})}).getByRole("button",{name:"Open",exact:true}).click();
  // Select the last free-text block in the block list (the palette also has its add button).
  await page.getByRole("button",{name:"free text",exact:true}).first().click();
- await page.getByLabel("text",{exact:true}).fill("Changed after first print");await page.getByRole("button",{name:"Save layout",exact:true}).click();await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
+ await page.getByRole("textbox",{name:"text",exact:true}).fill("Changed after first print");await page.getByRole("button",{name:"Save layout",exact:true}).click();await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
  expect(await (await page.request.get(path)).text()).toBe(html);
  expect(sha256(new Uint8Array(await (await page.request.get(pdfPath)).body()))).toBe(sha256(new Uint8Array(firstPdf)));
  expect(psql(`select layout_hash from public.quote_revision_layouts where revision_id='${quote.revisionId}'`)).toBe(pinned);
@@ -75,8 +75,8 @@ test("dirty Studio guards links, Back, profile and sidebar sign-out",async({page
  page.once("dialog",dialog=>dialog.dismiss());await page.evaluate(()=>history.back());await expect(page).toHaveURL(/\/studio$/);
  await page.getByRole("button",{name:"Open profile menu"}).click();page.once("dialog",dialog=>dialog.dismiss());await page.getByRole("menuitem",{name:"Sign out",exact:true}).click();await expect(page).toHaveURL(/\/studio$/);
  page.once("dialog",dialog=>dialog.dismiss());await page.locator('aside button[type="submit"]').last().click();await expect(page).toHaveURL(/\/studio$/);
- // Reload exercises beforeunload; cancel retains dirty state.
- page.once("dialog",dialog=>dialog.dismiss());await page.reload().catch(()=>{});await expect(page).toHaveURL(/\/studio$/);
+ // A dirty Studio must ask before unload. Playwright cannot reliably drive a reload prompt in headless Chrome, so assert the handler asks (prevents default) while dirty.
+ expect(await page.evaluate(()=>{const e=new Event("beforeunload",{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented||(e as unknown as {returnValue:unknown}).returnValue===""?true:e.defaultPrevented;})).toBe(true);
  page.once("dialog",dialog=>dialog.accept());await page.evaluate(()=>history.back());await expect(page).toHaveURL(/\/quotes$/);
 });
 // Home extension: render AppShell with beforeSignOut returning its sandbox warning dialog.

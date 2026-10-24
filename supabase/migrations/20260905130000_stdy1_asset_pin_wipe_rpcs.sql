@@ -26,7 +26,7 @@ begin
    -- Same closed grammar as lib/studio/assets.ts, as a second layer: only the canonical XML declaration, allowlisted element names,
    -- no DTD/PI/comment/CDATA, no character or unknown entity references, no prefixed attributes, only local url(#id) references.
    body := pg_catalog.regexp_replace(svg,'^<\?xml[[:space:]]+version=["'']1\.0["''][[:space:]]*(encoding=["'']UTF-8["''])?[[:space:]]*\?>[[:space:]]*','');
-   if body ~ '<[!?]' or body ~* 'javascript[[:space:]]*:' or body ~* '(^|[^a-z])on[a-z]+[[:space:]]*='
+   if body !~ '>[[:space:]]*$' or exists (select 1 from pg_catalog.regexp_matches(body,'="([^"]*)"','g') v where pg_catalog.length(v[1]) > 8192) or body ~ '<[!?]' or body ~* 'javascript[[:space:]]*:' or body ~* '(^|[^a-z])on[a-z]+[[:space:]]*='
      or body ~ '&(?!(amp|lt|gt|quot|apos);)' or body ~* '[[:alnum:]_.-]+:[[:alnum:]_.-]+[[:space:]]*=' or body ~* '[[:space:]]href[[:space:]]*='
      or body ~ 'xmlns[[:space:]]*=[[:space:]]*["''](?!http://www\.w3\.org/2000/svg["''])'
      or body ~* 'url[[:space:]]*\([[:space:]]*(?!#)' or body ~* '@import'

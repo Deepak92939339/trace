@@ -29,7 +29,7 @@ beforeAll(async () => { browser = await chromium.launch(); });
 afterAll(async () => { await browser?.close(); });
 
 async function render(layout: Layout, rows: number) {
-  const html = await buildPrintHtml({ props: props(rows), revisionNumber: 1, studio: { layout, brand: DEFAULT_BRAND, logo: null, layoutHash: "0".repeat(64) } });
+  const html = await buildPrintHtml({ props: props(rows), revisionNumber: 1, studio: { layout, brand: { ...DEFAULT_BRAND, footer_line: "Northstar Industrial Supply Private Limited · 27 Foundry Park, Unit 4, Pune 411019 · Fictional demonstration", registration_line: "Demo company, fictional registration DEMO-0000" }, logo: null, layoutHash: "0".repeat(64) } });
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: "load" });
@@ -42,17 +42,17 @@ async function render(layout: Layout, rows: number) {
 
 async function textBounds(pdf: Buffer) {
   const doc = await pdfjs.getDocument({ data: new Uint8Array(pdf), useSystemFonts: false }).promise;
-  const pages: { width: number; left: number; right: number }[] = [];
+  const pages: { width: number; left: number; right: number; lowest: number }[] = [];
   for (let n = 1; n <= doc.numPages; n++) {
     const page = await doc.getPage(n);
     const width = page.view[2]! - page.view[0]!;
     const content = await page.getTextContent();
-    let left = Infinity, right = -Infinity;
+    let left = Infinity, right = -Infinity, lowest = Infinity;
     for (const item of content.items) {
       if (!("str" in item) || !item.str.trim()) continue;
-      left = Math.min(left, item.transform[4]!); right = Math.max(right, item.transform[4]! + item.width);
+      left = Math.min(left, item.transform[4]!); right = Math.max(right, item.transform[4]! + item.width); lowest = Math.min(lowest, item.transform[5]!);
     }
-    pages.push({ width, left, right });
+    pages.push({ width, left, right, lowest });
   }
   await doc.destroy();
   return pages;
@@ -72,6 +72,8 @@ describe("Studio PDF stays inside the chosen page margins", () => {
           expect(Math.abs(page.width - PAGE_MM[size][0] * MM_TO_PT), `${label} page width`).toBeLessThan(2);
           expect(page.left, `${label} left edge`).toBeGreaterThanOrEqual(margin_pt - TOLERANCE_PT);
           expect(page.right, `${label} right edge`).toBeLessThanOrEqual(page.width - margin_pt + TOLERANCE_PT);
+          // The footer baseline of the last line stays at least 3 mm above the paper edge (printers cannot print closer).
+          expect(page.lowest, `${label} footer clearance`).toBeGreaterThanOrEqual(3 * MM_TO_PT);
         });
       }
     }

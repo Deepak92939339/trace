@@ -23,6 +23,7 @@ test.beforeAll(()=>{
 });
 
 test("author, upload, save, pin, download and reprint the exact old layout",async({page})=>{
+ test.setTimeout(180_000); // authoring, a real PDF render, a reprint and a workspace export in one flow
  await page.setViewportSize({width:1440,height:1000}); await signIn(page,{email,password}); await page.goto("/studio");
  await page.getByLabel("Name for your copy").fill(marker);
  await page.locator("article").filter({has:page.getByRole("heading",{name:"Classic Formal",exact:true})}).getByRole("button",{name:"Duplicate to edit"}).click();

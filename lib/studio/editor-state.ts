@@ -1,4 +1,5 @@
 import { parseLayout, type Block, type Layout } from "./layout-schema.ts";
+import { blockLabel } from "./labels.ts";
 export type EditorState = { layout: Layout; past: readonly Layout[]; future: readonly Layout[]; selected: string | null; saved: string; announcement: string };
 export type EditorAction = { type: "load"; layout: Layout } | { type: "select"; id: string | null } | { type: "replace"; layout: Layout } | { type: "add"; block: Block } | { type: "remove"; id: string } | { type: "move"; id: string; to: number } | { type: "update"; block: Block } | { type: "undo" } | { type: "redo" } | { type: "saved" };
 export function initialEditorState(layout: Layout): EditorState { const clean = parseLayout(layout); return { layout: clean, past: [], future: [], selected: null, saved: JSON.stringify(clean), announcement: "" }; }
@@ -16,13 +17,13 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
   let layout: Layout; const blocks = [...state.layout.blocks]; let announcement = "Layout updated.";
   if (action.type === "replace") layout = action.layout;
   else {
-    if (action.type === "add") { blocks.push(action.block); announcement = `${action.block.type} added.`; }
-    if (action.type === "remove") { const index = blocks.findIndex(b => b.id === action.id); if (index < 0) return state; blocks.splice(index, 1); announcement = "Block removed."; }
+    if (action.type === "add") { blocks.push(action.block); announcement = `${blockLabel(action.block.type)} added.`; }
+    if (action.type === "remove") { const index = blocks.findIndex(b => b.id === action.id); if (index < 0) return state; const [gone] = blocks.splice(index, 1); announcement = `${blockLabel(gone!.type)} removed.`; }
     if (action.type === "update") { const index = blocks.findIndex(b => b.id === action.block.id); if (index < 0) return state; blocks[index] = action.block; }
     if (action.type === "move") {
       const from = blocks.findIndex(b => b.id === action.id), to = Math.max(0, Math.min(blocks.length - 1, Math.trunc(action.to)));
       if (from < 0 || !Number.isFinite(to) || from === to) return state;
-      const [block] = blocks.splice(from, 1); blocks.splice(to, 0, block!); announcement = `Block moved to position ${to + 1}.`;
+      const [block] = blocks.splice(from, 1); blocks.splice(to, 0, block!); announcement = `${blockLabel(block!.type)} moved to position ${to + 1} of ${blocks.length}.`;
     }
     layout = { ...state.layout, blocks };
   }

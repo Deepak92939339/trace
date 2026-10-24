@@ -23,8 +23,8 @@ test("author, upload, save, pin, download and reprint the exact old layout",asyn
  await page.getByLabel("Name for your copy").fill(marker);
  await page.locator("article").filter({has:page.getByRole("heading",{name:"Classic Formal",exact:true})}).getByRole("button",{name:"Duplicate to edit"}).click();
  await expect(page.getByRole("tab",{name:"Editor",exact:true})).toHaveAttribute("aria-selected","true");
- await page.getByRole("button",{name:"free text",exact:true}).click();
- await page.getByRole("textbox",{name:"text",exact:true}).fill(marker);
+ await page.getByRole("button",{name:"Free text",exact:true}).click();
+ await page.getByRole("textbox",{name:"Text",exact:true}).fill(marker);
  await page.getByRole("button",{name:"Save layout",exact:true}).click();
  await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
  await page.getByRole("tab",{name:"Templates",exact:true}).click();
@@ -47,8 +47,8 @@ test("author, upload, save, pin, download and reprint the exact old layout",asyn
  await page.goto("/studio");await page.getByRole("tab",{name:"Templates",exact:true}).click();
  await page.locator("article").filter({has:page.getByRole("heading",{name:new RegExp(marker)})}).getByRole("button",{name:"Open",exact:true}).click();
  // Select the last free-text block in the block list (the palette also has its add button).
- await page.getByRole("button",{name:"free text",exact:true}).first().click();
- await page.getByRole("textbox",{name:"text",exact:true}).fill("Changed after first print");await page.getByRole("button",{name:"Save layout",exact:true}).click();await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
+ await page.getByRole("button",{name:"Free text",exact:true}).first().click();
+ await page.getByRole("textbox",{name:"Text",exact:true}).fill("Changed after first print");await page.getByRole("button",{name:"Save layout",exact:true}).click();await expect(page.getByRole("status").filter({hasText:"Template saved"})).toBeVisible();
  expect(await (await page.request.get(path)).text()).toBe(html);
  expect(sha256(new Uint8Array(await (await page.request.get(pdfPath)).body()))).toBe(sha256(new Uint8Array(firstPdf)));
  expect(psql(`select layout_hash from public.quote_revision_layouts where revision_id='${quote.revisionId}'`)).toBe(pinned);
@@ -70,7 +70,7 @@ test("dirty Studio guards links, Back, profile and sidebar sign-out",async({page
  await page.setViewportSize({width:1440,height:1000});await signIn(page,{email,password});
  await page.goto("/quotes");await page.goto("/studio");
  await page.locator("article").filter({has:page.getByRole("heading",{name:new RegExp(marker)})}).getByRole("button",{name:"Open",exact:true}).click();
- await page.getByRole("button",{name:"spacer",exact:true}).click();
+ await page.getByRole("button",{name:"Spacer",exact:true}).click();
  page.once("dialog",dialog=>dialog.dismiss());await page.locator('aside a[href="/quotes"]').click();await expect(page).toHaveURL(/\/studio$/);
  page.once("dialog",dialog=>dialog.dismiss());await page.evaluate(()=>history.back());await expect(page).toHaveURL(/\/studio$/);
  await page.getByRole("button",{name:"Open profile menu"}).click();page.once("dialog",dialog=>dialog.dismiss());await page.getByRole("menuitem",{name:"Sign out",exact:true}).click();await expect(page).toHaveURL(/\/studio$/);

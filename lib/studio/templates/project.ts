@@ -92,7 +92,7 @@ export const project = {
         "text": "{{seller.name}} · {{seller.tax_id}}",
         "right": "",
         "rule": true,
-        "pageNumbers": true
+        "pageNumbers": "x_of_y"
       }
     }
   ]

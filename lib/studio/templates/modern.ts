@@ -90,7 +90,7 @@ export const modern = {
         "text": "{{seller.name}} · {{seller.tax_id}}",
         "right": "",
         "rule": false,
-        "pageNumbers": true
+        "pageNumbers": "x_of_y"
       }
     }
   ]

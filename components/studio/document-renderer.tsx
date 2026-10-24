@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Embedded validated data URLs must work identically offline and in print. */
+import { studioPageCss } from "../../lib/studio/page-css.ts";
 import type { CSSProperties } from "react";
 import { brandIsValid, layoutIsValid, type Block, type Brand, type Column, type Layout } from "../../lib/studio/layout-schema.ts";
 import type { PrintData } from "../../lib/studio/print-data.ts";
@@ -53,8 +54,8 @@ export const STUDIO_PRINT_CSS = `
 @media print{.studio-document{display:block!important;padding:0!important;background:white}.studio-document .studio-cover{min-height:220mm}.studio-document .studio-token{background:transparent;color:inherit}}
 `;
 const LABELS: Record<Column, string> = { sku: "SKU", description: "Description", spec: "Specification", qty: "Qty", unit: "Unit", rate: "Rate", tax_code: "Tax code", amount: "Amount" };
-export function DocumentRenderer({ layout, brand, data, logo, fields = false, preview = false }: {
-  layout: Layout; brand: Brand; data: PrintData; logo?: LogoBytes | null; fields?: boolean; preview?: boolean;
+export function DocumentRenderer({ layout, brand, data, logo, fields = false, preview = false, includePageCss = true }: {
+  layout: Layout; brand: Brand; data: PrintData; logo?: LogoBytes | null; fields?: boolean; preview?: boolean; includePageCss?: boolean;
 }) {
   if (!layoutIsValid(layout) || !brandIsValid(brand)) return null;
   // Every render re-sanitizes bytes, including assets created through a direct RPC.
@@ -76,12 +77,11 @@ export function DocumentRenderer({ layout, brand, data, logo, fields = false, pr
       case "terms": return <section style={{ columnCount: String(b.props.columns ?? 1) }}><h2>Terms</h2><p>{text(b.props.text ?? "")}</p></section>;
       case "acceptance": return <section className="studio-acceptance"><h2>Acceptance</h2><p>{text(b.props.text ?? "Use the secure buyer link to record your decision against this revision.")}</p>{b.props.showExpiry !== false && <small>Valid until {data.quote.validUntil}</small>}</section>;
       case "spacer": return <div style={{ height: `${b.props.height ?? 18}px`, borderBottom: b.props.rule ? "1px solid #d9d3c6" : "none" }} />;
-      case "footer": return <footer className={`studio-footer ${b.props.rule !== false ? "studio-rule" : ""}`}><span>{text(b.props.text ?? "")}{brand.footer_line && <><br />{brand.footer_line}</>}<br />{brand.registration_line}</span><span>{text(b.props.right ?? "")}</span></footer>;
+      case "footer": return preview ? <footer className={`studio-footer ${b.props.rule !== false ? "studio-rule" : ""}`}><span>{text(b.props.text ?? "")}{brand.footer_line && <><br />{brand.footer_line}</>}<br />{brand.registration_line}</span><span>{text(b.props.right ?? "")}</span></footer> : null;
     }
   };
-  const margin = { narrow: "10mm", normal: "16mm", wide: "22mm" }[layout.page.margin];
   return <section className={`print-document studio-document ${preview ? "studio-preview" : ""}`} aria-label={`Document layout for ${data.quote.number}`} data-font={brand.font} data-density={layout.style.density} data-rules={layout.style.rules} data-corners={layout.style.corners} style={{ "--studio-primary": brand.primary, "--studio-accent": brand.accent } as CSSProperties}>
-    <style>{STUDIO_PRINT_CSS + `@page studio-page{size:${layout.page.size};margin:${margin}}`}</style>
-    {layout.blocks.map(b => <div className="studio-block" key={b.id} data-block-id={b.id}>{renderBlock(b)}</div>)}
+    <style>{STUDIO_PRINT_CSS + (!preview && includePageCss ? studioPageCss(layout,brand,data.tokens) : "")}</style>
+    {layout.blocks.filter(b => preview || b.type !== "footer").map(b => <div className="studio-block" key={b.id} data-block-id={b.id}>{renderBlock(b)}</div>)}
   </section>;
 }

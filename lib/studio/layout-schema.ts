@@ -18,7 +18,7 @@ export type PropMap = {
   notes: { text?: string };
   spacer: { height?: 6 | 12 | 18 | 24 | 36 | 48 | 72; rule?: boolean };
   free_text: { text?: string; align?: Align };
-  footer: { text?: string; right?: string; rule?: boolean; pageNumbers?: boolean };
+  footer: { text?: string; right?: string; rule?: boolean; pageNumbers?: "none" | "x" | "x_of_y" };
 };
 export type BlockType = keyof PropMap;
 export type Block = { [K in BlockType]: { id: string; type: K; props: PropMap[K] } }[BlockType];
@@ -172,7 +172,7 @@ export const PROP_RULES: Readonly<Record<BlockType, Readonly<Record<string, Rule
     "text": 2000,
     "right": 2000,
     "rule": "boolean",
-    "pageNumbers": "boolean"
+    "pageNumbers": ["none", "x", "x_of_y"]
   }
 };
 export const BLOCK_TYPES = Object.keys(PROP_RULES) as BlockType[];

@@ -1223,7 +1223,7 @@ export function QuoteBuilder({
                 Issue quote
               </button>
             ) : quote.state === "issued" &&
-              (capabilities.includes("quote.print") || (capabilities.includes("quote.read") && capabilities.includes("template.read"))) ? (
+              capabilities.includes("quote.print") ? (
               <button
                 type="button"
                 tabIndex={-1}

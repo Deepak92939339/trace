@@ -21,7 +21,8 @@ describe("Studio profile menu keyboard",()=>{
  it("omits shortcuts without capability and provides the beforeSignOut slot",async()=>{
   const proceed=vi.fn();await act(async()=>root.render(createElement(ProfileMenu,{...base,canReadStudio:false,canExport:false,signOutAction:proceed,beforeSignOut:slot=>createElement("button",{role:"menuitem",onClick:()=>slot.proceed()},"Review leaving") })));
   await act(async()=>host.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!.click());
-  expect([...host.querySelectorAll('[role="menuitem"]')].map(n=>n.textContent)).toEqual(["Review leaving"]);expect(proceed).not.toHaveBeenCalled();
-  await act(async()=>host.querySelector<HTMLButtonElement>('[role="menuitem"]')!.click());expect(proceed).toHaveBeenCalledTimes(1);
+  expect([...host.querySelectorAll('[role="menuitem"]')].map(n=>n.textContent)).toEqual(["Sign out"]);expect(proceed).not.toHaveBeenCalled();
+  await act(async()=>host.querySelector<HTMLButtonElement>('[role="menuitem"]')!.click());expect(proceed).not.toHaveBeenCalled();
+  await act(async()=>[...host.querySelectorAll("button")].find(b=>b.textContent==="Review leaving")!.click());expect(proceed).toHaveBeenCalledTimes(1);
  });
 });

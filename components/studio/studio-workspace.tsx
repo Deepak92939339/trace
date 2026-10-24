@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useReducer, useState, useTransition, type KeyboardEvent } from "react";
+import { useReducer, useState, useTransition, type KeyboardEvent } from "react";
+import { useLeaveGuard } from "./leave-guard-provider";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -34,7 +35,7 @@ export function StudioWorkspace(props:StudioWorkspaceProps) {
  const selected=state.layout.blocks.find(b=>b.id===state.selected), preview=props.previews.find(p=>p.id===previewId);
  const safeLogo=logo?{mime:logo.mime,bytes:Uint8Array.from(logo.bytes)}:null;
  const warnings=state.layout.blocks.flatMap(b=>Object.values(b.props).filter((v):v is string=>typeof v==="string").flatMap(unknownTokens));
- useEffect(()=>{if(!dirty)return;const unload=(e:BeforeUnloadEvent)=>{e.preventDefault();};const click=(e:MouseEvent)=>{const link=e.target instanceof Element?e.target.closest("a[href]"):null;if(link&&!window.confirm("Leave without saving this layout?")){e.preventDefault();e.stopPropagation();}};window.addEventListener("beforeunload",unload);document.addEventListener("click",click,true);return()=>{window.removeEventListener("beforeunload",unload);document.removeEventListener("click",click,true);};},[dirty]);
+ useLeaveGuard(dirty);
  const notice=(text:string,bad=false)=>{setMessage(text);setError(bad);};
  const choose=(layout:Layout,row:TemplateRow|null)=>{if(dirty&&!window.confirm("Replace unsaved changes?"))return;dispatch({type:"load",layout});setCurrent(row);setTab("Editor");notice("");};
  const update=(key:string,value:unknown)=>{if(selected)dispatch({type:"update",block:{...selected,props:{...selected.props,[key]:value}} as Block});};

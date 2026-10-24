@@ -1,5 +1,6 @@
 "use client";
 
+import { LeaveGuardProvider } from "@/components/studio/leave-guard-provider";
 import React, { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
@@ -160,7 +161,7 @@ export function AppShell({
   }, [context.canManageOrganization, context.canReadStudio, router]);
 
   return (
-    <div className={styles.app}>
+    <LeaveGuardProvider signOutAction={signOut} beforeSignOut={beforeSignOut}><div className={styles.app}>
       <AppSidebar
         organizationName={context.organizationName}
         displayName={context.displayName}
@@ -188,6 +189,6 @@ export function AppShell({
         onToggle={() => setPaletteOpen((prev) => !prev)}
         groups={commandGroups}
       />
-    </div>
+    </div></LeaveGuardProvider>
   );
 }

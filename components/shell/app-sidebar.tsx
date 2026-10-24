@@ -1,5 +1,6 @@
 "use client";
 
+import { requestSignOut } from "@/components/studio/leave-guard-provider";
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,7 +45,6 @@ export function AppSidebar({
   canManageOrganization = false,
   canReadStudio = false,
   counts,
-  signOutAction,
   className,
 }: AppSidebarProps) {
   const pathname = usePathname();
@@ -218,7 +218,7 @@ export function AppSidebar({
             Organization settings
           </Link>
         )}
-        <form action={signOutAction} className={styles.signOutForm}>
+        <form onSubmit={event=>{event.preventDefault();void requestSignOut();}} className={styles.signOutForm}>
           <button type="submit" className={styles.signOutBtn}>
             Sign out
           </button>
@@ -264,7 +264,7 @@ export function AppSidebar({
             <b>{displayName}</b>
             <small>{roleLabel}</small>
           </span>
-          <form action={signOutAction} className={styles.signOutForm}>
+          <form onSubmit={event=>{event.preventDefault();void requestSignOut();}} className={styles.signOutForm}>
             <button type="submit" className={styles.signOutBtn}>
               Sign out
             </button>

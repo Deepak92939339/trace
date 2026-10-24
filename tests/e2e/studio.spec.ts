@@ -64,3 +64,21 @@ test("reviewer has a read-only Studio and cannot export a workspace",async({page
  const exportResponse=await page.request.get("/api/studio/workspace");expect(exportResponse.status()).toBe(403);
  await page.getByRole("button",{name:"Open profile menu"}).click();await expect(page.getByRole("menuitem",{name:"Export workspace"})).toHaveCount(0);
 });
+
+// R6: WRITTEN, NOT EXECUTED. Ordinary Back is best effort and must be checked in Chromium.
+test("dirty Studio guards links, Back, profile and sidebar sign-out",async({page})=>{
+ await page.setViewportSize({width:1440,height:1000});await signIn(page,{email,password});
+ await page.goto("/quotes");await page.goto("/studio");
+ await page.locator("article").filter({has:page.getByRole("heading",{name:new RegExp(marker)})}).getByRole("button",{name:"Open",exact:true}).click();
+ await page.getByRole("button",{name:"spacer",exact:true}).click();
+ page.once("dialog",dialog=>dialog.dismiss());await page.locator('aside a[href="/quotes"]').click();await expect(page).toHaveURL(/\/studio$/);
+ page.once("dialog",dialog=>dialog.dismiss());await page.evaluate(()=>history.back());await expect(page).toHaveURL(/\/studio$/);
+ await page.getByRole("button",{name:"Open profile menu"}).click();page.once("dialog",dialog=>dialog.dismiss());await page.getByRole("menuitem",{name:"Sign out",exact:true}).click();await expect(page).toHaveURL(/\/studio$/);
+ page.once("dialog",dialog=>dialog.dismiss());await page.locator('aside button[type="submit"]').last().click();await expect(page).toHaveURL(/\/studio$/);
+ // Reload exercises beforeunload; cancel retains dirty state.
+ page.once("dialog",dialog=>dialog.dismiss());await page.reload().catch(()=>{});await expect(page).toHaveURL(/\/studio$/);
+ page.once("dialog",dialog=>dialog.accept());await page.evaluate(()=>history.back());await expect(page).toHaveURL(/\/quotes$/);
+});
+// Home extension: render AppShell with beforeSignOut returning its sandbox warning dialog.
+// Verify profile + mobile/desktop sidebar all show that same dialog after dirty confirmation;
+// Cancel keeps the session; proceed calls the action once; Escape/Tab/focus return work.

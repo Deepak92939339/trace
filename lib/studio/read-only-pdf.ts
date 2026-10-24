@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { renderPdf } from "@/lib/quote-pdf/render";
 import { buildPrintHtml } from "@/lib/quote-pdf/print-html";
 import { pdfDownloadPath, pdfDownloadResponse } from "@/lib/quote-pdf/download-response";
-import { QUOTE_PDF_BUCKET, quotePdfFilename } from "@/lib/quote-pdf/path";
+import { QUOTE_PDF_BUCKET, QUOTE_PDF_MAX_BYTES, quotePdfFilename } from "@/lib/quote-pdf/path";
 import { loadIssuedDocument } from "./issued-document.ts";
 /** Auth/tenant/issued checks run again. This module only SELECTs, downloads or renders bytes. */
 export async function readOnlyIssuedPdf(request: Request, params: {number:string;revisionNumber:string}) {
@@ -23,6 +23,7 @@ export async function readOnlyIssuedPdf(request: Request, params: {number:string
     // Transient output; no claim, register, activity or storage writes.
     bytes = await renderPdf(await buildPrintHtml({props:doc.props,revisionNumber:doc.revision.revision_number,studio:doc.studio}));
   }
+  if (bytes.length < 9 || bytes.length > QUOTE_PDF_MAX_BYTES || Buffer.from(bytes.subarray(0,5)).toString("ascii") !== "%PDF-") throw new Error("PDF output invalid or too large");
   const pdf = {revisionId:doc.revision.id,storagePath:registered?.storage_path ?? "",snapshotHash:doc.revision.snapshot_hash!,sha256:createHash("sha256").update(bytes).digest("hex"),byteLength:bytes.length,generatedAt:registered?.generated_at ?? doc.revision.issued_at!};
   if (new URL(request.url).searchParams.get("format") === "json") return Response.json({url:pdfDownloadPath(request.url),filename,pdf},{headers:{"Cache-Control":"private, no-store"}});
   return pdfDownloadResponse(bytes,pdf,filename);

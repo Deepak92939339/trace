@@ -97,7 +97,7 @@ export function DecisionActions({
             Issue quote
           </button>
         )}
-        {quote.state === "issued" && capabilities.includes("quote.print") && (
+        {quote.state === "issued" && (capabilities.includes("quote.print") || (capabilities.includes("quote.read") && capabilities.includes("template.read"))) && (
           <button
             className={`button button-primary ${styles.primaryButton}`}
             type="button"

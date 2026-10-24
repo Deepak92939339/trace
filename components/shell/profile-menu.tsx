@@ -6,7 +6,7 @@ import styles from "./profile-menu.module.css";
 export type ProfileMenuProps = {
  displayName:string;roleLabel:string;organizationName:string;canReadStudio:boolean;canExport:boolean;
  signOutAction:()=>void|Promise<void>;
- /** Replaces the sign-out item. Sandbox can render a warning dialog and call proceed only after its choice. */
+ /** Shared post-guard dialog slot. Sandbox calls proceed only after its warning/choice. */
  beforeSignOut?:(slot:{proceed:()=>void|Promise<void>;close:()=>void})=>ReactNode;
 };
 export function ProfileMenu(props:ProfileMenuProps){

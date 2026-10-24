@@ -3,6 +3,9 @@ import path from "node:path";
 import { createElement } from "react";
 import { IssuedPrintDocument } from "@/components/quotes/issued-print-document";
 import type { IssuedPrintProps } from "@/lib/quotes/issued-print-props";
+import { DocumentRenderer } from "@/components/studio/document-renderer";
+import { printDataFromIssued } from "@/lib/studio/print-data";
+import type { PinnedDocument } from "@/lib/studio/server";
 import { pdfFontCss } from "./fonts";
 import { renderStaticMarkup } from "./static-markup";
 
@@ -48,12 +51,15 @@ function escapeText(value: string) {
 export async function buildPrintHtml(input: {
   props: IssuedPrintProps;
   revisionNumber: number;
+  studio?: PinnedDocument | null;
 }) {
   const [css, fonts] = await Promise.all([applicationCss(), pdfFontCss()]);
   // Same component as the browser print. Next.js forbids react-dom/server in this graph, so the
   // element tree is serialized directly (see static-markup.ts for why that is equivalent).
   const body = renderStaticMarkup(
-    createElement(IssuedPrintDocument, input.props),
+    input.studio
+      ? createElement(DocumentRenderer, { ...input.studio, data: printDataFromIssued(input.props) })
+      : createElement(IssuedPrintDocument, input.props),
   );
   const title = `Quotation ${input.props.quote.number} revision ${input.revisionNumber}`;
   return `<!doctype html>

@@ -1,3 +1,6 @@
+import { DocumentRenderer } from "@/components/studio/document-renderer";
+import { printDataFromIssued } from "@/lib/studio/print-data";
+import { pinRevisionLayout, type PinnedDocument } from "@/lib/studio/server";
 import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/quotes/quote-builder";
 import { HistoryTimeline } from "@/components/quotes/history-timeline";
@@ -251,6 +254,7 @@ export default async function QuotePage({
   // The print document and the PDF share one source: the sealed snapshot of the current
   // issued revision, never the live quote tables (which a successor revision rewrites).
   let issuedPrint: IssuedPrintProps | null = null;
+  let studioPrint: PinnedDocument | null = null;
   let pdfDownload: {
     href: string;
     available: boolean;
@@ -282,6 +286,7 @@ export default async function QuotePage({
         issuedActor: issuedActorForRevision(activity, currentRevision.id),
         timeZone: timezone,
       });
+      if (context.capabilities.includes("quote.print")) studioPrint = await pinRevisionLayout(currentRevision.id);
       pdfDownload = {
         href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
         available: Boolean(pdfResult?.data),
@@ -513,7 +518,9 @@ export default async function QuotePage({
           }))}
         />
       </section>
-      {issuedPrint && <IssuedPrintDocument {...issuedPrint} />}
+      {issuedPrint && (studioPrint
+        ? <DocumentRenderer {...studioPrint} data={printDataFromIssued(issuedPrint)} />
+        : <IssuedPrintDocument {...issuedPrint} />)}
     </section>
   );
 }

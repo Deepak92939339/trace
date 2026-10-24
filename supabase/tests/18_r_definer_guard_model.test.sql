@@ -40,6 +40,23 @@ select is(
         ('update_customer(uuid,integer,jsonb,uuid)'),
         ('update_organization_settings(uuid,integer,jsonb,uuid)'),
         ('update_product(uuid,integer,jsonb,uuid)'),
+        ('archive_document_template(uuid)'),
+        ('create_document_asset(text,bytea,text)'),
+        ('create_document_template(text,text,jsonb)'),
+        ('delete_document_asset(uuid)'),
+        ('duplicate_document_template(text,text)'),
+        ('get_document_template(uuid)'),
+        ('get_organization_brand()'),
+        ('get_revision_layout(uuid)'),
+        ('list_document_assets()'),
+        ('list_document_templates()'),
+        ('list_studio_activity(integer)'),
+        ('pin_revision_layout(uuid)'),
+        ('read_document_asset(uuid)'),
+        ('request_workspace_export()'),
+        ('save_document_template(uuid,integer,jsonb)'),
+        ('save_organization_brand(jsonb)'),
+        ('set_default_document_template(uuid)'),
         ('update_tax_profile(uuid,integer,jsonb,uuid)')
     )
     select count(*)::integer

@@ -9,7 +9,9 @@ create function public.studio_layout_is_valid(p_layout jsonb) returns boolean
 language plpgsql stable security definer set search_path = '' as $$
 declare b jsonb; p jsonb; k text; r jsonb; rules jsonb; seen text[] := '{}'; singles text[] := '{}'; item jsonb;
 begin
- if p_layout is null or pg_catalog.octet_length(public.canonical_json_v1(p_layout)) > 65536
+ -- cheap bound first: canonical_json_v1 is quadratic in string length, so never feed it an oversized document
+ if p_layout is null or pg_catalog.jsonb_typeof(p_layout) <> 'object' or pg_catalog.octet_length(p_layout::text) > 196608 then return false; end if;
+ if pg_catalog.octet_length(public.canonical_json_v1(p_layout)) > 65536
    or not public.studio_object_keys(p_layout, array['v','page','style','blocks'])
    or p_layout -> 'v' is distinct from '1'::jsonb
    or not public.studio_object_keys(p_layout -> 'page', array['size','margin'])
@@ -74,5 +76,4 @@ language sql immutable set search_path = '' as $$
  else null end
 $$;
 revoke all on function public.studio_object_keys(jsonb,text[]), public.studio_layout_is_valid(jsonb), public.studio_system_layout(text) from public, anon, authenticated, service_role;
-grant execute on function public.studio_layout_is_valid(jsonb) to authenticated;
 commit;

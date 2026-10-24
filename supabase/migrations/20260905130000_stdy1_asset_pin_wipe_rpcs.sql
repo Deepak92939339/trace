@@ -2,7 +2,7 @@
 begin;
 create function public.create_document_asset(p_mime text,p_bytes bytea,p_sha256 text) returns public.document_assets
 language plpgsql security definer set search_path = '' as $$
-declare org uuid := public.studio_current_org('brand.manage'); a public.document_assets; svg text; size integer := octet_length(p_bytes);
+declare org uuid := public.studio_current_org('brand.manage'); a public.document_assets; svg text; body text; size integer := octet_length(p_bytes);
 begin
  perform public.studio_lock(org);
  if p_mime is null or p_mime not in ('image/png','image/jpeg','image/webp','image/svg+xml')
@@ -20,8 +20,18 @@ begin
      raise exception using errcode = '22023', message = 'studio_asset_svg_invalid'; end;
    svg := pg_catalog.ltrim(svg,chr(65279) || E' \t\r\n');
    -- SQL is defence in depth. Application upload AND every render use the stricter allowlist.
-   if svg !~* '^<svg([[:space:]>])|^<\?xml([[:space:]?])'
-     or svg ~* '<[[:space:]]*(script|foreignobject)|javascript[[:space:]]*:|<![[:space:]]*(entity|doctype)|on[a-z]+[[:space:]]*=|xlink:href|[[:space:]]href[[:space:]]*=|url[[:space:]]*\(' then
+   if svg !~* '^<svg([[:space:]>/])|^<\?xml([[:space:]?])' then
+     raise exception using errcode = '22023', message = 'studio_asset_svg_invalid';
+   end if;
+   -- Same closed grammar as lib/studio/assets.ts, as a second layer: only the canonical XML declaration, allowlisted element names,
+   -- no DTD/PI/comment/CDATA, no character or unknown entity references, no prefixed attributes, only local url(#id) references.
+   body := pg_catalog.regexp_replace(svg,'^<\?xml[[:space:]]+version=["'']1\.0["''][[:space:]]*(encoding=["'']UTF-8["''])?[[:space:]]*\?>[[:space:]]*','');
+   if body ~ '<[!?]' or body ~* 'javascript[[:space:]]*:' or body ~* '(^|[^a-z])on[a-z]+[[:space:]]*='
+     or body ~ '&(?!(amp|lt|gt|quot|apos);)' or body ~* '[[:alnum:]_.-]+:[[:alnum:]_.-]+[[:space:]]*=' or body ~* '[[:space:]]href[[:space:]]*='
+     or body ~ 'xmlns[[:space:]]*=[[:space:]]*["''](?!http://www\.w3\.org/2000/svg["''])'
+     or body ~* 'url[[:space:]]*\([[:space:]]*(?!#)' or body ~* '@import'
+     or exists (select 1 from pg_catalog.regexp_matches(body,'<[[:space:]]*/?[[:space:]]*([^[:space:]/>]+)','g') m
+                where m[1] <> all (array['svg','g','path','rect','circle','ellipse','line','polyline','polygon','text','tspan','defs','linearGradient','radialGradient','stop','clipPath','title','desc'])) then
      raise exception using errcode = '22023', message = 'studio_asset_svg_invalid';
    end if;
  end if;
@@ -86,7 +96,7 @@ begin
  if pinned.revision_id is not null then return pinned; end if;
  select * into t from public.document_templates where organization_id = org and is_default and archived_at is null;
  -- Historical/registered output and absent/invalid defaults are pinned legacy forever.
- if r.issued_at < (select installed_at from public.studio_rollout where singleton)
+ if r.issued_at < coalesce((select installed_at from public.studio_rollout where singleton),'infinity'::timestamptz)
    or exists (select 1 from public.quote_revision_pdfs where revision_id = r.id)
    or t.id is null or not coalesce(public.studio_layout_is_valid(t.layout),false) then
    insert into public.quote_revision_layouts(revision_id,organization_id,quote_id,snapshot_hash,kind,template_id,template_version,layout,brand,layout_hash,pinned_by)

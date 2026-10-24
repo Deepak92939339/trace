@@ -331,7 +331,8 @@ begin
  perform public.duplicate_document_template('project','Northstar · Project');
  -- Pin every issued demo revision as admin before the reviewer lock.
  for revision_id in select id from public.quote_revisions where organization_id=org and state='issued' loop
-   perform public.pin_revision_layout(revision_id);
+   -- A legacy marker here would permanently hide the Studio layout from the reviewer; fail loudly instead.
+   if (public.pin_revision_layout(revision_id)).kind <> 'studio' then raise exception 'studio_demo_seed_legacy_pin'; end if;
  end loop;
  -- Final reviewer lock comes after all issued revisions are pinned.
  update public.organization_memberships set role_id=(select id from public.roles where key='reviewer') where organization_id=org and user_id=actor;

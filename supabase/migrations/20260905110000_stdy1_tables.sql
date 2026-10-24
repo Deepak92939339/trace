@@ -74,7 +74,8 @@ create table public.quote_revision_layouts (
  snapshot_hash char(64) not null check (snapshot_hash ~ '^[0-9a-f]{64}$'), template_id uuid,
  template_version integer not null check (template_version > 0),
  kind text not null check (kind in ('studio','legacy')), layout jsonb, brand jsonb,
- check ((kind = 'studio' and layout is not null and brand is not null and template_id is not null and public.studio_layout_is_valid(layout))
+ -- No studio_layout_is_valid() here: pinned rows are immutable for years and a later, stricter validator must never make a restore fail. pin_revision_layout validates before inserting.
+ check ((kind = 'studio' and layout is not null and brand is not null and template_id is not null)
      or (kind = 'legacy' and layout is null and brand is null and template_id is null)),
  layout_hash char(64) not null check (layout_hash ~ '^[0-9a-f]{64}$'),
  pinned_by uuid not null references auth.users(id), pinned_at timestamptz not null default now(),
@@ -161,5 +162,29 @@ begin
  end loop;
 end;
 $$;
-revoke all on function public.studio_destroy_allowed(uuid), public.studio_guard_immutable(), public.studio_guard_asset(), public.studio_guard_caps() from public, anon, authenticated, service_role;
+create function public.studio_guard_blob_delete() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+ if exists (select 1 from public.quote_revision_layout_assets l where l.organization_id = old.organization_id and l.asset_id = old.asset_id)
+    and not public.studio_destroy_allowed(old.organization_id) then
+   raise exception using errcode = '55000', message = 'studio_asset_in_use';
+ end if;
+ return old;
+end;
+$$;
+create trigger document_asset_blobs_in_use before delete on public.document_asset_blobs for each row execute function public.studio_guard_blob_delete();
+-- Guards must also fire under session_replication_role = replica.
+do $$
+declare t text;
+begin
+ foreach t in array array['document_template_versions','studio_activity','quote_revision_layouts','quote_revision_layout_assets'] loop
+   execute format('alter table public.%I enable always trigger %I, enable always trigger %I',t,t||'_immutable',t||'_no_truncate');
+ end loop;
+ foreach t in array array['document_assets','document_asset_blobs'] loop
+   execute format('alter table public.%I enable always trigger %I, enable always trigger %I',t,t||'_immutable',t||'_no_truncate');
+ end loop;
+ alter table public.document_asset_blobs enable always trigger document_asset_blobs_in_use;
+end;
+$$;
+revoke all on function public.studio_destroy_allowed(uuid), public.studio_guard_immutable(), public.studio_guard_asset(), public.studio_guard_caps(), public.studio_guard_blob_delete() from public, anon, authenticated, service_role;
 commit;

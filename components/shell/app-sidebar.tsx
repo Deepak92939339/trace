@@ -17,6 +17,7 @@ export type AppSidebarProps = {
   displayName: string;
   roleLabel: string;
   canManageOrganization?: boolean;
+  canReadStudio?: boolean;
   counts?: AppSidebarNavCounts;
   signOutAction: () => Promise<void> | void;
   className?: string;
@@ -41,6 +42,7 @@ export function AppSidebar({
   displayName,
   roleLabel,
   canManageOrganization = false,
+  canReadStudio = false,
   counts,
   signOutAction,
   className,
@@ -200,6 +202,7 @@ export function AppSidebar({
           </svg>
           <span>Catalog</span>
         </Link>
+        {canReadStudio && <Link href="/studio" className={[styles.navItem,isCurrent("/studio")?styles.isActive:""].join(" ")} aria-current={isCurrent("/studio")?"page":undefined}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 2h8l4 4v12H4zM12 2v4h4M7 10h6M7 14h4"/></svg><span>Documents</span></Link>}
       </nav>
 
       {/* Row 3 on mobile: Help, What's new, Organization settings, Sign out */}

@@ -295,3 +295,43 @@ end;
 $demo$;
 
 commit;
+
+-- BEGIN DOCUMENT STUDIO — WRITTEN, NOT EXECUTED.
+-- Appended only. The existing seed transaction/guards above remain byte-identical.
+-- scripts/seed-cloud-demo.mjs performs target allowlisting; the reviewer lock is last below.
+-- Never run this as an unguarded standalone seed.
+begin;
+create temporary table studio_demo_seed_input(user_id uuid not null) on commit drop;
+insert into studio_demo_seed_input values (:'demo_user_id'::uuid);
+do $studio_demo$
+declare
+ actor uuid := (select user_id from studio_demo_seed_input); org uuid;
+ logo public.document_assets; t public.document_templates;
+ svg bytea := convert_to('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#216b46"/><path d="M8 24V8h4l8 12V8h4v16h-4L12 12v12z" fill="#ffffff"/></svg>','UTF8');
+begin
+ select o.id into org from public.organizations o
+ join public.organization_memberships m on m.organization_id=o.id and m.user_id=actor and m.status='active'
+ where o.slug='northstar-industrial-demo' and o.created_by=actor;
+ if org is null then raise exception 'studio_demo_seed_identity_mismatch'; end if;
+ -- Preserve the original one-time behavior: never overwrite a previously configured Studio.
+ if exists(select 1 from public.document_templates where organization_id=org)
+   or exists(select 1 from public.organization_brand where organization_id=org) then
+   raise notice 'Studio already configured; no Studio changes made.'; return;
+ end if;
+ if (select count(*) from public.quotes where organization_id=org)<>14 then raise exception 'studio_demo_seed_dataset_mismatch'; end if;
+ perform set_config('request.jwt.claims',json_build_object('sub',actor,'role','authenticated')::text,true);
+ -- Only the guarded seed owner temporarily restores the creator's admin role for brand RPCs.
+ -- The final step locks the dedicated demo user to reviewer. Exceptions roll this transaction back.
+ update public.organization_memberships set role_id=(select id from public.roles where key='organization_admin') where organization_id=org and user_id=actor;
+ logo:=public.create_document_asset('image/svg+xml',svg,public.sha256_hex(svg));
+ perform public.save_organization_brand(jsonb_build_object('primary','#216b46','accent','#b45309','font','sans','logo_asset_id',logo.id,'footer_line','Northstar Industrial Supply · Fictional demonstration','registration_line','Demo organization'));
+ t:=public.duplicate_document_template('classic','Northstar · Classic');
+ perform public.set_default_document_template(t.id);
+ perform public.duplicate_document_template('industrial','Northstar · Industrial');
+ perform public.duplicate_document_template('project','Northstar · Project');
+ -- Final reviewer lock comes after the three templates and brand have been seeded.
+ update public.organization_memberships set role_id=(select id from public.roles where key='reviewer') where organization_id=org and user_id=actor;
+end;
+$studio_demo$;
+commit;
+-- END DOCUMENT STUDIO

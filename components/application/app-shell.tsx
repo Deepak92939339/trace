@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { AppSidebar } from "@/components/shell/app-sidebar";
+import { ProfileMenu, type ProfileMenuProps } from "@/components/shell/profile-menu";
 import { TopBar, type BreadcrumbItem } from "@/components/shell/top-bar";
 import {
   CommandPalette,
@@ -14,6 +15,8 @@ import styles from "./app-shell.module.css";
 
 type ShellContext = {
   canManageOrganization: boolean;
+  canReadStudio?: boolean;
+  canExportWorkspace?: boolean;
   displayName: string;
   roleLabel: string;
   organizationName: string;
@@ -23,9 +26,11 @@ type ShellContext = {
 export function AppShell({
   context,
   children,
+  beforeSignOut,
 }: {
   context: ShellContext;
   children: React.ReactNode;
+  beforeSignOut?: ProfileMenuProps["beforeSignOut"];
 }) {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -120,6 +125,7 @@ export function AppShell({
             href: "/catalog",
             onSelect: () => router.push("/catalog"),
           },
+          ...(context.canReadStudio ? [{ id: "nav-studio", label: "Documents", detail: "Document Studio", href: "/studio", onSelect: () => router.push("/studio") }] : []),
           ...(context.canManageOrganization
             ? [
                 {
@@ -151,7 +157,7 @@ export function AppShell({
         ],
       },
     ];
-  }, [context.canManageOrganization, router]);
+  }, [context.canManageOrganization, context.canReadStudio, router]);
 
   return (
     <div className={styles.app}>
@@ -160,6 +166,7 @@ export function AppShell({
         displayName={context.displayName}
         roleLabel={context.roleLabel}
         canManageOrganization={context.canManageOrganization}
+        canReadStudio={context.canReadStudio}
         signOutAction={signOut}
       />
 
@@ -167,6 +174,7 @@ export function AppShell({
         {context.readOnly && <ReviewerBanner />}
         <TopBar
           breadcrumbs={breadcrumbs}
+          actions={<ProfileMenu displayName={context.displayName} roleLabel={context.roleLabel} organizationName={context.organizationName} canReadStudio={Boolean(context.canReadStudio)} canExport={Boolean(context.canExportWorkspace)} signOutAction={signOut} beforeSignOut={beforeSignOut} />}
           onSearchClick={() => setPaletteOpen(true)}
         />
         <main id="main-content" className={`app-main ${styles.appMain}`}>

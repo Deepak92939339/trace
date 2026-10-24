@@ -291,7 +291,7 @@ export default async function QuotePage({
       pdfDownload = {
         href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
         available: Boolean(pdfResult?.data),
-        canGenerate: context.capabilities.includes("quote.print") || (context.capabilities.includes("quote.read") && context.capabilities.includes("template.read")),
+        canGenerate: context.capabilities.includes("quote.print"),
       };
     } else {
       issuedPrint = printPropsFromLegacyRows({

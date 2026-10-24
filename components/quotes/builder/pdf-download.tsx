@@ -8,7 +8,7 @@ export type PdfDownloadProps = {
   href: string;
   /** A PDF is already registered for this revision. */
   available: boolean;
-  /** The route may render: quote.print persists; quote.read + template.read renders transiently. */
+  /** The viewer holds quote.print, so opening the link may generate the PDF. */
   canGenerate: boolean;
   buttonClassName?: string;
 };

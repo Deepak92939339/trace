@@ -1,0 +1,21 @@
+export const hostileSvg = [
+  '<svg><script>alert(1)</script></svg>', '<svg onload="alert(1)"/>', '<svg><foreignObject><div>html</div></foreignObject></svg>',
+  '<svg><image href="https://evil.test/x"/></svg>', '<svg><use xlink:href="https://evil.test/x"/></svg>', '<svg><path style="fill:url(https://evil.test/x)"/></svg>',
+  '<!DOCTYPE svg [<!ENTITY a "abc">]><svg>&a;</svg>', '<!DOCTYPE svg SYSTEM "https://evil.test/x"><svg/>', '<svg><image href="data:image/svg+xml;base64,xxx"/></svg>',
+  '<svg><path d="' + 'M1 1 '.repeat(2000) + '"/></svg>', '<svg/><html><script>x</script></html>', '<svg><a href="javascript:alert(1)"><text>x</text></a></svg>',
+  '<svg><animate attributeName="href" values="javascript:alert(1)"/></svg>', '<svg><set attributeName="onload" to="x"/></svg>', '<svg><style>@import url(https://evil.test)</style></svg>',
+  '<svg xmlns="https://evil.test"/>', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"/>', '<svg><path onclick="x"/></svg>', '<svg ONLOAD="x"/>',
+  '<svg><path fill="url(https://evil.test/x)"/></svg>', '<svg><path fill="url(data:image/svg+xml,x)"/></svg>', '<svg><path fill="&#106;avascript:alert(1)"/></svg>',
+  '<svg><g xml:base="https://evil.test/"/></svg>', '<svg><iframe src="https://evil.test"/></svg>', '<svg><path d="M1 1" d="M2 2"/></svg>',
+  '<svg><path></svg>', '<svg/>trailing text', '<svg><text><![CDATA[</text><script>x</script>]]></text></svg>', '<svg><text>&unknown;</text></svg>',
+  '<svg><?xml-stylesheet href="https://evil.test"?></svg>', '<svg><g'.repeat(20) + '/>'.repeat(20), '<svg><path onmouseover = "x"/></svg>',
+  '<svg><text>\u0000</text></svg>', '<svg><path fill="red"/ garbage></svg>', '<SVG><script>x</script></SVG>',
+] as const;
+export const benignSvg = [
+  '<svg viewBox="0 0 20 20"><path fill="#216b46" d="M0 0h20v20H0z"/></svg>',
+  '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke="#123456"/></svg>',
+  '<svg><text x="1" y="12" font-family="sans-serif">A &amp; B</text></svg>',
+  '<svg viewBox="0 0 10 10"><g transform="translate(1, 2) scale(0.5)"><rect width="8" height="6" rx="2"/></g></svg>',
+  '<svg><defs><linearGradient id="brand"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#000"/></linearGradient></defs><rect width="10" height="10" fill="url(#brand)"/></svg>',
+  '\uFEFF<?xml version="1.0" encoding="UTF-8"?><svg viewBox="0 0 16 16"><title>Trace</title><polygon points="0,0 16,0 8,16" fill="currentColor"/></svg>',
+] as const;

@@ -1,5 +1,9 @@
 // Verified on a disposable local Supabase; never applied to a hosted database. Requires a freshly reset, confirmed disposable local database.
+import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { ORGANIZATION_ID, provisionIssuedQuote, psql, REVIEWER, sha256, signIn } from "./p5-support";
 
@@ -55,6 +59,19 @@ test("author, upload, save, pin, download and reprint the exact old layout",asyn
  await page.getByRole("button",{name:"Open profile menu"}).click();
  await expect(page.getByRole("menu",{name:"Profile"}).getByRole("menuitem",{name:"Export workspace"})).toBeVisible();
  await page.keyboard.press("Escape");await expect(page.getByRole("button",{name:"Open profile menu"})).toBeFocused();
+ // Workspace export: copies the PDF that was already generated above, never renders another, and says which revisions have none.
+ const second=provisionIssuedQuote({notes:"Studio export without a PDF",lines:1});
+ const exported=await page.request.get("/api/studio/workspace");expect(exported.status()).toBe(200);expect(exported.headers()["content-type"]).toContain("application/zip");
+ const dir=mkdtempSync(join(tmpdir(),"studio-export-")),zipPath=join(dir,"workspace.zip");writeFileSync(zipPath,await exported.body());
+ expect(execFileSync("unzip",["-t",zipPath]).toString()).toContain("No errors detected");
+ const names=execFileSync("unzip",["-Z1",zipPath]).toString().split("\n");
+ expect(names).toContain(`quotes/${quote.number}-rev1.pdf`);expect(names).toContain(`quotes/${quote.number}-rev1.html`);expect(names).toContain(`quotes/${second.number}-rev1.html`);
+ expect(names).not.toContain(`quotes/${second.number}-rev1.pdf`);
+ const readme=execFileSync("unzip",["-p",zipPath,"README.txt"]).toString();
+ expect(readme).toContain(`PDF not generated yet: open the quotation and use Download PDF, then export again. ${second.number} revision 1`);
+ expect(readme).not.toContain(`${quote.number} revision 1`);
+ expect(psql(`select count(*) from public.quote_revision_pdfs where revision_id='${second.revisionId}'`)).toBe("0");
+ expect(psql(`select count(*) from public.quote_revision_layouts where revision_id='${second.revisionId}'`)).toBe("0");
 });
 
 test("reviewer has a read-only Studio and cannot export a workspace",async({page})=>{

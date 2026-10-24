@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED — Studio tables, tenant keys, capabilities and immutable guards.
+-- Verified locally (pgTAP + psql proofs); never applied to a hosted database — Studio tables, tenant keys, capabilities and immutable guards.
 begin;
 insert into public.capabilities (key, label) values
  ('template.read','Read document templates'), ('template.manage','Create and edit document templates'),

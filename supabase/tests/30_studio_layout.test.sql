@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED
+-- Verified locally (pgTAP); never applied to a hosted database.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;

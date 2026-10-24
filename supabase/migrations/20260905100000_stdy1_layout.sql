@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED — Studio schema v1; kept in sync with lib/studio/layout-schema.ts.
+-- Verified locally (pgTAP + psql proofs); never applied to a hosted database — Studio schema v1; kept in sync with lib/studio/layout-schema.ts.
 begin;
 create function public.studio_object_keys(p_value jsonb, p_keys text[]) returns boolean
 language sql immutable set search_path = '' as $$

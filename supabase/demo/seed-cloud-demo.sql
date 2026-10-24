@@ -296,7 +296,7 @@ $demo$;
 
 commit;
 
--- BEGIN DOCUMENT STUDIO — WRITTEN, NOT EXECUTED.
+-- BEGIN DOCUMENT STUDIO — Verified on a disposable local Supabase; never applied to a hosted database.
 -- Appended only. The existing seed transaction/guards above remain byte-identical.
 -- scripts/seed-cloud-demo.mjs performs target allowlisting; the reviewer lock is last below.
 -- Never run this as an unguarded standalone seed.

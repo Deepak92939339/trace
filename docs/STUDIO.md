@@ -2,7 +2,7 @@
 
 Document Studio designs the presentation of issued quotations. Open **Documents** in the sidebar. Preview one of eight built-ins, duplicate it to edit, save, and set the saved template as default. Managers manage templates; organization admins also manage brand/logos and workspace exports. Operators and reviewers can read the Studio. Capabilities are enforced again in every mutation RPC.
 
-The implementation is a draft pending local verification. SQL, pgTAP and Playwright are **WRITTEN, NOT EXECUTED**. Physical pagination and exact prototype fidelity require home verification. Section 13 settles reviewer read-only rendering and legacy marker pinning. See the bundle report for actual checks and limitations.
+SQL, pgTAP (31 files, 1270 tests), the Studio Playwright spec and local proofs for isolation, capabilities, pinning, immutability, wipe and PDF pagination were run against a disposable local Supabase and Playwright Chromium. Nothing has been run against a hosted database or on Vercel (`@sparticuz/chromium`). Exact prototype fidelity and motion still need a human eye. Section 13 settles reviewer read-only rendering and legacy marker pinning. See the bundle report for actual checks and limitations.
 
 ## Layout and templates
 
@@ -75,6 +75,6 @@ To add a block type:
 
 ## Verification and known conflicts
 
-Run lint, typecheck, unit suite, build and then test:secrets. On a confirmed disposable local DB run migrations, pgTAP, parity and focused e2e. Use the existing PDF suite plus Studio tests to compare actual paged output at 200 lines. Verify P5 bundled Chromium and local Playwright separately.
+Run lint, typecheck, unit suite, build and then test:secrets. On a confirmed disposable local DB run migrations, pgTAP, parity and focused e2e. A quotation is capped at 100 lines, so the 200-row case was verified by duplicating the rows of a 100-line export in Chromium: 8 pages, repeating header, no split row, correct page counters. Verify P5 bundled Chromium and local Playwright separately.
 
-Existing tests 15/18 assert exact routine allowlists, and test 24 asserts the old reviewer capability list. They are intentionally untouched in this bundle; approve explicit new expectations locally. Reviewer has quote.read and template.read: it renders through the read-only RPC, never pinning or mutating. Reviewer PDF downloads reuse an already registered PDF and can never trigger a render (the P5 contract: `pdf_generation_forbidden` without `quote.print`); the reviewer demo seed therefore relies on registered PDFs, the read-only print view and the HTML export. Pinning still requires quote.print. bytea RPC size/hex transport, hosted tracing/caps and physical pagination remain UNVERIFIED-HOME.
+Existing tests 15, 18 and 24 assert closed routine allowlists and the reviewer capability list; they received only the Studio routine names and the reviewer `template.read` capability (nothing else in them changed). Reviewer has quote.read and template.read: it renders through the read-only RPC, never pinning or mutating. Reviewer PDF downloads reuse an already registered PDF and can never trigger a render (the P5 contract: `pdf_generation_forbidden` without `quote.print`); the reviewer demo seed therefore relies on registered PDFs, the read-only print view and the HTML export. Pinning still requires quote.print. bytea RPC size/hex transport, hosted tracing/caps and physical pagination remain UNVERIFIED-HOME.

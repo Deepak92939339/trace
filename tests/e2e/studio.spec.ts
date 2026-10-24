@@ -1,4 +1,4 @@
-// WRITTEN, NOT EXECUTED. Requires a freshly reset, confirmed disposable local database.
+// Verified on a disposable local Supabase; never applied to a hosted database. Requires a freshly reset, confirmed disposable local database.
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { ORGANIZATION_ID, provisionIssuedQuote, psql, REVIEWER, sha256, signIn } from "./p5-support";
@@ -65,7 +65,7 @@ test("reviewer has a read-only Studio and cannot export a workspace",async({page
  await page.getByRole("button",{name:"Open profile menu"}).click();await expect(page.getByRole("menuitem",{name:"Export workspace"})).toHaveCount(0);
 });
 
-// R6: WRITTEN, NOT EXECUTED. Ordinary Back is best effort and must be checked in Chromium.
+// R6: Verified on a disposable local Supabase; never applied to a hosted database. Ordinary Back is best effort and must be checked in Chromium.
 test("dirty Studio guards links, Back, profile and sidebar sign-out",async({page})=>{
  await page.setViewportSize({width:1440,height:1000});await signIn(page,{email,password});
  await page.goto("/quotes");await page.goto("/studio");

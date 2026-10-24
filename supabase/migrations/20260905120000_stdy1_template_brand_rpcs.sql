@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED — capability-checked Studio template, brand and activity RPCs.
+-- Verified locally (pgTAP + psql proofs); never applied to a hosted database — capability-checked Studio template, brand and activity RPCs.
 begin;
 create function public.studio_require(p_organization_id uuid, p_capability text) returns void
 language plpgsql security definer set search_path = '' as $$

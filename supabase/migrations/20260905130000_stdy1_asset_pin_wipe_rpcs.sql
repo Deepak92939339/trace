@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED — asset byte defence, server-selected pinning, export throttle and wipe hook.
+-- Verified locally (pgTAP + psql proofs); never applied to a hosted database — asset byte defence, server-selected pinning, export throttle and wipe hook.
 begin;
 create function public.create_document_asset(p_mime text,p_bytes bytea,p_sha256 text) returns public.document_assets
 language plpgsql security definer set search_path = '' as $$

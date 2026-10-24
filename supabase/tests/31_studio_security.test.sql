@@ -1,4 +1,4 @@
--- WRITTEN, NOT EXECUTED — local disposable database only; all fixtures roll back.
+-- Verified locally (pgTAP + psql proofs); never applied to a hosted database — local disposable database only; all fixtures roll back.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;

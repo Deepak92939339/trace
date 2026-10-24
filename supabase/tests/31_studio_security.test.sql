@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(156);
+select plan(164);
 create function public.s31_claims(p_user uuid) returns void language sql set search_path = '' as $$
  select pg_catalog.set_config('request.jwt.claims',pg_catalog.json_build_object('sub',p_user,'role','authenticated')::text,true)
 $$;
@@ -50,6 +50,36 @@ update public.studio_rollout set installed_at = '-infinity';
 select public.s31_claims('33333333-3333-4333-8333-333333333333');
 set local role authenticated;
 insert into pg_temp.s31_data values ('pin',to_jsonb(public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key = 'issued'))));
+-- R3 marker fixtures; owner setup only, no sealed revision is edited.
+reset role;
+select public.s31_make('no_default','issued');
+select public.s31_make('old_revision','issued');
+select public.s31_make('invalid_default','issued');
+select public.s31_claims('33333333-3333-4333-8333-333333333333');
+update public.document_templates set is_default = false where organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+set local role authenticated;
+insert into pg_temp.s31_data values ('legacy_pin',to_jsonb(public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key='no_default'))));
+select is((select value ->> 'kind' from pg_temp.s31_data where key='legacy_pin'),'legacy','no default pins a legacy marker');
+select ok((select value -> 'layout' = 'null'::jsonb and value -> 'brand' = 'null'::jsonb and value -> 'template_id' = 'null'::jsonb from pg_temp.s31_data where key='legacy_pin'),'legacy payload and template are null');
+select public.set_default_document_template((select (value ->> 'id')::uuid from pg_temp.s31_data where key='template'));
+select ok(to_jsonb(public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key='no_default'))) = (select value from pg_temp.s31_data where key='legacy_pin'),'later default never changes legacy pin');
+select is((select count(*)::integer from public.quote_revision_layout_assets where revision_id=(select (value ->> 'id')::uuid from pg_temp.s31_data where key='no_default')),0,'legacy marker has no asset links');
+reset role;
+update public.studio_rollout set installed_at = 'infinity';
+set local role authenticated;
+select is((public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key='old_revision'))).kind,'legacy','pre-rollout revision gets legacy marker');
+reset role;
+update public.studio_rollout set installed_at = '-infinity';
+-- Force validation failure through the owner-only test transaction, then restore the exact function.
+insert into pg_temp.s31_data values ('validator_definition',to_jsonb(pg_get_functiondef('public.studio_layout_is_valid(jsonb)'::regprocedure)));
+create or replace function public.studio_layout_is_valid(p_layout jsonb) returns boolean language sql immutable set search_path = '' as $$ select false $$;
+set local role authenticated;
+select is((public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key='invalid_default'))).kind,'legacy','invalid default pins legacy marker');
+reset role;
+do $$ begin execute (select value #>> '{}' from pg_temp.s31_data where key='validator_definition'); end $$;
+select throws_ok($$update public.quote_revision_layouts set kind='studio' where kind='legacy'$$,'55000','studio_immutable','legacy marker cannot change kind');
+select throws_ok($$delete from public.quote_revision_layouts where kind='legacy'$$,'55000','studio_immutable','legacy marker cannot be deleted');
+set local role authenticated;
 select ok(not has_function_privilege('authenticated','public.studio_destroy_allowed(uuid)','execute') and not has_function_privilege('service_role','public.studio_destroy_allowed(uuid)','execute'), 'destroy stub is owner-only');
 select ok(not has_function_privilege('authenticated','public.studio_wipe_organization(uuid)','execute'), 'wipe is owner-only');
 select ok(not has_table_privilege('authenticated','public.document_asset_blobs','select'), 'no direct blob read grant');

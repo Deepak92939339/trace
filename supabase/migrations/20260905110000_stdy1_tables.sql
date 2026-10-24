@@ -73,7 +73,9 @@ create table public.quote_revision_layouts (
  revision_id uuid primary key, organization_id uuid not null, quote_id uuid not null,
  snapshot_hash char(64) not null check (snapshot_hash ~ '^[0-9a-f]{64}$'), template_id uuid,
  template_version integer not null check (template_version > 0),
- layout jsonb not null check (public.studio_layout_is_valid(layout)), brand jsonb not null,
+ kind text not null check (kind in ('studio','legacy')), layout jsonb, brand jsonb,
+ check ((kind = 'studio' and layout is not null and brand is not null and template_id is not null and public.studio_layout_is_valid(layout))
+     or (kind = 'legacy' and layout is null and brand is null and template_id is null)),
  layout_hash char(64) not null check (layout_hash ~ '^[0-9a-f]{64}$'),
  pinned_by uuid not null references auth.users(id), pinned_at timestamptz not null default now(),
  unique (organization_id,revision_id),

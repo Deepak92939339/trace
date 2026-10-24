@@ -73,16 +73,22 @@ begin
  end if;
  select * into pinned from public.quote_revision_layouts where revision_id = r.id and organization_id = org;
  if pinned.revision_id is not null then return pinned; end if;
- if r.issued_at < (select installed_at from public.studio_rollout where singleton) then return null; end if;
- -- Existing PDFs also keep their legacy layout, including a PDF registered during rollout.
- if exists (select 1 from public.quote_revision_pdfs where revision_id = r.id) then return null; end if;
  select * into t from public.document_templates where organization_id = org and is_default and archived_at is null;
- if t.id is null then return null; end if;
+ -- Historical/registered output and absent/invalid defaults are pinned legacy forever.
+ if r.issued_at < (select installed_at from public.studio_rollout where singleton)
+   or exists (select 1 from public.quote_revision_pdfs where revision_id = r.id)
+   or t.id is null or not coalesce(public.studio_layout_is_valid(t.layout),false) then
+   insert into public.quote_revision_layouts(revision_id,organization_id,quote_id,snapshot_hash,kind,template_id,template_version,layout,brand,layout_hash,pinned_by)
+   values (r.id,org,r.quote_id,r.snapshot_hash,'legacy',null,1,null,null,
+     public.sha256_hex(public.canonical_json_v1(jsonb_build_object('kind','legacy'))),auth.uid()) returning * into pinned;
+   perform public.studio_log(org,'layout.pinned','revision',r.id,jsonb_build_object('kind','legacy','layout_hash',pinned.layout_hash));
+   return pinned;
+ end if;
  select jsonb_build_object('primary',primary_color,'accent',accent_color,'font',font,'logo_asset_id',logo_asset_id,'footer_line',footer_line,'registration_line',registration_line) into b from public.organization_brand where organization_id = org;
  b := coalesce(b,'{"primary":"#216b46","accent":"#b45309","font":"sans","logo_asset_id":null,"footer_line":"","registration_line":""}'::jsonb);
  logo := (b ->> 'logo_asset_id')::uuid;
- insert into public.quote_revision_layouts(revision_id,organization_id,quote_id,snapshot_hash,template_id,template_version,layout,brand,layout_hash,pinned_by)
- values (r.id,org,r.quote_id,r.snapshot_hash,t.id,t.version,t.layout,b,
+ insert into public.quote_revision_layouts(revision_id,organization_id,quote_id,snapshot_hash,kind,template_id,template_version,layout,brand,layout_hash,pinned_by)
+ values (r.id,org,r.quote_id,r.snapshot_hash,'studio',t.id,t.version,t.layout,b,
    public.sha256_hex(public.canonical_json_v1(jsonb_build_object('layout',t.layout,'brand',b))),auth.uid()) returning * into pinned;
  if logo is not null then insert into public.quote_revision_layout_assets(organization_id,revision_id,asset_id) values (org,r.id,logo); end if;
  perform public.studio_log(org,'layout.pinned','revision',r.id,jsonb_build_object('template_id',t.id,'version',t.version,'layout_hash',pinned.layout_hash));

@@ -9,7 +9,7 @@ import { SYSTEM_TEMPLATES } from "../../lib/studio/templates";
 import { getBrand, listTemplates, pinRevisionLayout, readAsset, studioContext } from "../../lib/studio/server";
 import { studioFailure, StudioError } from "../../lib/studio/errors";
 const ORG="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", REV="00000000-0000-4000-8000-000000000001", ASSET="00000000-0000-4000-8000-000000000002";
-const record = {revision_id:REV,organization_id:ORG,layout:SYSTEM_TEMPLATES[0].layout,brand:DEFAULT_BRAND,layout_hash:"a".repeat(64)};
+const record = {kind:"studio",revision_id:REV,organization_id:ORG,layout:SYSTEM_TEMPLATES[0].layout,brand:DEFAULT_BRAND,layout_hash:"a".repeat(64)};
 beforeEach(()=>{vi.resetAllMocks();mocks.context.mockResolvedValue({user:{id:REV},capabilities:["template.read","quote.print"],membership:{organizationId:ORG,organization:{id:ORG}}});});
 describe("Studio server trust boundaries",()=>{
   it("rejects unauthenticated and capability-less callers before any RPC",async()=>{mocks.context.mockResolvedValue(null);await expect(studioContext("template.read")).rejects.toMatchObject({status:401});mocks.context.mockResolvedValue({capabilities:[],membership:{organizationId:ORG}});await expect(getBrand()).rejects.toMatchObject({status:403});expect(mocks.rpc).not.toHaveBeenCalled();});

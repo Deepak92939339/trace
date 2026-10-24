@@ -2,7 +2,7 @@
 
 Document Studio designs the presentation of issued quotations. Open **Documents** in the sidebar. Preview one of eight built-ins, duplicate it to edit, save, and set the saved template as default. Managers manage templates; organization admins also manage brand/logos and workspace exports. Operators and reviewers can read the Studio. Capabilities are enforced again in every mutation RPC.
 
-The implementation is a draft pending local verification. SQL, pgTAP and Playwright are **WRITTEN, NOT EXECUTED**. Physical pagination, exact prototype fidelity, repeating footers/page numbers, and reviewer print permissions are not settled. See the bundle report for actual checks and limitations.
+The implementation is a draft pending local verification. SQL, pgTAP and Playwright are **WRITTEN, NOT EXECUTED**. Physical pagination and exact prototype fidelity require home verification. Section 13 settles reviewer read-only rendering and legacy marker pinning. See the bundle report for actual checks and limitations.
 
 ## Layout and templates
 
@@ -18,7 +18,7 @@ Eight typed constants live in `lib/studio/templates/`, versioned by `SYSTEM_TEMP
 
 The issued quotation page prepares its hidden print presentation eagerly. For a caller with quote.print it invokes `pin_revision_layout(revision_id)`. PDF render preparation and HTML export use the same RPC. It accepts only a revision ID, reads the organization's default/brand on the server, and copies both into an immutable row anchored to organization, quote, revision and snapshot hash. Logo bytes are immutable and retained through asset links. Later template/default/brand changes do not modify the copied row.
 
-All Studio writes take the same organization advisory lock. This serializes pin selection against saves, defaults, brand changes and asset deletion. Repeated pins return the existing row. Organizations without a default, pre-install issued revisions, and already registered legacy PDFs return null and retain the original renderer. The private rollout timestamp records installation time, not an assumed migration date. The no-default path intentionally has no pin row, so selecting a default later can affect a revision that previously used that path; settle that contract if permanent legacy pinning is required.
+All Studio writes take the same organization advisory lock. This serializes pin selection against saves, defaults, brand changes and asset deletion. Repeated pins return the existing row. Organizations without a valid default, pre-install issued revisions, and already registered legacy PDFs write an immutable kind=legacy marker (layout/brand/template_id null; template_version=1 is an unused sentinel) and retain the original renderer. The private rollout timestamp records installation time, not an assumed migration date. Both historical and no-default paths are now permanently legacy, even if a default is selected later.
 
 The PDF state machine, private bucket, integrity register, privileged writer and render throttles are unchanged. HTML uses the same renderer/fonts. Invalid SVG from a direct RPC is neutralized at every render. An asset transport or digest failure fails the request rather than silently dropping a valid logo from a reprint.
 
@@ -49,7 +49,7 @@ The SVG parser permits only bounded static geometry, local gradients/clips and s
 
 ## Export
 
-`GET /api/studio/quotes/{number}/revisions/{revision}/html` requires quote.print and returns a private, non-cacheable HTML attachment with embedded local fonts/images and no script. `?view=print` opens the same revision inline. Both paths validate the sealed snapshot first.
+`GET /api/studio/quotes/{number}/revisions/{revision}/html` requires quote.read plus template.read for read-only rendering (quote.print holders pin on first render) and returns a private, non-cacheable HTML attachment with embedded local fonts/images and no script. `?view=print` opens the same revision inline. Both paths validate the sealed snapshot first.
 
 `GET /api/studio/workspace` requires workspace.export, organization.manage and the underlying read/print capabilities. It records export.requested and atomically rate-limits to one request per organization per 60 seconds, including failed exports. It caps 200 issued sealed revisions and 50 MiB ZIP size. Over-cap messages direct users to individual downloads.
 
@@ -77,4 +77,4 @@ To add a block type:
 
 Run lint, typecheck, unit suite, build and then test:secrets. On a confirmed disposable local DB run migrations, pgTAP, parity and focused e2e. Use the existing PDF suite plus Studio tests to compare actual paged output at 200 lines. Verify P5 bundled Chromium and local Playwright separately.
 
-Existing tests 15/18 assert exact routine allowlists, and test 24 asserts the old reviewer capability list. They are intentionally untouched in this bundle; approve explicit new expectations locally. Base reviewer has no quote.print. Studio does not bypass that check; reviewer print/HTML requires an explicit product/security decision, while existing registered PDFs retain quote.read access. bytea RPC size/hex transport, hosted tracing/caps and physical pagination remain UNVERIFIED-HOME.
+Existing tests 15/18 assert exact routine allowlists, and test 24 asserts the old reviewer capability list. They are intentionally untouched in this bundle; approve explicit new expectations locally. Reviewer has quote.read and template.read: it renders through the read-only RPC, never pinning or mutating. Reviewer PDF downloads reuse registered bytes or render transient output without registration. Pinning still requires quote.print. bytea RPC size/hex transport, hosted tracing/caps and physical pagination remain UNVERIFIED-HOME.

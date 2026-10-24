@@ -74,10 +74,11 @@ export async function readRevisionLayout(revisionId: string): Promise<PinnedDocu
 async function parseRevisionLayout(value: unknown, revisionId: string, organizationId: string): Promise<PinnedDocument | null> {
   const raw = single(value);
   if (raw === null || isRecord(raw) && raw.revision_id === null) return null;
+  if (isRecord(raw) && raw.kind === "legacy" && raw.revision_id === revisionId && raw.organization_id === organizationId && raw.layout === null && raw.brand === null && raw.template_id === null) return null;
   // Invalid layouts always use the unchanged legacy renderer, with a server-side warning.
   let layout: Layout, brand: Brand;
   try {
-    if (!isRecord(raw) || raw.revision_id !== revisionId || raw.organization_id !== organizationId || typeof raw.layout_hash !== "string" || !/^[0-9a-f]{64}$/.test(raw.layout_hash) || !brandIsValid(raw.brand)) throw new StudioError("studio_data_invalid");
+    if (!isRecord(raw) || raw.kind !== "studio" || raw.revision_id !== revisionId || raw.organization_id !== organizationId || typeof raw.layout_hash !== "string" || !/^[0-9a-f]{64}$/.test(raw.layout_hash) || !brandIsValid(raw.brand)) throw new StudioError("studio_data_invalid");
     layout = parseLayout(raw.layout); brand = raw.brand;
   } catch {
     console.warn("studio_pinned_layout_invalid",{revisionId}); return null;

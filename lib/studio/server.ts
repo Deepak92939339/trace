@@ -17,7 +17,7 @@ export async function studioContext(capability: string) {
   if (!context.membership || !context.capabilities.includes(capability)) throw new StudioError("studio_forbidden",403);
   return { ...context, membership: context.membership };
 }
-type StudioRpc = "list_document_templates" | "get_document_template" | "create_document_template" | "save_document_template" | "duplicate_document_template" | "archive_document_template" | "set_default_document_template" | "get_organization_brand" | "save_organization_brand" | "create_document_asset" | "delete_document_asset" | "read_document_asset" | "pin_revision_layout" | "get_revision_layout" | "list_studio_activity" | "request_workspace_export";
+type StudioRpc = "list_document_assets" | "list_document_templates" | "get_document_template" | "create_document_template" | "save_document_template" | "duplicate_document_template" | "archive_document_template" | "set_default_document_template" | "get_organization_brand" | "save_organization_brand" | "create_document_asset" | "delete_document_asset" | "read_document_asset" | "pin_revision_layout" | "get_revision_layout" | "list_studio_activity" | "request_workspace_export";
 /** The sole temporary type boundary until local `db:types` can be regenerated. All return data is parsed. */
 export async function studioRpc(name: StudioRpc, args: Record<string, Json> = {}): Promise<unknown> {
   const client = await createClient();
@@ -101,4 +101,19 @@ export async function listActivity(limit = 50): Promise<ActivityRow[]> {
   const data = await studioRpc("list_studio_activity",{p_limit:limit});
   if (!Array.isArray(data) || data.length > limit) throw new StudioError("studio_data_invalid");
   return data.map(row => { if (!isRecord(row) || row.organization_id !== context.membership.organizationId || typeof row.action !== "string" || typeof row.subject_type !== "string" || typeof row.created_at !== "string") throw new StudioError("studio_data_invalid"); return {id:uuid(row.id),action:row.action,subject_type:row.subject_type,created_at:row.created_at}; });
+}
+
+export type AssetRow = {id:string;mime:string;byte_length:number;created_at:string;is_brand_logo:boolean;pinned_revision_count:number;logo:{mime:string;bytes:number[]}|null};
+export async function listAssets(): Promise<AssetRow[]> {
+  await studioContext("template.read");
+  const data = await studioRpc("list_document_assets");
+  if (!Array.isArray(data) || data.length > 8) throw new StudioError("studio_data_invalid");
+  return Promise.all(data.map(async (row): Promise<AssetRow> => {
+    if (!isRecord(row) || typeof row.mime !== "string" || !["image/png","image/jpeg","image/webp","image/svg+xml"].includes(row.mime) || typeof row.byte_length !== "number" || !Number.isSafeInteger(row.byte_length) || row.byte_length < 1 || row.byte_length > (row.mime === "image/svg+xml" ? 131072 : 524288) || typeof row.created_at !== "string" || typeof row.is_brand_logo !== "boolean" || typeof row.pinned_revision_count !== "number" || !Number.isSafeInteger(row.pinned_revision_count) || row.pinned_revision_count < 0) throw new StudioError("studio_data_invalid");
+    const id = uuid(row.id);
+    let logo: AssetRow["logo"] = null;
+    try { const safe = await readAsset(id); logo = {mime:safe.mime,bytes:Array.from(safe.bytes)}; }
+    catch (error) { if (!["studio_asset_svg_invalid","studio_asset_magic_invalid","studio_asset_invalid"].includes(studioFailure(error).code)) throw error; console.warn("studio_gallery_asset_rejected",{id}); }
+    return {id,mime:row.mime,byte_length:row.byte_length,created_at:row.created_at,is_brand_logo:row.is_brand_logo,pinned_revision_count:row.pinned_revision_count,logo};
+  }));
 }

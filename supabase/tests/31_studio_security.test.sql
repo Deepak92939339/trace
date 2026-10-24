@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(164);
+select plan(170);
 create function public.s31_claims(p_user uuid) returns void language sql set search_path = '' as $$
  select pg_catalog.set_config('request.jwt.claims',pg_catalog.json_build_object('sub',p_user,'role','authenticated')::text,true)
 $$;
@@ -50,6 +50,13 @@ update public.studio_rollout set installed_at = '-infinity';
 select public.s31_claims('33333333-3333-4333-8333-333333333333');
 set local role authenticated;
 insert into pg_temp.s31_data values ('pin',to_jsonb(public.pin_revision_layout((select (value ->> 'id')::uuid from pg_temp.s31_data where key = 'issued'))));
+-- R5 list RPC: tenant scope, capability and reference counts.
+select is((select count(*)::integer from public.list_document_assets()),1,'asset gallery lists tenant assets');
+select ok((select is_brand_logo from public.list_document_assets() where id=(select (value ->> 'id')::uuid from pg_temp.s31_data where key='asset')),'asset gallery marks brand logo');
+select is((select pinned_revision_count from public.list_document_assets() where id=(select (value ->> 'id')::uuid from pg_temp.s31_data where key='asset')),1::bigint,'asset gallery counts pinned revisions');
+select public.s31_claims('44444444-4444-4444-8444-444444444444');
+select is((select count(*)::integer from public.list_document_assets()),0,'asset gallery isolates another tenant');
+select public.s31_claims('33333333-3333-4333-8333-333333333333');
 -- R3 marker fixtures; owner setup only, no sealed revision is edited.
 reset role;
 select public.s31_make('no_default','issued');
@@ -146,6 +153,7 @@ select is(public.s31_state('select public.list_studio_activity(50)'), '00000', '
 select is(public.s31_state('select public.request_workspace_export()'), '00000', 'organization_admin workspace.export request_workspace_export');
 select public.s31_claims('55555555-5555-4555-8555-555555555555');
 select is(public.s31_state('select public.list_document_templates()'), '00000', 'reviewer template.read list_document_templates');
+select is(public.s31_state('select public.list_document_assets()'),'00000','reviewer can list asset gallery');
 select is(public.s31_state('select public.get_document_template((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''template''))'), '00000', 'reviewer template.read get_document_template');
 select is(public.s31_state('select public.create_document_template(''Matrix'',''classic'',(select value -> ''layout'' from pg_temp.s31_data where key = ''template''))'), '42501', 'reviewer template.manage create_document_template');
 select is(public.s31_state('select public.save_document_template((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''template''),1,(select value -> ''layout'' from pg_temp.s31_data where key = ''template''))'), '42501', 'reviewer template.manage save_document_template');
@@ -166,6 +174,7 @@ delete from public.role_capabilities where role_id = (select id from public.role
 select public.s31_claims('55555555-5555-4555-8555-555555555555');
 set local role authenticated;
 select is(public.s31_state('select public.list_document_templates()'), '42501', 'no capability rejects list_document_templates');
+select is(public.s31_state('select public.list_document_assets()'),'42501','asset gallery requires template.read');
 select is(public.s31_state('select public.get_document_template((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''template''))'), '42501', 'no capability rejects get_document_template');
 select is(public.s31_state('select public.create_document_template(''Matrix'',''classic'',(select value -> ''layout'' from pg_temp.s31_data where key = ''template''))'), '42501', 'no capability rejects create_document_template');
 select is(public.s31_state('select public.save_document_template((select (value ->> ''id'')::uuid from pg_temp.s31_data where key = ''template''),1,(select value -> ''layout'' from pg_temp.s31_data where key = ''template''))'), '42501', 'no capability rejects save_document_template');

@@ -32,6 +32,17 @@ begin
  return a;
 end;
 $$;
+create function public.list_document_assets()
+returns table (id uuid,mime text,byte_length integer,created_at timestamptz,is_brand_logo boolean,pinned_revision_count bigint)
+language plpgsql stable security definer set search_path = '' as $$
+declare org uuid := public.studio_current_org('template.read');
+begin
+ return query select a.id,a.mime,a.byte_length,a.created_at,
+   exists(select 1 from public.organization_brand b where b.organization_id=org and b.logo_asset_id=a.id),
+   (select count(*) from public.quote_revision_layout_assets l where l.organization_id=org and l.asset_id=a.id)
+ from public.document_assets a where a.organization_id=org order by a.created_at,a.id;
+end;
+$$;
 create function public.read_document_asset(p_id uuid) returns jsonb
 language plpgsql stable security definer set search_path = '' as $$
 declare org uuid := public.studio_current_org('template.read'); result jsonb;
@@ -136,6 +147,6 @@ begin
  delete from public.studio_export_attempts where organization_id = p_organization_id;
 end;
 $$;
-revoke all on function public.create_document_asset(text,bytea,text),public.read_document_asset(uuid),public.delete_document_asset(uuid),public.pin_revision_layout(uuid),public.get_revision_layout(uuid),public.request_workspace_export(),public.studio_wipe_organization(uuid) from public,anon,authenticated,service_role;
-grant execute on function public.create_document_asset(text,bytea,text),public.read_document_asset(uuid),public.delete_document_asset(uuid),public.pin_revision_layout(uuid),public.get_revision_layout(uuid),public.request_workspace_export() to authenticated;
+revoke all on function public.list_document_assets(),public.create_document_asset(text,bytea,text),public.read_document_asset(uuid),public.delete_document_asset(uuid),public.pin_revision_layout(uuid),public.get_revision_layout(uuid),public.request_workspace_export(),public.studio_wipe_organization(uuid) from public,anon,authenticated,service_role;
+grant execute on function public.list_document_assets(),public.create_document_asset(text,bytea,text),public.read_document_asset(uuid),public.delete_document_asset(uuid),public.pin_revision_layout(uuid),public.get_revision_layout(uuid),public.request_workspace_export() to authenticated;
 commit;

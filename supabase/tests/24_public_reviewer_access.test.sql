@@ -18,8 +18,8 @@ select is(
     where role.key = 'reviewer'
     order by capability.key
   ),
-  array['catalog.read', 'customer.read', 'organization.read', 'quote.read'],
-  'reviewer receives only the four intended read capabilities'
+  array['catalog.read', 'customer.read', 'organization.read', 'quote.read', 'template.read'],
+  'reviewer receives only the five intended read capabilities'
 );
 
 set local role authenticated;

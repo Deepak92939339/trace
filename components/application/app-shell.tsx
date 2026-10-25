@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { LeaveGuardProvider } from "@/components/studio/leave-guard-provider";
+import { confirmLeave } from "@/components/studio/leave-guard-registry";
+import React, { useCallback, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { AppSidebar } from "@/components/shell/app-sidebar";
+import { ProfileMenu, type ProfileMenuProps } from "@/components/shell/profile-menu";
 import { TopBar, type BreadcrumbItem } from "@/components/shell/top-bar";
 import {
   CommandPalette,
@@ -14,6 +17,8 @@ import styles from "./app-shell.module.css";
 
 type ShellContext = {
   canManageOrganization: boolean;
+  canReadStudio?: boolean;
+  canExportWorkspace?: boolean;
   displayName: string;
   roleLabel: string;
   organizationName: string;
@@ -23,9 +28,11 @@ type ShellContext = {
 export function AppShell({
   context,
   children,
+  beforeSignOut,
 }: {
   context: ShellContext;
   children: React.ReactNode;
+  beforeSignOut?: ProfileMenuProps["beforeSignOut"];
 }) {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -79,6 +86,8 @@ export function AppShell({
   }, [pathname]);
 
   const router = useRouter();
+  // Command-palette navigation is programmatic (no click/unload event), so it must ask the leave guards itself.
+  const go = useCallback((href: string) => { if (confirmLeave()) router.push(href); }, [router]);
 
   const commandGroups = useMemo<CommandGroup[]>(() => {
     return [
@@ -90,36 +99,37 @@ export function AppShell({
             label: "Quotes",
             detail: "View all quotations",
             href: "/quotes",
-            onSelect: () => router.push("/quotes"),
+            onSelect: () => go("/quotes"),
           },
           {
             id: "nav-new-quote",
             label: "Prepare the offer",
             detail: "Create a new quotation",
             href: "/quotes/new",
-            onSelect: () => router.push("/quotes/new"),
+            onSelect: () => go("/quotes/new"),
           },
           {
             id: "nav-approvals",
             label: "Approvals",
             detail: "Commercial review queue",
             href: "/approvals",
-            onSelect: () => router.push("/approvals"),
+            onSelect: () => go("/approvals"),
           },
           {
             id: "nav-customers",
             label: "Customers",
             detail: "Directory of commercial clients",
             href: "/customers",
-            onSelect: () => router.push("/customers"),
+            onSelect: () => go("/customers"),
           },
           {
             id: "nav-catalog",
             label: "Catalog",
             detail: "Standard line items and rates",
             href: "/catalog",
-            onSelect: () => router.push("/catalog"),
+            onSelect: () => go("/catalog"),
           },
+          ...(context.canReadStudio ? [{ id: "nav-studio", label: "Documents", detail: "Document Studio", href: "/studio", onSelect: () => go("/studio") }] : []),
           ...(context.canManageOrganization
             ? [
                 {
@@ -127,7 +137,7 @@ export function AppShell({
                   label: "Organization settings",
                   detail: "Manage tenant configuration",
                   href: "/settings/organization",
-                  onSelect: () => router.push("/settings/organization"),
+                  onSelect: () => go("/settings/organization"),
                 },
               ]
             : []),
@@ -140,26 +150,27 @@ export function AppShell({
             id: "support-help",
             label: "Documentation and guides",
             href: "/help",
-            onSelect: () => router.push("/help"),
+            onSelect: () => go("/help"),
           },
           {
             id: "support-whats-new",
             label: "What's new",
             href: "/whats-new",
-            onSelect: () => router.push("/whats-new"),
+            onSelect: () => go("/whats-new"),
           },
         ],
       },
     ];
-  }, [context.canManageOrganization, router]);
+  }, [context.canManageOrganization, context.canReadStudio, go]);
 
   return (
-    <div className={styles.app}>
+    <LeaveGuardProvider signOutAction={signOut} beforeSignOut={beforeSignOut}><div className={styles.app}>
       <AppSidebar
         organizationName={context.organizationName}
         displayName={context.displayName}
         roleLabel={context.roleLabel}
         canManageOrganization={context.canManageOrganization}
+        canReadStudio={context.canReadStudio}
         signOutAction={signOut}
       />
 
@@ -167,6 +178,7 @@ export function AppShell({
         {context.readOnly && <ReviewerBanner />}
         <TopBar
           breadcrumbs={breadcrumbs}
+          actions={<ProfileMenu displayName={context.displayName} roleLabel={context.roleLabel} organizationName={context.organizationName} canReadStudio={Boolean(context.canReadStudio)} canExport={Boolean(context.canExportWorkspace)} signOutAction={signOut} beforeSignOut={beforeSignOut} />}
           onSearchClick={() => setPaletteOpen(true)}
         />
         <main id="main-content" className={`app-main ${styles.appMain}`}>
@@ -180,6 +192,6 @@ export function AppShell({
         onToggle={() => setPaletteOpen((prev) => !prev)}
         groups={commandGroups}
       />
-    </div>
+    </div></LeaveGuardProvider>
   );
 }

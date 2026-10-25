@@ -1,3 +1,4 @@
+import { pinRevisionLayout } from "@/lib/studio/server";
 import { getApplicationContext } from "@/lib/auth/context";
 import {
   issuedActorForRevision,
@@ -157,6 +158,7 @@ export async function handleQuotePdfRequest(
             timeZone: organization.timezone,
           }),
           revisionNumber: revision.revision_number,
+          studio: await pinRevisionLayout(revision.id),
         });
         return renderPdf(html);
       },

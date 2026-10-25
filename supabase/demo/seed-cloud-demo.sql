@@ -298,7 +298,7 @@ commit;
 
 -- BEGIN DOCUMENT STUDIO — Verified on a disposable local Supabase; never applied to a hosted database.
 -- Appended only. The existing seed transaction/guards above remain byte-identical.
--- scripts/seed-cloud-demo.mjs performs target allowlisting; the reviewer lock is last below.
+-- scripts/seed-cloud-demo.mjs performs target allowlisting; the actor's original role is restored last below.
 -- Never run this as an unguarded standalone seed.
 begin;
 create temporary table studio_demo_seed_input(user_id uuid not null) on commit drop;
@@ -306,6 +306,7 @@ insert into studio_demo_seed_input values (:'demo_user_id'::uuid);
 do $studio_demo$
 declare
  actor uuid := (select user_id from studio_demo_seed_input); org uuid;
+ prev_role uuid;
  logo public.document_assets; t public.document_templates; revision_id uuid;
  cust uuid; gst uuid; created jsonb; lines jsonb; qid uuid; rid uuid; extra record;
  svg bytea := convert_to('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#216b46"/><path d="M8 24V8h4l8 12V8h4v16h-4L12 12v12z" fill="#ffffff"/></svg>','UTF8');
@@ -319,10 +320,12 @@ begin
    or exists(select 1 from public.organization_brand where organization_id=org) then
    raise notice 'Studio already configured; no Studio changes made.'; return;
  end if;
+ select role_id into prev_role from public.organization_memberships where organization_id=org and user_id=actor and status='active';
+ if prev_role is null then raise exception 'studio_demo_seed_identity_mismatch'; end if;
  if (select count(*) from public.quotes where organization_id=org)<>14 then raise exception 'studio_demo_seed_dataset_mismatch'; end if;
  perform set_config('request.jwt.claims',json_build_object('sub',actor,'role','authenticated')::text,true);
- -- Only the guarded seed owner temporarily restores the creator's admin role for brand RPCs.
- -- The final step locks the dedicated demo user to reviewer. Exceptions roll this transaction back.
+ -- Only the guarded seed owner is temporarily promoted to admin for brand RPCs.
+ -- The final step restores the actor's original role. Exceptions roll this transaction back.
  update public.organization_memberships set role_id=(select id from public.roles where key='organization_admin') where organization_id=org and user_id=actor;
  logo:=public.create_document_asset('image/svg+xml',svg,public.sha256_hex(svg));
  perform public.save_organization_brand(jsonb_build_object('primary','#216b46','accent','#b45309','font','sans','logo_asset_id',logo.id,'footer_line','Northstar Industrial Supply Private Limited · 27 Foundry Park, Unit 4, Pune 411019 · Fictional demonstration','registration_line','Demo company, fictional registration DEMO-0000'));
@@ -359,13 +362,13 @@ begin
    where quote_id = qid and version = (select version from public.quotes where id=qid);
  perform public.submit_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
  perform public.issue_quote_revision(qid,rid,(select version from public.quotes where id=qid),gen_random_uuid());
- -- Pin every issued demo revision as admin before the reviewer lock.
+ -- Pin every issued demo revision as admin before restoring the actor's original role.
  for revision_id in select id from public.quote_revisions where organization_id=org and state='issued' loop
    -- A legacy marker here would permanently hide the Studio layout from the reviewer; fail loudly instead.
    if (public.pin_revision_layout(revision_id)).kind <> 'studio' then raise exception 'studio_demo_seed_legacy_pin'; end if;
  end loop;
- -- Final reviewer lock comes after all issued revisions are pinned.
- update public.organization_memberships set role_id=(select id from public.roles where key='reviewer') where organization_id=org and user_id=actor;
+ -- Restore the actor's original role after all issued revisions are pinned.
+ update public.organization_memberships set role_id=prev_role where organization_id=org and user_id=actor;
 end;
 $studio_demo$;
 commit;

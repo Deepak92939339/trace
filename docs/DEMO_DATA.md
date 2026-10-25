@@ -14,11 +14,11 @@ The wrapper `scripts/seed-cloud-demo.mjs`:
 - requires the project reference a second time for `--apply`;
 - requires a pre-created dedicated Auth user UUID;
 - takes the database password only from `SUPABASE_DB_URL` in the operator environment;
-- uses one transaction and performs no delete, truncate, or reset;
-- makes no changes when its unique demo organization slug already exists;
-- ends by assigning the privately held seed user the `manager` role.
+- applies two transactions and performs no delete, truncate, or reset;
+- leaves an existing demo unchanged in the base transaction, then runs the Studio transaction once (it makes no changes if templates or a brand already exist);
+- leaves the privately held seed user with its original role after Studio setup (`manager` on the current demo, as assigned by the base seed).
 
-The separate guarded migration `20260826091000_public_demo_reviewer_identity.sql` runs only when the unique fictional organization slug already exists. It provisions the published reviewer credential and assigns the four-capability `reviewer` role. It does not make the manager credential public and does not enable signup.
+The separate guarded migration `20260826091000_public_demo_reviewer_identity.sql` runs only when the unique fictional organization slug already exists. It provisions the published reviewer credential for a separate account; `20260905090000_rename_public_reviewer_identity.sql` renames that account to `demo.reviewer@trace.example.test`. Its `reviewer` role has the four original read capabilities plus `template.read`. The seed does not touch this account. The migrations do not make the manager credential public and do not enable signup.
 
 The committed allowlist contains only the dedicated disposable portfolio-demo project reference. Preview and apply refuse any other project; rotate that entry deliberately if the demo project is recreated.
 

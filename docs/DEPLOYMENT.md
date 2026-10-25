@@ -27,9 +27,9 @@ In Supabase Auth URL Configuration, set Site URL to the primary HTTPS Vercel pro
 
 ## 2. Demo identities and data
 
-Create one dedicated manager Auth user with a strong unique password stored outside source. Copy only its UUID into the invoking shell. Put the real project reference in `supabase/demo/project-allowlist.json` and follow [Demo data](DEMO_DATA.md). Do not use a personal account.
+Create one dedicated manager Auth user with a strong unique password stored outside source. Copy only its UUID into the invoking shell. Put the real project reference in `supabase/demo/project-allowlist.json` and follow [Demo data](DEMO_DATA.md). Do not use a personal account. The seed file contains two transactions: on an existing demo the base transaction makes no changes, then the Studio transaction runs once (it makes no changes if templates or a brand already exist). Studio setup restores the seed user's original role (`manager` on the current demo, as assigned by the base seed).
 
-After the fictional organization exists, the guarded reviewer migrations provision the published read-only reviewer: `20260826091000_public_demo_reviewer_identity.sql` creates it and `20260905090000_rename_public_reviewer_identity.sql` renames it to `demo.reviewer@trace.example.test`. Both are inert unless the fictional organization exists. The reviewer credential is published on the sign-in page by design; never assign it to the manager, an organization administrator, or any non-fictional environment.
+After the fictional organization exists, the guarded reviewer migrations provision the published read-only reviewer: `20260826091000_public_demo_reviewer_identity.sql` creates it and `20260905090000_rename_public_reviewer_identity.sql` renames it to `demo.reviewer@trace.example.test`. Both are inert unless the fictional organization exists. This reviewer is a separate account with the four original read capabilities plus `template.read`; the seed does not touch it. The reviewer credential is published on the sign-in page by design; never assign it to the manager, an organization administrator, or any non-fictional environment.
 
 ## 3. Vercel application
 

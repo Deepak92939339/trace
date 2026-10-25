@@ -83,6 +83,22 @@ test("reviewer has a read-only Studio and cannot export a workspace",async({page
  await page.getByRole("button",{name:"Open profile menu"}).click();await expect(page.getByRole("menuitem",{name:"Export workspace"})).toHaveCount(0);
 });
 
+test("reviewer Editor uses a readable document width on desktop", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await signIn(page, REVIEWER);
+  await page.goto("/studio");
+  await page.getByRole("tab", { name: "Editor", exact: true }).click();
+  const sheet = page
+    .locator("#studio-panel-Editor .studio-document")
+    .locator("..");
+  await expect(sheet).toBeVisible();
+  await expect
+    .poll(async () => (await sheet.boundingBox())?.width ?? 0)
+    .toBeGreaterThanOrEqual(560);
+});
+
 // R6: Verified on a disposable local Supabase; never applied to a hosted database. Ordinary Back is best effort and must be checked in Chromium.
 test("dirty Studio guards links, Back, profile and sidebar sign-out",async({page})=>{
  await page.setViewportSize({width:1440,height:1000});await signIn(page,{email,password});

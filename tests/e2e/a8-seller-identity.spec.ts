@@ -1,5 +1,8 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { spawnSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
+
+documentLayoutFixture("studio");
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
@@ -67,15 +70,21 @@ test("issued_print_contains_seller_and_customer", async ({ page }) => {
   await issuePreparedQuote(page);
 
   await page.emulateMedia({ media: "print" });
-  const printDocument = page.locator(".print-document");
-  const seller = printDocument.locator(".print-seller");
-  const customer = printDocument.locator(".print-customer");
+  const parties = page.locator('.studio-document [data-block-id="b-parties"]');
+  const seller = parties
+    .locator("section")
+    .filter({ has: page.getByText("From", { exact: true }) });
+  const customer = parties
+    .locator("section")
+    .filter({ has: page.getByText("Prepared for", { exact: true }) });
   await expect(seller).toHaveCount(1);
   await expect(customer).toHaveCount(1);
   await expect(seller).toContainText("Trace Demo Industries");
   await expect(seller).toContainText("14 Commerce Avenue");
   await expect(seller).toContainText("GSTIN-DEMO-TRACE");
   await expect(customer).toContainText("Asha Engineering Works");
+  await expect(customer).toContainText("18 Industrial Estate Road");
+  await expect(customer).toContainText("GSTIN-DEMO-18ASHA");
   await expect(seller).not.toContainText("Asha Engineering Works");
   await expect(customer).not.toContainText("14 Commerce Avenue");
   await page.emulateMedia({ media: "screen" });
@@ -98,7 +107,20 @@ test("issued_print_uses_snapshots_only", async ({ page }) => {
     `);
     await page.goto(quoteUrl);
     await page.emulateMedia({ media: "print" });
-    const seller = page.locator(".print-document .print-seller").first();
+    const parties = page.locator(
+      '.studio-document [data-block-id="b-parties"]',
+    );
+    const seller = parties
+      .locator("section")
+      .filter({ has: page.getByText("From", { exact: true }) });
+    const customer = parties
+      .locator("section")
+      .filter({ has: page.getByText("Prepared for", { exact: true }) });
+    await expect(seller).toHaveCount(1);
+    await expect(customer).toHaveCount(1);
+    await expect(customer).toContainText("Asha Engineering Works");
+    await expect(customer).toContainText("18 Industrial Estate Road");
+    await expect(customer).toContainText("GSTIN-DEMO-18ASHA");
     await expect(seller).toContainText("Trace Demo Industries");
     await expect(seller).toContainText("14 Commerce Avenue");
     await expect(seller).toContainText("GSTIN-DEMO-TRACE");

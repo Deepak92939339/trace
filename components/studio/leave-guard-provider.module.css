@@ -1,1 +1,14 @@
-.dialog{position:fixed;inset:20% auto auto 50%;transform:translateX(-50%);z-index:1000;width:min(90vw,32rem);padding:var(--space-6,24px);background:var(--surface,#fff);color:var(--ink,#17212b);border:1px solid var(--border,#d9d3c6);box-shadow:0 0 0 100vmax #0008;display:grid;gap:1rem}
+.dialog {
+  position: fixed;
+  inset: 20% auto auto 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: min(90vw, 32rem);
+  padding: var(--space-6, 24px);
+  background: var(--surface, #fff);
+  color: var(--ink, #17212b);
+  border: 1px solid var(--border, #d9d3c6);
+  box-shadow: 0 0 0 100vmax #0008;
+  display: grid;
+  gap: 1rem;
+}

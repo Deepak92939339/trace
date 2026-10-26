@@ -15,9 +15,7 @@ export function ConflictBanner({
   className,
 }: ConflictBannerProps) {
   return (
-    <div
-      className={`${styles.banner} ${className ?? ""}`.trim()}
-    >
+    <div className={`${styles.banner} ${className ?? ""}`.trim()}>
       <div className={styles.iconWrap}>
         <svg
           viewBox="0 0 24 24"

@@ -3,9 +3,7 @@ import styles from "./reviewer-banner.module.css";
 
 export function ReviewerBanner({ className }: { className?: string }) {
   return (
-    <div
-      className={`${styles.banner} ${className ?? ""}`.trim()}
-    >
+    <div className={`${styles.banner} ${className ?? ""}`.trim()}>
       <svg
         viewBox="0 0 24 24"
         width="15"
@@ -22,7 +20,8 @@ export function ReviewerBanner({ className }: { className?: string }) {
         <circle cx="12" cy="12" r="3" />
       </svg>
       <span>
-        Read-only workspace. You can open everything; nothing you do here changes data.
+        Read-only workspace. You can open everything; nothing you do here
+        changes data.
       </span>
     </div>
   );

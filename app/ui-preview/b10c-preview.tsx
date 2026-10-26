@@ -74,7 +74,8 @@ export function B10cPreview() {
       {/* 2. 50/30/20 on 8,325.72 with derived amounts */}
       <div style={{ marginTop: 24 }}>
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
-          2. Builder: 50/30/20 schedule on $8,325.72 ($4,162.86 / $2,497.72 / $1,665.14)
+          2. Builder: 50/30/20 schedule on $8,325.72 ($4,162.86 / $2,497.72 /
+          $1,665.14)
         </h3>
         <div style={{ maxWidth: 840 }}>
           <PaymentScheduleEditor
@@ -160,20 +161,32 @@ export function B10cPreview() {
                 <tr>
                   <td data-label="Milestone">Deposit</td>
                   <td data-label="Share">50.00%</td>
-                  <td data-label="Amount" className={proposalStyles.r}>$4,162.86</td>
-                  <td data-label="Due" className={proposalStyles.r}>Due on acceptance</td>
+                  <td data-label="Amount" className={proposalStyles.r}>
+                    $4,162.86
+                  </td>
+                  <td data-label="Due" className={proposalStyles.r}>
+                    Due on acceptance
+                  </td>
                 </tr>
                 <tr>
                   <td data-label="Milestone">Delivery</td>
                   <td data-label="Share">30.00%</td>
-                  <td data-label="Amount" className={proposalStyles.r}>$2,497.72</td>
-                  <td data-label="Due" className={proposalStyles.r}>Due on delivery</td>
+                  <td data-label="Amount" className={proposalStyles.r}>
+                    $2,497.72
+                  </td>
+                  <td data-label="Due" className={proposalStyles.r}>
+                    Due on delivery
+                  </td>
                 </tr>
                 <tr>
                   <td data-label="Milestone">Completion</td>
                   <td data-label="Share">20.00%</td>
-                  <td data-label="Amount" className={proposalStyles.r}>$1,665.14</td>
-                  <td data-label="Due" className={proposalStyles.r}>Due on completion</td>
+                  <td data-label="Amount" className={proposalStyles.r}>
+                    $1,665.14
+                  </td>
+                  <td data-label="Due" className={proposalStyles.r}>
+                    Due on completion
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -186,7 +199,15 @@ export function B10cPreview() {
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
           6. Print document: Payment schedule section
         </h3>
-        <div style={{ maxWidth: 840, border: "1px solid var(--line)", borderRadius: "var(--r-panel)", padding: 16, background: "var(--surface)" }}>
+        <div
+          style={{
+            maxWidth: 840,
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-panel)",
+            padding: 16,
+            background: "var(--surface)",
+          }}
+        >
           <IssuedPrintDocument
             quote={{
               number: "TND-2026-0042",

@@ -61,9 +61,5 @@ export function Brand({
     );
   }
 
-  return (
-    <span className={classes}>
-      {content}
-    </span>
-  );
+  return <span className={classes}>{content}</span>;
 }

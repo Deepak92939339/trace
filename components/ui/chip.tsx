@@ -10,12 +10,7 @@ export type ChipProps = {
   id?: string;
 };
 
-export function Chip({
-  children,
-  tone = "neutral",
-  className,
-  id,
-}: ChipProps) {
+export function Chip({ children, tone = "neutral", className, id }: ChipProps) {
   const classNames = [styles.chip, styles[tone], className ?? ""]
     .filter(Boolean)
     .join(" ");

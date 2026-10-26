@@ -14,7 +14,9 @@ export default async function ProtectedLayout({
           "organization.manage",
         ),
         canReadStudio: context.capabilities.includes("template.read"),
-        canExportWorkspace: context.capabilities.includes("workspace.export") && context.capabilities.includes("organization.manage"),
+        canExportWorkspace:
+          context.capabilities.includes("workspace.export") &&
+          context.capabilities.includes("organization.manage"),
         displayName: context.profile.displayName,
         roleLabel: context.membership.role.label,
         organizationName: context.membership.organization.name,

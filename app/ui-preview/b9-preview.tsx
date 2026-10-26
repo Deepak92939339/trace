@@ -16,17 +16,24 @@ import styles from "./ui-preview.module.css";
 
 export function B9Preview() {
   return (
-    <section className={styles.section} id="b9-states" aria-labelledby="b9-title">
+    <section
+      className={styles.section}
+      id="b9-states"
+      aria-labelledby="b9-title"
+    >
       <h2 id="b9-title" className={styles.sectionTitle}>
         <span>System States &amp; Notices (Batch B9)</span>
         <span className={styles.sectionHint}>
-          EmptyState · ErrorState · ConflictBanner · ExpiredNotice · ReviewerBanner · Skeleton
+          EmptyState · ErrorState · ConflictBanner · ExpiredNotice ·
+          ReviewerBanner · Skeleton
         </span>
       </h2>
 
       {/* 1. Empty States */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>1. EmptyState — Check, Search, and Inbox variants</div>
+        <div className={styles.label}>
+          1. EmptyState — Check, Search, and Inbox variants
+        </div>
         <div
           style={{
             display: "grid",
@@ -82,7 +89,9 @@ export function B9Preview() {
 
       {/* 2. Error States */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>2. ErrorState — Interrupted view and 404 not found</div>
+        <div className={styles.label}>
+          2. ErrorState — Interrupted view and 404 not found
+        </div>
         <div
           style={{
             display: "grid",
@@ -146,7 +155,9 @@ export function B9Preview() {
 
       {/* 3. Conflict Banner */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>3. ConflictBanner — Concurrency status banner</div>
+        <div className={styles.label}>
+          3. ConflictBanner — Concurrency status banner
+        </div>
         <ConflictBanner
           title="Concurrent revision detected"
           body="Revision 2 was saved with newer line items in another session. Reload before making further adjustments."
@@ -160,7 +171,9 @@ export function B9Preview() {
 
       {/* 4. Expired Notices */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>4. ExpiredNotice — Expired and Closed tones</div>
+        <div className={styles.label}>
+          4. ExpiredNotice — Expired and Closed tones
+        </div>
         <div
           style={{
             display: "grid",
@@ -183,7 +196,9 @@ export function B9Preview() {
 
       {/* 5. Reviewer Banner & Read-Only Notice */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>5. ReviewerBanner &amp; ReadOnlyNotice</div>
+        <div className={styles.label}>
+          5. ReviewerBanner &amp; ReadOnlyNotice
+        </div>
         <div
           style={{
             border: "1px solid var(--line)",
@@ -195,7 +210,8 @@ export function B9Preview() {
           <ReviewerBanner />
           <div style={{ padding: 16 }}>
             <ReadOnlyNotice>
-              Your explicit capability map does not grant access to organization settings.
+              Your explicit capability map does not grant access to organization
+              settings.
             </ReadOnlyNotice>
           </div>
         </div>
@@ -203,7 +219,9 @@ export function B9Preview() {
 
       {/* 6. Skeletons */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className={styles.label}>6. Skeleton — Page, Table, and Document variants</div>
+        <div className={styles.label}>
+          6. Skeleton — Page, Table, and Document variants
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
             <div className={styles.sectionHint} style={{ marginBottom: 8 }}>

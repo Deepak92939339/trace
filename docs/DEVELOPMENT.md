@@ -108,4 +108,3 @@ The transport and session secrets are server-only Next.js runtime values; `TENDE
 This repository is a demonstration application and has not been independently penetration-tested. Do not use it for real commercial or personal data without a separate security, privacy, tax, and operational review. After publication, report suspected vulnerabilities through a private GitHub Security Advisory rather than a public issue. Dependency advisory results are reported from the final local release verification and should not be interpreted as proof that every transitive package is unreachable.
 
 Stage 4 updated the direct Next.js and matching ESLint integration to `16.3.2`, with normal compatible lockfile updates for PostCSS, Sharp, Nanoid, js-yaml, and undici. The final read-only `npm audit --omit=dev` and full `npm audit` both reported **zero vulnerabilities**. This result is point-in-time evidence, not a substitute for reviewing future advisories before deployment.
-

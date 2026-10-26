@@ -133,7 +133,8 @@ export function B6Preview() {
 
       <div style={{ marginTop: 40 }}>
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
-          Variant 2: Replayed Acceptance without title (replayed: true, buyerAssertedTitle: null)
+          Variant 2: Replayed Acceptance without title (replayed: true,
+          buyerAssertedTitle: null)
         </h3>
         <AcceptanceReceipt
           acceptance={FIXTURE_ACCEPTANCE_REPLAYED}

@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  type QuoteState,
-  quoteStateLabel,
-} from "@/lib/quotes/effective-state";
+import { type QuoteState, quoteStateLabel } from "@/lib/quotes/effective-state";
 import type { RecipientEventType } from "@/lib/quotes/commitment-contracts";
 import styles from "./status-pill.module.css";
 

@@ -1,6 +1,10 @@
 import { DocumentRenderer } from "@/components/studio/document-renderer";
 import { printDataFromIssued } from "@/lib/studio/print-data";
-import { pinRevisionLayout, readRevisionLayout, type PinnedDocument } from "@/lib/studio/server";
+import {
+  pinRevisionLayout,
+  readRevisionLayout,
+  type PinnedDocument,
+} from "@/lib/studio/server";
 import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/quotes/quote-builder";
 import { HistoryTimeline } from "@/components/quotes/history-timeline";
@@ -288,10 +292,15 @@ export default async function QuotePage({
       });
       // A Studio fault must never take the issued quote page down: show the standard document on screen and log. The PDF/HTML routes stay strict.
       try {
-        if (context.capabilities.includes("quote.print")) studioPrint = await pinRevisionLayout(currentRevision.id);
-        else if (context.capabilities.includes("template.read")) studioPrint = await readRevisionLayout(currentRevision.id);
+        if (context.capabilities.includes("quote.print"))
+          studioPrint = await pinRevisionLayout(currentRevision.id);
+        else if (context.capabilities.includes("template.read"))
+          studioPrint = await readRevisionLayout(currentRevision.id);
       } catch (error) {
-        console.warn("studio_layout_unavailable_on_quote_page", error instanceof Error ? error.message : "unknown");
+        console.warn(
+          "studio_layout_unavailable_on_quote_page",
+          error instanceof Error ? error.message : "unknown",
+        );
         studioPrint = null;
       }
       pdfDownload = {
@@ -525,9 +534,15 @@ export default async function QuotePage({
           }))}
         />
       </section>
-      {issuedPrint && (studioPrint
-        ? <DocumentRenderer {...studioPrint} data={printDataFromIssued(issuedPrint)} />
-        : <IssuedPrintDocument {...issuedPrint} />)}
+      {issuedPrint &&
+        (studioPrint ? (
+          <DocumentRenderer
+            {...studioPrint}
+            data={printDataFromIssued(issuedPrint)}
+          />
+        ) : (
+          <IssuedPrintDocument {...issuedPrint} />
+        ))}
     </section>
   );
 }

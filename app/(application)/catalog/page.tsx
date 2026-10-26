@@ -164,10 +164,7 @@ export default async function CatalogPage({
             })}
             {!products?.length && (
               <tr>
-                <td
-                  colSpan={canReadMargin ? 7 : 6}
-                  className="table-empty"
-                >
+                <td colSpan={canReadMargin ? 7 : 6} className="table-empty">
                   <EmptyState
                     icon="search"
                     title="No catalog products match this view."

@@ -24,18 +24,18 @@ The PDF state machine, private bucket, integrity register, privileged writer and
 
 ## Tables, guards and wipe order
 
-| Order | Table | Parent relationships / guard |
-|---|---|---|
-| 1 | quote_revision_layout_assets | Composite org/revision and org/asset FKs; immutable |
-| 2 | quote_revision_layouts | P5 revision/snapshot anchor and template-version FK; immutable |
-| 3 | studio_activity | Organization/actor; append-only |
-| 4 | document_template_versions | Composite org/template FK; append-only |
-| 5 | document_templates | Organization/actor; RPC writes, cap 25 active, one default |
-| 6 | organization_brand | Organization and composite logo FK; RPC writes |
-| 7 | document_asset_blobs | Composite org/asset FK; no direct application grants, no updates |
-| 8 | document_assets | Organization/creator; no updates, RPC deletion only if unreferenced, cap 8 |
-| 9 | studio_export_attempts | Organization; private throttle, RPC writes |
-| — | studio_rollout | Private global installation singleton, not tenant data and not wiped |
+| Order | Table                        | Parent relationships / guard                                               |
+| ----- | ---------------------------- | -------------------------------------------------------------------------- |
+| 1     | quote_revision_layout_assets | Composite org/revision and org/asset FKs; immutable                        |
+| 2     | quote_revision_layouts       | P5 revision/snapshot anchor and template-version FK; immutable             |
+| 3     | studio_activity              | Organization/actor; append-only                                            |
+| 4     | document_template_versions   | Composite org/template FK; append-only                                     |
+| 5     | document_templates           | Organization/actor; RPC writes, cap 25 active, one default                 |
+| 6     | organization_brand           | Organization and composite logo FK; RPC writes                             |
+| 7     | document_asset_blobs         | Composite org/asset FK; no direct application grants, no updates           |
+| 8     | document_assets              | Organization/creator; no updates, RPC deletion only if unreferenced, cap 8 |
+| 9     | studio_export_attempts       | Organization; private throttle, RPC writes                                 |
+| —     | studio_rollout               | Private global installation singleton, not tenant data and not wiped       |
 
 Every table has RLS enabled. This follows the existing definer/owner guard model rather than claiming FORCE RLS. Browser roles have selected read grants and no table writes. Blob bytes and throttle rows have no direct grants. Public definer entry points explicitly check capabilities; helpers are revoked from application roles.
 

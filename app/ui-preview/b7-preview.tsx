@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import { ApprovalsTable, type ApprovalRow } from "@/components/approvals/approvals-table";
+import {
+  ApprovalsTable,
+  type ApprovalRow,
+} from "@/components/approvals/approvals-table";
 import styles from "./b3-preview.module.css";
 
 const FIXTURE_ROWS: ApprovalRow[] = [

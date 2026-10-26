@@ -1,3 +1,4 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 // Verified on a disposable local Supabase; never applied to a hosted database. Requires a freshly reset, confirmed disposable local database.
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -14,6 +15,7 @@ import {
   signIn,
 } from "./p5-support";
 
+documentLayoutFixture("legacy");
 test.describe.configure({ mode: "serial" });
 const id = randomUUID(),
   email = `studio-${id}@trace.local`,
@@ -229,10 +231,14 @@ test("dirty Studio guards links, Back, profile and sidebar sign-out", async ({
   await signIn(page, { email, password });
   await page.goto("/quotes");
   await page.goto("/studio");
+  // This guard test owns its editable copy; it also runs without the author flow.
+  await page.getByLabel("Name for your copy").fill(`Dirty ${id.slice(0, 8)}`);
   await page
     .locator("article")
-    .filter({ has: page.getByRole("heading", { name: new RegExp(marker) }) })
-    .getByRole("button", { name: "Open", exact: true })
+    .filter({
+      has: page.getByRole("heading", { name: "Classic Formal", exact: true }),
+    })
+    .getByRole("button", { name: "Duplicate to edit" })
     .click();
   await page.getByRole("button", { name: "Spacer", exact: true }).click();
   page.once("dialog", (dialog) => dialog.dismiss());

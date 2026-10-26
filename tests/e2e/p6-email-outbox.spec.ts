@@ -1,3 +1,4 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { spawn, type ChildProcess } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
@@ -26,6 +27,7 @@ import {
   uniqueAddress,
 } from "./p6-support";
 
+documentLayoutFixture("legacy");
 // The email outbox against the local mail catcher (Mailpit, SMTP on 54325). Desktop only.
 test.describe.configure({ mode: "serial" });
 

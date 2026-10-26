@@ -1,7 +1,9 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
+documentLayoutFixture("legacy");
 const ARTIFACT_DIR = path.join(
   process.cwd(),
   "qa-runs",

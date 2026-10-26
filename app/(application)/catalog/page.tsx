@@ -5,46 +5,65 @@ import { formatMinor } from "@/lib/formatting/money";
 import { requireApplicationContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/components/catalog/catalog.module.css";
+import { ListPagination } from "@/components/application/list-pagination";
+import {
+  FETCH_SIZE,
+  listPage,
+  listSearch,
+  listWindow,
+  PAGE_SIZE,
+  singleSearchValue,
+  type ListSearchParams,
+} from "@/lib/lists/pagination";
 
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; state?: string }>;
+  searchParams: Promise<ListSearchParams>;
 }) {
   const context = await requireApplicationContext();
   const canReadMargin = context.capabilities.includes("margin.read");
   const query = await searchParams;
-  const search = (query.q ?? "").trim().slice(0, 100);
+  const search = listSearch(query.q);
+  const page = listPage(query.page);
+  const requestedState = singleSearchValue(query.state);
   const state =
-    query.state === "inactive"
+    requestedState === "inactive"
       ? "inactive"
-      : query.state === "all"
+      : requestedState === "all"
         ? "all"
         : "active";
   const supabase = await createClient();
-  const [{ data: products, error }, { data: taxProfiles }, unitCostsResult] =
-    await Promise.all([
-      supabase.rpc("search_products", {
-        p_organization_id: context.membership.organizationId,
-        p_query: search,
-        p_state: state,
-        p_limit: 100,
-        p_offset: 0,
-      }),
-      supabase
-        .from("tax_profiles")
-        .select("id, code, label")
-        .eq("organization_id", context.membership.organizationId)
-        .eq("active", true)
-        .order("code"),
-      canReadMargin
-        ? supabase
-            .from("product_unit_costs")
-            .select("id, unit_cost_minor")
-            .eq("organization_id", context.membership.organizationId)
-        : Promise.resolve({ data: null }),
-    ]);
+  const [{ data, error }, { data: taxProfiles }] = await Promise.all([
+    supabase.rpc("search_products", {
+      p_organization_id: context.membership.organizationId,
+      p_query: search,
+      p_state: state,
+      p_limit: FETCH_SIZE,
+      p_offset: (page - 1) * PAGE_SIZE,
+    }),
+    supabase
+      .from("tax_profiles")
+      .select("id, code, label")
+      .eq("organization_id", context.membership.organizationId)
+      .eq("active", true)
+      .order("code"),
+  ]);
   if (error) throw new Error("Unable to load the tenant-scoped catalog.");
+  const { rows: products, hasMore } = listWindow(data ?? [], page);
+  const unitCostsResult =
+    canReadMargin && products.length
+      ? await supabase
+          .from("product_unit_costs")
+          .select("id, unit_cost_minor")
+          .eq("organization_id", context.membership.organizationId)
+          .in(
+            "id",
+            products.map((product) => product.id),
+          )
+      : { data: null, error: null };
+  if (unitCostsResult.error)
+    throw new Error("Unable to load product costs for this catalog page.");
 
   const costByProductId = new Map<string, number | null>();
   if (canReadMargin && unitCostsResult.data) {
@@ -74,7 +93,7 @@ export default async function CatalogPage({
           </label>
           <label>
             State
-            <select name="state" defaultValue={query.state ?? "active"}>
+            <select name="state" defaultValue={state}>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="all">All</option>
@@ -175,6 +194,13 @@ export default async function CatalogPage({
           </tbody>
         </table>
       </div>
+      <ListPagination
+        path="/catalog"
+        filters={{ q: search, state }}
+        page={page}
+        count={products.length}
+        hasMore={hasMore}
+      />
       <p className="legal-note">
         Tax profiles are organization configuration for demonstration and
         calculation; they are not universal legal tax advice.

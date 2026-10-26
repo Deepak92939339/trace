@@ -5,3 +5,6 @@ playwright-report
 test-results
 reference
 package-lock.json
+
+# Pre-existing untracked demonstration; never format or package it.
+Forma-Demonstration.html

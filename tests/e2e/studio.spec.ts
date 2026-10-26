@@ -66,15 +66,13 @@ test("author, upload, save, pin, download and reprint the exact old layout", asy
     page.getByRole("status").filter({ hasText: "Default template set" }),
   ).toBeVisible();
   await page.getByRole("tab", { name: "Brand", exact: true }).click();
-  await page
-    .getByLabel(/Logo · PNG/)
-    .setInputFiles({
-      name: "studio.svg",
-      mimeType: "image/svg+xml",
-      buffer: Buffer.from(
-        '<svg viewBox="0 0 16 16"><path fill="#216b46" d="M0 0h16v16H0z"/></svg>',
-      ),
-    });
+  await page.getByLabel(/Logo · PNG/).setInputFiles({
+    name: "studio.svg",
+    mimeType: "image/svg+xml",
+    buffer: Buffer.from(
+      '<svg viewBox="0 0 16 16"><path fill="#216b46" d="M0 0h16v16H0z"/></svg>',
+    ),
+  });
   await expect(
     page.getByRole("status").filter({ hasText: "Logo uploaded" }),
   ).toBeVisible();

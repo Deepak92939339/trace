@@ -78,6 +78,23 @@ jobs:
       - run: npm run test:concurrency
       - run: npm run test:decisions
       - run: npx playwright install --with-deps chromium chrome
+      - name: Configure disposable local E2E environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          local_service_role_key="$(./node_modules/.bin/supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY="\(.*\)"$/\1/p')"
+          if [[ -z "$local_service_role_key" ]]; then
+            echo "Local Supabase service-role key is unavailable." >&2
+            exit 1
+          fi
+          echo "::add-mask::$local_service_role_key"
+          e2e_drain_secret="$(openssl rand -hex 24)"
+          echo "::add-mask::$e2e_drain_secret"
+          {
+            printf '%s=%s\n' SUPABASE_SERVICE_ROLE_KEY "$local_service_role_key"
+            printf '%s=%s\n' TRACE_OUTBOX_DRAIN_SECRET "$e2e_drain_secret"
+            printf '%s\n' 'TRACE_MAIL_PROVIDER=smtp' 'TRACE_MAIL_FROM=quotes@trace.test' 'TENDER_DEMO_MODE=false'
+          } >> "$GITHUB_ENV"
       - run: npm run test:e2e
       - if: always()
         run: ./node_modules/.bin/supabase stop

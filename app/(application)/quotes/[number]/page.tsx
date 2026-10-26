@@ -1,5 +1,6 @@
 import { DocumentRenderer } from "@/components/studio/document-renderer";
 import { printDataFromIssued } from "@/lib/studio/print-data";
+import { layoutNotice } from "@/lib/studio/layout-notice";
 import {
   pinRevisionLayout,
   readRevisionLayout,
@@ -259,6 +260,7 @@ export default async function QuotePage({
   // issued revision, never the live quote tables (which a successor revision rewrites).
   let issuedPrint: IssuedPrintProps | null = null;
   let studioPrint: PinnedDocument | null = null;
+  let documentLayoutNotice: string | null = null;
   let pdfDownload: {
     href: string;
     available: boolean;
@@ -296,12 +298,21 @@ export default async function QuotePage({
           studioPrint = await pinRevisionLayout(currentRevision.id);
         else if (context.capabilities.includes("template.read"))
           studioPrint = await readRevisionLayout(currentRevision.id);
+        documentLayoutNotice = layoutNotice({
+          canPrint: context.capabilities.includes("quote.print"),
+          customLayout: studioPrint !== null,
+        });
       } catch (error) {
         console.warn(
           "studio_layout_unavailable_on_quote_page",
           error instanceof Error ? error.message : "unknown",
         );
         studioPrint = null;
+        documentLayoutNotice = layoutNotice({
+          canPrint: false,
+          customLayout: false,
+          unavailable: true,
+        });
       }
       pdfDownload = {
         href: `/quotes/${encodeURIComponent(quote.number)}/revisions/${currentRevision.revision_number}/pdf`,
@@ -332,6 +343,11 @@ export default async function QuotePage({
   }
   return (
     <section className="quote-page">
+      {documentLayoutNotice && (
+        <p className="legal-note document-layout-notice" role="status">
+          {documentLayoutNotice}
+        </p>
+      )}
       <QuoteBuilder
         pdfDownload={pdfDownload}
         key={`${quote.id}:${quote.version}`}

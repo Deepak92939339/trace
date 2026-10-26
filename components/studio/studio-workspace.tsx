@@ -567,9 +567,9 @@ export function StudioWorkspace(props: StudioWorkspaceProps) {
             )}
           </div>
           <p className={styles.hint}>
-            Issued downloads use the revision’s pinned layout.
+            Issued downloads keep the revision’s finalized layout.
             {props.canManage
-              ? " Save your changes and set a default before a quotation is first opened for print."
+              ? " Save and set your default before a print-authorized user first opens the issued quotation, even without clicking Print. If no default is set, that revision permanently keeps the standard layout."
               : ""}
           </p>
           {warnings.length > 0 && (

@@ -23,7 +23,7 @@ export function TopBar({
   breadcrumbs = [],
   actions,
   onSearchClick,
-  searchPlaceholder = "Search catalog, customers, quotes",
+  searchPlaceholder = "Navigate pages and actions",
   className,
 }: TopBarProps) {
   const topClasses = [styles.top, className ?? ""].filter(Boolean).join(" ");

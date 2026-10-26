@@ -39,7 +39,7 @@ export function CommandPalette({
   groups = [],
   query: controlledQuery,
   onQueryChange,
-  placeholder = "Search quotes, customers, catalog...",
+  placeholder = "Search pages and actions...",
   onSelect,
   enableGlobalShortcut = true,
 }: CommandPaletteProps) {

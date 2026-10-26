@@ -75,6 +75,20 @@ The transport and session secrets are server-only Next.js runtime values; `TENDE
 - **PDF rendering depends on the host.** The first download of an issued revision renders it in a packaged headless Chromium on Vercel; the available function size, memory and duration depend on the Vercel plan. If rendering is unavailable, Print / Save as PDF on the issued view still works and existing PDFs stay downloadable.
 - **The reviewer credential is public by design.** `demo.reviewer@trace.example.test` is read-only and exists only in the fictional demo organization.
 
+## Engineering checks and bounded lists
+
+Customers, Catalog and Quotes display 50 records per page and request one extra row to determine whether another page exists. Search and filters are URL state; submitting a filter resets pagination. Customers and Catalog reuse the existing scoped search RPCs. Their 10,000-offset guard is preserved: if more results remain on page 201, the UI explicitly asks for a narrower search. Quotes uses the same visible browsing bound, an organization-scoped query and an `updated_at, id` tie-break. Concurrent edits can move quotes between pages.
+
+Quote search matches quotation number and the customer name displayed for that lifecycle state: current customer for drafts, captured customer name for submitted records, and the current name only when a legacy snapshot is absent. Search text is treated as a literal substring with regex metacharacters escaped and PostgREST logic values quoted. Expired filters use the organization's current local date and do not reclassify issued/rejected quotes.
+
+The command menu navigates pages/actions; use each list's search form for records.
+
+`npm run test:unit` is the fast deterministic suite. `npm run test:pdf` runs the Chromium-dependent PDF geometry suite; install its browser with `npx playwright install chromium` first. `npm test` runs both suites and `npm run verify` includes both. A failed browser setup is a blocked PDF suite, not a passing full test run.
+
+The repository's **Trace quality** workflow contains Application checks, PDF rendering checks, and Disposable database and workflow checks. The database job creates a fresh local Supabase project, verifies its identity and never accepts a hosted database URL. Existing containers cause setup to refuse to run. Add these three job checks as required checks in the repository's ruleset before describing them as enforced merge gates; adding a workflow file does not configure branch protection. Vercel deployment status remains separate evidence.
+
+For each release, create a fresh dated evidence record rather than updating the historical baseline. Record the app commit, migration state, environment, commands, manager/reviewer smoke results, first/repeat PDF results, HTML/export results, email-provider outcome and any blocked checks. The current source changes are not a claim that a hosted smoke run has passed.
+
 ## Current limitations
 
 - This is a portfolio-grade quotation workflow, not a tax, accounting, ERP, or legal-compliance system.

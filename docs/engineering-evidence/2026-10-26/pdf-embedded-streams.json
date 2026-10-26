@@ -1,0 +1,275 @@
+[
+  {
+    "file": "generated-mono-accent.pdf",
+    "fonts": [
+      {
+        "name": "/AAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 28,
+        "embeddedGlyphBytes": 21765
+      },
+      {
+        "name": "/AAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 9,
+        "embeddedGlyphBytes": 5763
+      },
+      {
+        "name": "/BAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 23,
+        "embeddedGlyphBytes": 25281
+      },
+      {
+        "name": "/BAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 2,
+        "embeddedGlyphBytes": 989
+      },
+      {
+        "name": "/CAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 18,
+        "embeddedGlyphBytes": 16599
+      },
+      {
+        "name": "/CAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 36,
+        "embeddedGlyphBytes": 28111
+      },
+      {
+        "name": "/DAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 8,
+        "embeddedGlyphBytes": 6668
+      },
+      {
+        "name": "/DAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 10,
+        "embeddedGlyphBytes": 12904
+      },
+      {
+        "name": "/EAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 42,
+        "embeddedGlyphBytes": 36185
+      },
+      {
+        "name": "/EAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 19,
+        "embeddedGlyphBytes": 13407
+      },
+      {
+        "name": "/FAAAAA+JetBrainsMonoRoman-Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 16,
+        "embeddedGlyphBytes": 12891
+      },
+      {
+        "name": "/GAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 22,
+        "embeddedGlyphBytes": 17849
+      },
+      {
+        "name": "/GAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 14,
+        "embeddedGlyphBytes": 8989
+      },
+      {
+        "name": "/HAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 9,
+        "embeddedGlyphBytes": 8469
+      },
+      {
+        "name": "/HAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 10,
+        "embeddedGlyphBytes": 10358
+      },
+      {
+        "name": "/IAAAAA+JetBrainsMonoRoman-Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 7,
+        "embeddedGlyphBytes": 4042
+      }
+    ]
+  },
+  {
+    "file": "generated-serif.pdf",
+    "fonts": [
+      {
+        "name": "/AAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 36,
+        "embeddedGlyphBytes": 36043
+      },
+      {
+        "name": "/BAAAAA+SourceSerif4-Regular_wght2BC0000",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 24,
+        "embeddedGlyphBytes": 39229
+      },
+      {
+        "name": "/CAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 52,
+        "embeddedGlyphBytes": 52309
+      },
+      {
+        "name": "/CAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 2,
+        "embeddedGlyphBytes": 353
+      },
+      {
+        "name": "/DAAAAA+SourceSerif4-Regular_wght2BC0000",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 17,
+        "embeddedGlyphBytes": 19789
+      },
+      {
+        "name": "/EAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 58,
+        "embeddedGlyphBytes": 61170
+      },
+      {
+        "name": "/FAAAAA+SourceSerif4-Regular_wght2BC0000",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 16,
+        "embeddedGlyphBytes": 25946
+      },
+      {
+        "name": "/GAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 33,
+        "embeddedGlyphBytes": 32829
+      },
+      {
+        "name": "/EAAAAA+SourceSerif4-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 2,
+        "embeddedGlyphBytes": 263
+      },
+      {
+        "name": "/HAAAAA+SourceSerif4-Regular_wght2BC0000",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 17,
+        "embeddedGlyphBytes": 22084
+      },
+      {
+        "name": "/IAAAAA+SourceSerif4-Regular_wght2BC0000",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 7,
+        "embeddedGlyphBytes": 8170
+      }
+    ]
+  },
+  {
+    "file": "generated-sans.pdf",
+    "fonts": [
+      {
+        "name": "/AAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 28,
+        "embeddedGlyphBytes": 21765
+      },
+      {
+        "name": "/AAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 9,
+        "embeddedGlyphBytes": 5763
+      },
+      {
+        "name": "/BAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 23,
+        "embeddedGlyphBytes": 25281
+      },
+      {
+        "name": "/BAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 2,
+        "embeddedGlyphBytes": 989
+      },
+      {
+        "name": "/CAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 18,
+        "embeddedGlyphBytes": 16599
+      },
+      {
+        "name": "/CAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 36,
+        "embeddedGlyphBytes": 28111
+      },
+      {
+        "name": "/DAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 8,
+        "embeddedGlyphBytes": 6668
+      },
+      {
+        "name": "/DAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 10,
+        "embeddedGlyphBytes": 12904
+      },
+      {
+        "name": "/EAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 42,
+        "embeddedGlyphBytes": 36185
+      },
+      {
+        "name": "/EAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 19,
+        "embeddedGlyphBytes": 13407
+      },
+      {
+        "name": "/FAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 16,
+        "embeddedGlyphBytes": 17192
+      },
+      {
+        "name": "/GAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 22,
+        "embeddedGlyphBytes": 17849
+      },
+      {
+        "name": "/GAAAAA+Inter-Regular",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 14,
+        "embeddedGlyphBytes": 8989
+      },
+      {
+        "name": "/HAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 9,
+        "embeddedGlyphBytes": 8469
+      },
+      {
+        "name": "/HAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 10,
+        "embeddedGlyphBytes": 10358
+      },
+      {
+        "name": "/IAAAAA+Inter-Regular_Bold",
+        "subtype": "/Type3",
+        "embeddedGlyphs": 7,
+        "embeddedGlyphBytes": 5933
+      }
+    ]
+  }
+]

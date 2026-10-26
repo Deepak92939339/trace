@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 /**
- * Local copies of the three families the application loads through next/font/google
+ * Local copies of the three families the application self-hosts through app/fonts.css
  * (Inter, Source Serif 4, JetBrains Mono), embedded into the PDF document as data: URIs so a
  * render needs no network and no fonts installed on the host. Licenses: SIL OFL 1.1, stored
  * beside the files (see fonts/README.md).

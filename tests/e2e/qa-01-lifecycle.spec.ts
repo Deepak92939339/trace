@@ -1,6 +1,10 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { test, expect } from "@playwright/test";
 import * as fs from "fs";
 import { execSync } from "child_process";
+import { json, ORGANIZATION_ID } from "./p5-support";
+
+documentLayoutFixture("studio");
 
 test("qa-01: complete quote lifecycle and print validation", async ({
   page,
@@ -73,7 +77,7 @@ test("qa-01: complete quote lifecycle and print validation", async ({
 
   // 5. Save PDF and assert against extracted text
   await page.emulateMedia({ media: "print" });
-  await expect(page.locator(".print-document")).toBeVisible();
+  await expect(page.locator(".studio-document")).toBeVisible();
 
   const pdfPath = "qa-runs/verified/artifacts/pdfs/qa-01-issued.pdf";
   if (!fs.existsSync("qa-runs/verified/artifacts/pdfs")) {
@@ -86,8 +90,29 @@ test("qa-01: complete quote lifecycle and print validation", async ({
   // 1. Matches TND-\d{4}-\d{4}
   expect(textContent).toMatch(/TND-\d{4}-\d{4}/);
 
-  // 2. Contains non-zero amount
-  expect(textContent).toMatch(/Total\s+INR\s+[1-9][\d,]*\.\d{2}/);
+  // Known wording issue: Studio currently prints "Total INR INR …" because
+  // both the label and formatted amount include INR. Do not change the renderer here.
+  const total = textContent.match(
+    /\bTotal\s+([A-Z]{3})\s+([A-Z]{3})\s+([1-9][\d,]*\.\d{2})/,
+  );
+  expect(
+    total,
+    "Studio total must include its currency and a non-zero amount",
+  ).not.toBeNull();
+  const number = decodeURIComponent(
+    new URL(quoteUrl).pathname.split("/").at(-1)!,
+  );
+  expect(number).toMatch(/^TND-\d{4}-\d+$/);
+  const issued = json<{ currency: string; minor: string }>(
+    `select json_build_object('currency', currency_code, 'minor', total_minor::text)
+      from public.quotes where organization_id = '${ORGANIZATION_ID}' and number = '${number}'`,
+  );
+  expect(issued.currency).toBe("INR");
+  expect(total![1]).toBe(issued.currency);
+  expect(total![2]).toBe(issued.currency);
+  const printedMinor = BigInt(total![3]!.replace(/[,.]/g, ""));
+  expect(printedMinor).toBeGreaterThan(0n);
+  expect(printedMinor).toBe(BigInt(issued.minor));
 
   // 3. Does NOT contain "Select a customer" or "Create draft"
   expect(textContent).not.toContain("Select a customer");

@@ -4,21 +4,50 @@ import { formatMinor } from "@/lib/formatting/money";
 import {
   effectiveQuoteState,
   quoteStateLabel,
+  dateInTimeZone,
 } from "@/lib/quotes/effective-state";
 import { requireApplicationContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
+import { ListPagination } from "@/components/application/list-pagination";
+import {
+  listPage,
+  listSearch,
+  listWindow,
+  type ListSearchParams,
+} from "@/lib/lists/pagination";
+import {
+  quoteListQuery,
+  quoteListState,
+  QUOTE_LIST_STATES,
+} from "@/lib/quotes/list-query";
 
-export default async function QuotesPage() {
+export default async function QuotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<ListSearchParams>;
+}) {
   const context = await requireApplicationContext();
   const supabase = await createClient();
-  const { data: quotes, error } = await supabase
-    .from("quotes")
-    .select(
-      "id, number, state, customer_name_snapshot, issue_date, valid_until, currency_code, locale, total_minor, updated_at, customers!inner(name)",
-    )
-    .eq("organization_id", context.membership.organizationId)
-    .order("updated_at", { ascending: false });
+  const params = await searchParams;
+  const page = listPage(params.page);
+  const search = listSearch(params.q);
+  const stateFilter = quoteListState(params.state);
+  const instant = new Date();
+  const { data, error } = await quoteListQuery(
+    supabase,
+    {
+      organizationId: context.membership.organizationId,
+      timeZone: context.membership.organization.timezone,
+    },
+    params,
+    instant,
+  );
   if (error) throw new Error("Unable to load tenant quotations.");
+  const { rows: quotes, hasMore } = listWindow(data ?? [], page);
+  const today = dateInTimeZone(
+    instant,
+    context.membership.organization.timezone,
+  );
   return (
     <section className="destination-page">
       <header className="destination-header">
@@ -33,6 +62,31 @@ export default async function QuotesPage() {
           </Link>
         )}
       </header>
+      <form className="filter-form">
+        <label>
+          Search quotes
+          <input
+            name="q"
+            defaultValue={search}
+            maxLength={100}
+            placeholder="Quotation number or customer"
+          />
+        </label>
+        <label>
+          State
+          <select name="state" defaultValue={stateFilter}>
+            <option value="all">All states</option>
+            {QUOTE_LIST_STATES.map((state) => (
+              <option key={state} value={state}>
+                {quoteStateLabel(state)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="button" type="submit">
+          Apply
+        </button>
+      </form>
       <div
         className="table-region"
         tabIndex={0}
@@ -59,6 +113,7 @@ export default async function QuotesPage() {
                 quote.state,
                 quote.valid_until,
                 context.membership.organization.timezone,
+                instant,
               );
               const customerName =
                 quote.state === "draft"
@@ -97,7 +152,11 @@ export default async function QuotesPage() {
                 <td colSpan={6} className="table-empty">
                   <EmptyState
                     icon="inbox"
-                    title="No quotations yet. Create a draft to begin the commercial record."
+                    title={
+                      search || stateFilter !== "all" || page > 1
+                        ? "No quotations match this view."
+                        : "No quotations yet. Create a draft to begin the commercial record."
+                    }
                   />
                 </td>
               </tr>
@@ -105,6 +164,18 @@ export default async function QuotesPage() {
           </tbody>
         </table>
       </div>
+      <ListPagination
+        path="/quotes"
+        filters={{ q: search, state: stateFilter }}
+        page={page}
+        count={quotes.length}
+        hasMore={hasMore}
+      />
+      <p className="legal-note">
+        Expiry is evaluated on {today} in{" "}
+        {context.membership.organization.timezone}. Updated quotations can move
+        between pages.
+      </p>
     </section>
   );
 }

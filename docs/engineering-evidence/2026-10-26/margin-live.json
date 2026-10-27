@@ -1,0 +1,44 @@
+[
+  {
+    "role": "operator",
+    "rows": 3,
+    "returnedFields": [
+      "id",
+      "sku",
+      "description",
+      "unit_code",
+      "quantity_precision",
+      "unit_price_minor",
+      "currency_code",
+      "tax_profile_id",
+      "tax_code",
+      "tax_label",
+      "active",
+      "version"
+    ],
+    "forbiddenKeys": [],
+    "directCostRows": 0,
+    "costError": null
+  },
+  {
+    "role": "reviewer",
+    "rows": 3,
+    "returnedFields": [
+      "id",
+      "sku",
+      "description",
+      "unit_code",
+      "quantity_precision",
+      "unit_price_minor",
+      "currency_code",
+      "tax_profile_id",
+      "tax_code",
+      "tax_label",
+      "active",
+      "version"
+    ],
+    "forbiddenKeys": [],
+    "directCostRows": 0,
+    "costError": null
+  }
+]

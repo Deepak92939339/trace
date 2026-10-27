@@ -1,3 +1,4 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
@@ -25,6 +26,7 @@ import {
   type IssuedQuote,
 } from "./p5-support";
 
+documentLayoutFixture("legacy");
 // One immutable PDF per issued revision. Desktop only: the route is not viewport specific, and
 // the per-user render limit (5 a minute) makes running it twice back to back pointless.
 test.describe.configure({ mode: "serial" });

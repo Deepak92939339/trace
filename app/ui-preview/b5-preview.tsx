@@ -54,7 +54,8 @@ const FIXTURE_QUOTE: RecipientQuoteViewModel = {
     {
       id: "i2",
       sku: "SKU-4402",
-      description: "Stainless feed rail (316L, polished, cut to length on site)",
+      description:
+        "Stainless feed rail (316L, polished, cut to length on site)",
       quantity_scaled: 12000,
       quantity_scale: 1000,
       unit_code: "M",
@@ -111,9 +112,7 @@ export function B5Preview() {
     <section className={styles.section} aria-labelledby="b5-title">
       <h2 id="b5-title" className={styles.title}>
         <span>Proposal (B5)</span>
-        <span className={styles.hint}>
-          ProposalView Document & Actions Bar
-        </span>
+        <span className={styles.hint}>ProposalView Document & Actions Bar</span>
       </h2>
 
       <div className={recipientStyles.shell}>
@@ -142,9 +141,13 @@ export function B5Preview() {
         />
 
         <div className={recipientStyles.lowerWrap}>
-          <div className={`recipient-verification ${recipientStyles.verification}`}>
+          <div
+            className={`recipient-verification ${recipientStyles.verification}`}
+          >
             <Paper padding="md" as="section">
-              <h2 className={recipientStyles.verificationTitle}>Verify a quotation</h2>
+              <h2 className={recipientStyles.verificationTitle}>
+                Verify a quotation
+              </h2>
               <p>Enter the 32-character code from the document footer.</p>
               <form onSubmit={(e) => e.preventDefault()}>
                 <label className={recipientStyles.label}>

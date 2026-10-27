@@ -18,24 +18,26 @@ Eight typed constants live in `lib/studio/templates/`, versioned by `SYSTEM_TEMP
 
 The issued quotation page prepares its hidden print presentation eagerly. For a caller with quote.print it invokes `pin_revision_layout(revision_id)`. PDF render preparation and HTML export use the same RPC. It accepts only a revision ID, reads the organization's default/brand on the server, and copies both into an immutable row anchored to organization, quote, revision and snapshot hash. Logo bytes are immutable and retained through asset links. Later template/default/brand changes do not modify the copied row.
 
+The issued page now explains whether it rendered a finalized custom or standard presentation (or could not check the layout). The Studio editor explicitly warns managers to save and set a default before a print-authorized user first opens an issued quote, even without clicking Print. This is a clarity change: first-render pinning, legacy markers, the read-only reviewer path and all historical immutability rules are unchanged.
+
 All Studio writes take the same organization advisory lock. This serializes pin selection against saves, defaults, brand changes and asset deletion. Repeated pins return the existing row. Organizations without a valid default, pre-install issued revisions, and already registered legacy PDFs write an immutable kind=legacy marker (layout/brand/template_id null; template_version=1 is an unused sentinel) and retain the original renderer. The private rollout timestamp records installation time, not an assumed migration date. Both historical and no-default paths are now permanently legacy, even if a default is selected later.
 
 The PDF state machine, private bucket, integrity register, privileged writer and render throttles are unchanged. HTML uses the same renderer/fonts. Invalid SVG from a direct RPC is neutralized at every render. An asset transport or digest failure fails the request rather than silently dropping a valid logo from a reprint.
 
 ## Tables, guards and wipe order
 
-| Order | Table | Parent relationships / guard |
-|---|---|---|
-| 1 | quote_revision_layout_assets | Composite org/revision and org/asset FKs; immutable |
-| 2 | quote_revision_layouts | P5 revision/snapshot anchor and template-version FK; immutable |
-| 3 | studio_activity | Organization/actor; append-only |
-| 4 | document_template_versions | Composite org/template FK; append-only |
-| 5 | document_templates | Organization/actor; RPC writes, cap 25 active, one default |
-| 6 | organization_brand | Organization and composite logo FK; RPC writes |
-| 7 | document_asset_blobs | Composite org/asset FK; no direct application grants, no updates |
-| 8 | document_assets | Organization/creator; no updates, RPC deletion only if unreferenced, cap 8 |
-| 9 | studio_export_attempts | Organization; private throttle, RPC writes |
-| — | studio_rollout | Private global installation singleton, not tenant data and not wiped |
+| Order | Table                        | Parent relationships / guard                                               |
+| ----- | ---------------------------- | -------------------------------------------------------------------------- |
+| 1     | quote_revision_layout_assets | Composite org/revision and org/asset FKs; immutable                        |
+| 2     | quote_revision_layouts       | P5 revision/snapshot anchor and template-version FK; immutable             |
+| 3     | studio_activity              | Organization/actor; append-only                                            |
+| 4     | document_template_versions   | Composite org/template FK; append-only                                     |
+| 5     | document_templates           | Organization/actor; RPC writes, cap 25 active, one default                 |
+| 6     | organization_brand           | Organization and composite logo FK; RPC writes                             |
+| 7     | document_asset_blobs         | Composite org/asset FK; no direct application grants, no updates           |
+| 8     | document_assets              | Organization/creator; no updates, RPC deletion only if unreferenced, cap 8 |
+| 9     | studio_export_attempts       | Organization; private throttle, RPC writes                                 |
+| —     | studio_rollout               | Private global installation singleton, not tenant data and not wiped       |
 
 Every table has RLS enabled. This follows the existing definer/owner guard model rather than claiming FORCE RLS. Browser roles have selected read grants and no table writes. Blob bytes and throttle rows have no direct grants. Public definer entry points explicitly check capabilities; helpers are revoked from application roles.
 

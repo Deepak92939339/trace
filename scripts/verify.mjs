@@ -7,6 +7,7 @@ const commands = [
   ["npm", ["run", "lint"]],
   ["npm", ["run", "typecheck"]],
   ["npm", ["run", "test:unit"]],
+  ["npm", ["run", "test:pdf"]],
   ["npm", ["run", "test:parity"]],
   ["npm", ["run", "test:concurrency"]],
   ["npm", ["run", "test:decisions"]],

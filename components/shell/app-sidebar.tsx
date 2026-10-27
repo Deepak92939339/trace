@@ -52,7 +52,9 @@ export function AppSidebar({
   const isCurrent = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`);
 
-  const sidebarClasses = [styles.sidebar, className ?? ""].filter(Boolean).join(" ");
+  const sidebarClasses = [styles.sidebar, className ?? ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <aside className={sidebarClasses} aria-label="Primary">
@@ -202,7 +204,27 @@ export function AppSidebar({
           </svg>
           <span>Catalog</span>
         </Link>
-        {canReadStudio && <Link href="/studio" className={[styles.navItem,isCurrent("/studio")?styles.isActive:""].join(" ")} aria-current={isCurrent("/studio")?"page":undefined}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 2h8l4 4v12H4zM12 2v4h4M7 10h6M7 14h4"/></svg><span>Documents</span></Link>}
+        {canReadStudio && (
+          <Link
+            href="/studio"
+            className={[
+              styles.navItem,
+              isCurrent("/studio") ? styles.isActive : "",
+            ].join(" ")}
+            aria-current={isCurrent("/studio") ? "page" : undefined}
+          >
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path d="M4 2h8l4 4v12H4zM12 2v4h4M7 10h6M7 14h4" />
+            </svg>
+            <span>Documents</span>
+          </Link>
+        )}
       </nav>
 
       {/* Row 3 on mobile: Help, What's new, Organization settings, Sign out */}
@@ -218,7 +240,13 @@ export function AppSidebar({
             Organization settings
           </Link>
         )}
-        <form onSubmit={event=>{event.preventDefault();void requestSignOut();}} className={styles.signOutForm}>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void requestSignOut();
+          }}
+          className={styles.signOutForm}
+        >
           <button type="submit" className={styles.signOutBtn}>
             Sign out
           </button>
@@ -264,7 +292,13 @@ export function AppSidebar({
             <b>{displayName}</b>
             <small>{roleLabel}</small>
           </span>
-          <form onSubmit={event=>{event.preventDefault();void requestSignOut();}} className={styles.signOutForm}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void requestSignOut();
+            }}
+            className={styles.signOutForm}
+          >
             <button type="submit" className={styles.signOutBtn}>
               Sign out
             </button>

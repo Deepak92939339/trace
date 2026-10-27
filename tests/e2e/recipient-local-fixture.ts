@@ -68,15 +68,19 @@ function assertLocalTarget() {
 function localRuntime() {
   const status = JSON.parse(
     run("./node_modules/.bin/supabase", ["status", "-o", "json"]),
-  ) as { API_URL?: string; ANON_KEY?: string };
-  if (!status.API_URL || !status.ANON_KEY) {
+  ) as { API_URL?: string; ANON_KEY?: string; SERVICE_ROLE_KEY?: string };
+  if (!status.API_URL || !status.ANON_KEY || !status.SERVICE_ROLE_KEY) {
     throw new Error("Local Supabase runtime values are unavailable.");
   }
   const api = new URL(status.API_URL);
   if (!["127.0.0.1", "localhost", "::1"].includes(api.hostname)) {
     throw new Error("Recipient server requires the loopback API.");
   }
-  return { apiUrl: api.origin, anonKey: status.ANON_KEY };
+  return {
+    apiUrl: api.origin,
+    anonKey: status.ANON_KEY,
+    serviceRoleKey: status.SERVICE_ROLE_KEY,
+  };
 }
 
 function psql(sql: string) {
@@ -267,7 +271,7 @@ commit;`);
 
 async function serveRecipientE2E() {
   assertLocalTarget();
-  const { apiUrl, anonKey } = localRuntime();
+  const { apiUrl, anonKey, serviceRoleKey } = localRuntime();
   await waitForLocalSupabaseReadiness(apiUrl, anonKey);
   const transportSecret = randomBytes(48).toString("base64url");
   const sessionSecret = randomBytes(48).toString("base64url");
@@ -341,6 +345,7 @@ async function serveRecipientE2E() {
         ...common,
         NEXT_PUBLIC_SUPABASE_URL: apiUrl,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: anonKey,
+        SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
         TENDER_EDGE_BROKER_TRANSPORT_SECRET: transportSecret,
         TENDER_PUBLIC_SESSION_ENCRYPTION_KEY: sessionSecret,
       },

@@ -6,7 +6,10 @@ import React, { useCallback, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { AppSidebar } from "@/components/shell/app-sidebar";
-import { ProfileMenu, type ProfileMenuProps } from "@/components/shell/profile-menu";
+import {
+  ProfileMenu,
+  type ProfileMenuProps,
+} from "@/components/shell/profile-menu";
 import { TopBar, type BreadcrumbItem } from "@/components/shell/top-bar";
 import {
   CommandPalette,
@@ -87,7 +90,12 @@ export function AppShell({
 
   const router = useRouter();
   // Command-palette navigation is programmatic (no click/unload event), so it must ask the leave guards itself.
-  const go = useCallback((href: string) => { if (confirmLeave()) router.push(href); }, [router]);
+  const go = useCallback(
+    (href: string) => {
+      if (confirmLeave()) router.push(href);
+    },
+    [router],
+  );
 
   const commandGroups = useMemo<CommandGroup[]>(() => {
     return [
@@ -129,7 +137,17 @@ export function AppShell({
             href: "/catalog",
             onSelect: () => go("/catalog"),
           },
-          ...(context.canReadStudio ? [{ id: "nav-studio", label: "Documents", detail: "Document Studio", href: "/studio", onSelect: () => go("/studio") }] : []),
+          ...(context.canReadStudio
+            ? [
+                {
+                  id: "nav-studio",
+                  label: "Documents",
+                  detail: "Document Studio",
+                  href: "/studio",
+                  onSelect: () => go("/studio"),
+                },
+              ]
+            : []),
           ...(context.canManageOrganization
             ? [
                 {
@@ -164,34 +182,46 @@ export function AppShell({
   }, [context.canManageOrganization, context.canReadStudio, go]);
 
   return (
-    <LeaveGuardProvider signOutAction={signOut} beforeSignOut={beforeSignOut}><div className={styles.app}>
-      <AppSidebar
-        organizationName={context.organizationName}
-        displayName={context.displayName}
-        roleLabel={context.roleLabel}
-        canManageOrganization={context.canManageOrganization}
-        canReadStudio={context.canReadStudio}
-        signOutAction={signOut}
-      />
-
-      <div className={styles.main}>
-        {context.readOnly && <ReviewerBanner />}
-        <TopBar
-          breadcrumbs={breadcrumbs}
-          actions={<ProfileMenu displayName={context.displayName} roleLabel={context.roleLabel} organizationName={context.organizationName} canReadStudio={Boolean(context.canReadStudio)} canExport={Boolean(context.canExportWorkspace)} signOutAction={signOut} beforeSignOut={beforeSignOut} />}
-          onSearchClick={() => setPaletteOpen(true)}
+    <LeaveGuardProvider signOutAction={signOut} beforeSignOut={beforeSignOut}>
+      <div className={styles.app}>
+        <AppSidebar
+          organizationName={context.organizationName}
+          displayName={context.displayName}
+          roleLabel={context.roleLabel}
+          canManageOrganization={context.canManageOrganization}
+          canReadStudio={context.canReadStudio}
+          signOutAction={signOut}
         />
-        <main id="main-content" className={`app-main ${styles.appMain}`}>
-          {children}
-        </main>
-      </div>
 
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        onToggle={() => setPaletteOpen((prev) => !prev)}
-        groups={commandGroups}
-      />
-    </div></LeaveGuardProvider>
+        <div className={styles.main}>
+          {context.readOnly && <ReviewerBanner />}
+          <TopBar
+            breadcrumbs={breadcrumbs}
+            actions={
+              <ProfileMenu
+                displayName={context.displayName}
+                roleLabel={context.roleLabel}
+                organizationName={context.organizationName}
+                canReadStudio={Boolean(context.canReadStudio)}
+                canExport={Boolean(context.canExportWorkspace)}
+                signOutAction={signOut}
+                beforeSignOut={beforeSignOut}
+              />
+            }
+            onSearchClick={() => setPaletteOpen(true)}
+          />
+          <main id="main-content" className={`app-main ${styles.appMain}`}>
+            {children}
+          </main>
+        </div>
+
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          onToggle={() => setPaletteOpen((prev) => !prev)}
+          groups={commandGroups}
+        />
+      </div>
+    </LeaveGuardProvider>
   );
 }

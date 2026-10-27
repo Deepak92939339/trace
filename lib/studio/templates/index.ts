@@ -18,5 +18,7 @@ export const SYSTEM_TEMPLATES = [
   { key: "showcase", name: "Product Showcase", layout: showcase },
   { key: "dark", name: "Premium Dark Accent", layout: dark },
 ] as const satisfies readonly { key: string; name: string; layout: Layout }[];
-export type SystemTemplateKey = typeof SYSTEM_TEMPLATES[number]["key"];
-export function systemTemplate(key: string) { return SYSTEM_TEMPLATES.find(t => t.key === key); }
+export type SystemTemplateKey = (typeof SYSTEM_TEMPLATES)[number]["key"];
+export function systemTemplate(key: string) {
+  return SYSTEM_TEMPLATES.find((t) => t.key === key);
+}

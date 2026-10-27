@@ -39,7 +39,7 @@ export function CommandPalette({
   groups = [],
   query: controlledQuery,
   onQueryChange,
-  placeholder = "Search quotes, customers, catalog...",
+  placeholder = "Search pages and actions...",
   onSelect,
   enableGlobalShortcut = true,
 }: CommandPaletteProps) {
@@ -88,7 +88,7 @@ export function CommandPalette({
 
   const safeIndex =
     flatItems.length > 0
-      ? (selectedIndex % flatItems.length + flatItems.length) %
+      ? ((selectedIndex % flatItems.length) + flatItems.length) %
         flatItems.length
       : 0;
 
@@ -154,7 +154,9 @@ export function CommandPalette({
       setSelectedIndex((prev) => (prev + 1) % flatItems.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + flatItems.length) % flatItems.length);
+      setSelectedIndex(
+        (prev) => (prev - 1 + flatItems.length) % flatItems.length,
+      );
     } else if (e.key === "Enter") {
       e.preventDefault();
       const currentItem = flatItems[safeIndex];
@@ -220,7 +222,9 @@ export function CommandPalette({
 
       <div className={styles.results} id={listboxId} role="listbox">
         {filteredGroups.length === 0 ? (
-          <div className={styles.empty}>No matching commands or records found</div>
+          <div className={styles.empty}>
+            No matching commands or records found
+          </div>
         ) : (
           filteredGroups.map((group) => (
             <div key={group.name} className={styles.group}>

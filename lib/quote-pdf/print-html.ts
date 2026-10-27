@@ -59,7 +59,11 @@ export async function buildPrintHtml(input: {
   // element tree is serialized directly (see static-markup.ts for why that is equivalent).
   const body = renderStaticMarkup(
     input.studio
-      ? createElement(DocumentRenderer, { ...input.studio, data: printDataFromIssued(input.props), includePageCss: false })
+      ? createElement(DocumentRenderer, {
+          ...input.studio,
+          data: printDataFromIssued(input.props),
+          includePageCss: false,
+        })
       : createElement(IssuedPrintDocument, input.props),
   );
   const title = `Quotation ${input.props.quote.number} revision ${input.revisionNumber}`;
@@ -70,7 +74,7 @@ export async function buildPrintHtml(input: {
 <title>${escapeText(title)}</title>
 <style>${fonts}</style>
 <style>${css}</style>
-${input.studio ? `<style>${studioPageCss(input.studio.layout,input.studio.brand,printDataFromIssued(input.props).tokens)}</style>` : ""}
+${input.studio ? `<style>${studioPageCss(input.studio.layout, input.studio.brand, printDataFromIssued(input.props).tokens)}</style>` : ""}
 </head>
 <body>${body}</body>
 </html>`;

@@ -60,9 +60,9 @@ export default function HelpPage() {
         <p className="eyebrow">Fail-safe reviewer guide</p>
         <h1>Understand Trace without guessing.</h1>
         <p>
-          Trace is a quotation workflow demonstration. It keeps product
-          pricing, customer context, approval decisions and the issued document
-          attached to one traceable commercial record.
+          Trace is a quotation workflow demonstration. It keeps product pricing,
+          customer context, approval decisions and the issued document attached
+          to one traceable commercial record.
         </p>
         <div className="button-row">
           <Link className="button button-primary" href="/sign-in">

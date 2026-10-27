@@ -140,12 +140,9 @@ describe("formatMinorNumber decimal formatting", () => {
   });
 
   it("throws on non-safe integers", () => {
-    expect(() => formatMinorNumber(12.34, "USD")).toThrow(
-      /safe integer/i,
-    );
+    expect(() => formatMinorNumber(12.34, "USD")).toThrow(/safe integer/i);
     expect(() => formatMinorNumber(Number.MAX_SAFE_INTEGER + 1, "USD")).toThrow(
       /safe integer/i,
     );
   });
 });
-

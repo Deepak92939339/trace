@@ -3,6 +3,10 @@
 The PDF renderer (`lib/quote-pdf/render.ts`) embeds these files as `data:` URIs so a
 render needs no network access and does not depend on fonts installed on the host.
 
+The browser also self-hosts these same files through `app/fonts.css`, with explicit
+Latin and Latin Extended unicode ranges. Production builds do not fetch Google Fonts.
+The issued PDF continues to embed its own data URIs and does not depend on that CSS file.
+
 | Family                          | Files                    | License                                                 |
 | ------------------------------- | ------------------------ | ------------------------------------------------------- |
 | Inter (variable, wght)          | `inter/*.woff2`          | SIL Open Font License 1.1, see `inter/OFL.txt`          |

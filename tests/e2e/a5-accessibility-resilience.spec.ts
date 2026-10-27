@@ -1,5 +1,7 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { expect, test, type Page } from "@playwright/test";
 
+documentLayoutFixture("legacy");
 const modifier = process.platform === "darwin" ? "Meta" : "Control";
 
 async function signIn(page: Page) {

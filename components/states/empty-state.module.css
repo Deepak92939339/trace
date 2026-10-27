@@ -62,7 +62,9 @@
   border: 1px solid var(--line-strong);
   border-radius: var(--r-ctl, 6px);
   text-decoration: none;
-  transition: background var(--t, 150ms ease), border-color var(--t, 150ms ease);
+  transition:
+    background var(--t, 150ms ease),
+    border-color var(--t, 150ms ease);
 }
 
 .actionLink:hover {

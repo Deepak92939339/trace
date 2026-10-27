@@ -1,4 +1,10 @@
+import {
+  issuedStudioPdf,
+  documentLayoutFixture,
+} from "./helpers/document-layout";
 import { expect, test, type Browser, type Page } from "@playwright/test";
+
+documentLayoutFixture("studio");
 
 async function signIn(page: Page, email = "operator@tender.local") {
   await page.goto("/sign-in");
@@ -92,8 +98,10 @@ test("operator submits boundary-approved quote, issues separately, then prints",
   await page.emulateMedia({ media: "print" });
   await expect(page.locator(".print-document")).toBeVisible();
   await expect(page.locator(".app-header")).toBeHidden();
-  await expect(page.getByText("Page 1 of 1")).toBeVisible();
-  await expect(page.locator(".print-totals")).toHaveCount(1);
+  await expect(page.locator(".studio-document")).toHaveCount(1);
+  await expect(page.locator(".studio-document .studio-totals")).toHaveCount(1);
+  const pdf = await issuedStudioPdf(page);
+  expect(pdf.pages).toBe(1);
   await page.emulateMedia({ media: "screen" });
 });
 
@@ -311,8 +319,16 @@ test("40-line issued quote has deterministic continued print pages", async ({
     timeout: 20_000,
   });
   await page.emulateMedia({ media: "print" });
-  await expect(page.locator(".print-page")).toHaveCount(4);
-  await expect(page.getByText("Page 4 of 4")).toBeVisible();
-  await expect(page.getByText("Continued — commercial lines")).toHaveCount(3);
-  await expect(page.locator(".print-totals")).toHaveCount(1);
+  await expect(
+    page.locator('.studio-document [data-block-id="b-line-items"] tbody tr'),
+  ).toHaveCount(40);
+  await expect(page.locator(".studio-document .studio-totals")).toHaveCount(1);
+  const pdf = await issuedStudioPdf(page);
+  expect(pdf.pages).toBeGreaterThan(1);
+  expect(pdf.collapsed.match(/Precision coupling assembly/g)).toHaveLength(40);
+  for (const text of pdf.perPage) {
+    expect(text.replace(/\s+/g, " ")).toMatch(
+      /Description Qty Unit Rate Amount/i,
+    );
+  }
 });

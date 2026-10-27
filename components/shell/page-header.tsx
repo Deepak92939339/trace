@@ -28,7 +28,9 @@ export function PageHeader({
   rightSlot,
   className,
 }: PageHeaderProps) {
-  const headClasses = [styles.pageHead, className ?? ""].filter(Boolean).join(" ");
+  const headClasses = [styles.pageHead, className ?? ""]
+    .filter(Boolean)
+    .join(" ");
 
   const hasMeta = Boolean(quoteId || statusState || revChip);
 

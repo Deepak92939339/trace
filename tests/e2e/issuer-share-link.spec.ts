@@ -1,6 +1,8 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { expect, test, type Page } from "@playwright/test";
 import { provisionIssuedRevisionWithoutLink } from "./recipient-local-fixture";
 
+documentLayoutFixture("legacy");
 test.use({ trace: "off", screenshot: "off", video: "off" });
 
 const statement =

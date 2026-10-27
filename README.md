@@ -25,9 +25,9 @@
 
 ## Why Trace exists
 
-A B2B quotation is not a document. It is a **commercial commitment**: a price, a discount someone was allowed to give, terms someone approved, and a buyer who said yes to *exactly that version*.
+A B2B quotation is not a document. It is a **commercial commitment**: a price, a discount someone was allowed to give, terms someone approved, and a buyer who said yes to _exactly that version_.
 
-Most quoting tools treat it like a spreadsheet with a PDF button. Numbers drift between screen and printout, approvals live in chat threads, and when a customer says *"we never agreed to that"*, nobody can prove what was sent.
+Most quoting tools treat it like a spreadsheet with a PDF button. Numbers drift between screen and printout, approvals live in chat threads, and when a customer says _"we never agreed to that"_, nobody can prove what was sent.
 
 Trace keeps the whole commitment in one accountable record, from catalog price to buyer acceptance, and makes every step provable.
 
@@ -94,28 +94,28 @@ Trace is a Next.js 16 App Router application on Vercel, backed by Supabase Postg
 
 ## Quality
 
-| Gate | Result |
-|---|---|
-| Unit tests | **553** passing across 46 files |
-| Database tests (pgTAP) | **1,036** assertions across 29 files: authorization, invariants, isolation |
-| Calculator parity (TypeScript ↔ SQL) | **5,000 / 5,000** quotes and **2,010** milestone allocations identical |
-| End-to-end (Playwright, desktop + mobile) | **122** passing, 0 failing |
-| Secrets | Tracked files, built client assets and service-role confinement scanned on every run |
-| Browser surface | Zero direct calls to the database or storage from client code |
+| Gate                                      | Result                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| Unit tests                                | **553** passing across 46 files                                                      |
+| Database tests (pgTAP)                    | **1,036** assertions across 29 files: authorization, invariants, isolation           |
+| Calculator parity (TypeScript ↔ SQL)      | **5,000 / 5,000** quotes and **2,010** milestone allocations identical               |
+| End-to-end (Playwright, desktop + mobile) | **122** passing, 0 failing                                                           |
+| Secrets                                   | Tracked files, built client assets and service-role confinement scanned on every run |
+| Browser surface                           | Zero direct calls to the database or storage from client code                        |
 
 <br/>
 
 ## Built with
 
-| Layer | Technology |
-|---|---|
-| Application | Next.js 16 (App Router, Server Actions), React 19, TypeScript (strict), Zod |
-| Data | Supabase PostgreSQL, row-level security, security-definer commands, pgTAP |
-| Edge | Supabase Edge Functions (Deno) for the buyer broker |
-| Documents | Headless Chromium (`playwright-core` + `@sparticuz/chromium`), Supabase Storage |
-| Messaging | Transactional outbox, `pg_cron` + `pg_net`, Resend |
-| Quality | Vitest, Playwright, parity and concurrency runners |
-| Hosting | Vercel |
+| Layer       | Technology                                                                      |
+| ----------- | ------------------------------------------------------------------------------- |
+| Application | Next.js 16 (App Router, Server Actions), React 19, TypeScript (strict), Zod     |
+| Data        | Supabase PostgreSQL, row-level security, security-definer commands, pgTAP       |
+| Edge        | Supabase Edge Functions (Deno) for the buyer broker                             |
+| Documents   | Headless Chromium (`playwright-core` + `@sparticuz/chromium`), Supabase Storage |
+| Messaging   | Transactional outbox, `pg_cron` + `pg_net`, Resend                              |
+| Quality     | Vitest, Playwright, parity and concurrency runners                              |
+| Hosting     | Vercel                                                                          |
 
 <br/>
 

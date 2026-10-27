@@ -1,3 +1,4 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import {
   clearRenderAttempts,
@@ -8,6 +9,7 @@ import {
   type IssuedQuote,
 } from "./p5-support";
 
+documentLayoutFixture("legacy");
 // Proves the page model against real output. For every scenario the stored PDF (the same bytes a
 // customer receives) must have exactly as many physical pages as the quote page has .print-page
 // articles, page k must say "Page k of N", and nothing may be dropped or truncated.

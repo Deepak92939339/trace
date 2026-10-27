@@ -1,0 +1,66 @@
+{
+  "existingRepo": [
+    {
+      "path": "lib/quote-pdf/fonts/jetbrains-mono/jetbrains-mono-latin-wght-normal.woff2",
+      "bytes": 40404,
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e"
+    },
+    {
+      "path": "lib/quote-pdf/fonts/jetbrains-mono/jetbrains-mono-latin-ext-wght-normal.woff2",
+      "bytes": 15196,
+      "sha256": "79bfdab9ba467e26eea4122e6f2567e188dd8a09a8c730d501fc487c4ab99c6e"
+    },
+    {
+      "path": "lib/quote-pdf/fonts/inter/inter-latin-ext-wght-normal.woff2",
+      "bytes": 85068,
+      "sha256": "34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956"
+    },
+    {
+      "path": "lib/quote-pdf/fonts/inter/inter-latin-wght-normal.woff2",
+      "bytes": 48256,
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+    },
+    {
+      "path": "lib/quote-pdf/fonts/source-serif-4/source-serif-4-latin-ext-wght-normal.woff2",
+      "bytes": 42040,
+      "sha256": "41529a5b38008d9ea01e28ec18693a714a3216669ee477d83a5b9db999369625"
+    },
+    {
+      "path": "lib/quote-pdf/fonts/source-serif-4/source-serif-4-latin-wght-normal.woff2",
+      "bytes": 50824,
+      "sha256": "c1df4596be5029233ed2afbb8b2f6ea20784b3fb1aa5d6b5c6519ccd85eb3dfb"
+    }
+  ],
+  "clientAssets": [
+    {
+      "path": ".next/static/media/source-serif-4-latin-ext-wght-normal.36uylrv_m5wdg.woff2",
+      "bytes": 42040,
+      "sha256": "41529a5b38008d9ea01e28ec18693a714a3216669ee477d83a5b9db999369625"
+    },
+    {
+      "path": ".next/static/media/inter-latin-ext-wght-normal.3gdi_th3seg1n.woff2",
+      "bytes": 85068,
+      "sha256": "34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956"
+    },
+    {
+      "path": ".next/static/media/source-serif-4-latin-wght-normal.3_g1pg7bqcyap.woff2",
+      "bytes": 50824,
+      "sha256": "c1df4596be5029233ed2afbb8b2f6ea20784b3fb1aa5d6b5c6519ccd85eb3dfb"
+    },
+    {
+      "path": ".next/static/media/inter-latin-wght-normal.0gsaq8ukbf34m.woff2",
+      "bytes": 48256,
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+    },
+    {
+      "path": ".next/static/media/jetbrains-mono-latin-ext-wght-normal.3rxtet6g9i1k3.woff2",
+      "bytes": 15196,
+      "sha256": "79bfdab9ba467e26eea4122e6f2567e188dd8a09a8c730d501fc487c4ab99c6e"
+    },
+    {
+      "path": ".next/static/media/jetbrains-mono-latin-wght-normal.2rmhnsrc80fag.woff2",
+      "bytes": 40404,
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e"
+    }
+  ]
+}

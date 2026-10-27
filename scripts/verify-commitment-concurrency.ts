@@ -71,7 +71,7 @@ function createIssuedQuote(scenario: number) {
   const created = JSON.parse(
     psql(
       authenticated(
-        `select public.create_verified_quote_draft('${organizationId}','${customerId}','INR','en-IN','Tax','exclusive','2026-08-14','2026-09-14','${commandUuid(scenario, 1)}');`,
+        `select public.create_verified_quote_draft('${organizationId}','${customerId}','INR','en-IN','Tax','exclusive',current_date,current_date + 30,'${commandUuid(scenario, 1)}');`,
       ),
     ),
   );
@@ -79,7 +79,7 @@ function createIssuedQuote(scenario: number) {
   const revisionId = created.current_revision_id as string;
   psql(
     authenticated(
-      `select public.save_quote_draft('${quoteId}',1,'${commandUuid(scenario, 2)}','{"customer_id":"${customerId}","currency_code":"INR","locale":"en-IN","tax_label":"Tax","tax_mode":"exclusive","discount_bps":0,"issue_date":"2026-08-14","valid_until":"2026-09-14","notes":"","items":[{"line_id":null,"product_id":"${productId}","position":1,"quantity_scaled":1,"quantity_scale":1}],"charges":[]}'::jsonb);`,
+      `select public.save_quote_draft('${quoteId}',1,'${commandUuid(scenario, 2)}','{"customer_id":"${customerId}","currency_code":"INR","locale":"en-IN","tax_label":"Tax","tax_mode":"exclusive","discount_bps":0,"notes":"","items":[{"line_id":null,"product_id":"${productId}","position":1,"quantity_scaled":1,"quantity_scale":1}],"charges":[]}'::jsonb || jsonb_build_object('issue_date', current_date, 'valid_until', current_date + 30));`,
     ),
   );
   psql(
@@ -95,14 +95,14 @@ function createIssuedQuote(scenario: number) {
   const first = JSON.parse(
     psql(
       authenticated(
-        `select public.create_quote_share_link('${quoteId}','${revisionId}',4,'first-${scenario}@example.test','2026-09-01T00:00:00Z','${commandUuid(scenario, 5)}');`,
+        `select public.create_quote_share_link('${quoteId}','${revisionId}',4,'first-${scenario}@example.test',now() + interval '7 days','${commandUuid(scenario, 5)}');`,
       ),
     ),
   ) as Link;
   const second = JSON.parse(
     psql(
       authenticated(
-        `select public.create_quote_share_link('${quoteId}','${revisionId}',4,'second-${scenario}@example.test','2026-09-01T00:00:00Z','${commandUuid(scenario, 6)}');`,
+        `select public.create_quote_share_link('${quoteId}','${revisionId}',4,'second-${scenario}@example.test',now() + interval '7 days','${commandUuid(scenario, 6)}');`,
       ),
     ),
   ) as Link;

@@ -21,7 +21,15 @@ export function B10aPreview() {
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
           1. MarginMeter: Positive margin above floor
         </h3>
-        <div style={{ maxWidth: 340, background: "var(--surface)", padding: 16, border: "1px solid var(--line)", borderRadius: "var(--r-panel)" }}>
+        <div
+          style={{
+            maxWidth: 340,
+            background: "var(--surface)",
+            padding: 16,
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-panel)",
+          }}
+        >
           <MarginMeter
             margin={{
               marginBps: 3450,
@@ -38,7 +46,15 @@ export function B10aPreview() {
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
           2. MarginMeter: Margin under floor (needs approval)
         </h3>
-        <div style={{ maxWidth: 340, background: "var(--surface)", padding: 16, border: "1px solid var(--line)", borderRadius: "var(--r-panel)" }}>
+        <div
+          style={{
+            maxWidth: 340,
+            background: "var(--surface)",
+            padding: 16,
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-panel)",
+          }}
+        >
           <MarginMeter
             margin={{
               marginBps: 1820,
@@ -55,7 +71,15 @@ export function B10aPreview() {
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
           3. MarginMeter: Negative margin below cost (needs approval)
         </h3>
-        <div style={{ maxWidth: 340, background: "var(--surface)", padding: 16, border: "1px solid var(--line)", borderRadius: "var(--r-panel)" }}>
+        <div
+          style={{
+            maxWidth: 340,
+            background: "var(--surface)",
+            padding: 16,
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-panel)",
+          }}
+        >
           <MarginMeter
             margin={{
               marginBps: -450,
@@ -72,7 +96,15 @@ export function B10aPreview() {
         <h3 style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
           4. MarginMeter: No catalog costs yet
         </h3>
-        <div style={{ maxWidth: 340, background: "var(--surface)", padding: 16, border: "1px solid var(--line)", borderRadius: "var(--r-panel)" }}>
+        <div
+          style={{
+            maxWidth: 340,
+            background: "var(--surface)",
+            padding: 16,
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-panel)",
+          }}
+        >
           <MarginMeter margin={null} />
         </div>
       </div>
@@ -120,7 +152,9 @@ export function B10aPreview() {
                 <td className="mono" data-label="SKU">
                   SRV-INST-002
                 </td>
-                <td data-label="Description">Site Installation and Calibration</td>
+                <td data-label="Description">
+                  Site Installation and Calibration
+                </td>
                 <td data-label="Unit">EA</td>
                 <td className="money" data-label="Unit price">
                   $450.00

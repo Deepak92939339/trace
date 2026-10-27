@@ -3,24 +3,35 @@ import { EmptyState } from "@/components/states";
 import { CustomerForm } from "@/components/customers/customer-form";
 import { requireApplicationContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
+import { ListPagination } from "@/components/application/list-pagination";
+import {
+  FETCH_SIZE,
+  listPage,
+  listSearch,
+  listWindow,
+  PAGE_SIZE,
+  type ListSearchParams,
+} from "@/lib/lists/pagination";
 
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<ListSearchParams>;
 }) {
   const context = await requireApplicationContext();
   const query = await searchParams;
-  const search = (query.q ?? "").trim().slice(0, 100);
+  const search = listSearch(query.q);
+  const page = listPage(query.page);
   const supabase = await createClient();
-  const { data: customers, error } = await supabase.rpc("search_customers", {
+  const { data, error } = await supabase.rpc("search_customers", {
     p_organization_id: context.membership.organizationId,
     p_query: search,
     p_state: "active",
-    p_limit: 100,
-    p_offset: 0,
+    p_limit: FETCH_SIZE,
+    p_offset: (page - 1) * PAGE_SIZE,
   });
   if (error) throw new Error("Unable to load tenant-scoped customers.");
+  const { rows: customers, hasMore } = listWindow(data ?? [], page);
   return (
     <section className="destination-page">
       <header className="destination-header">
@@ -104,6 +115,13 @@ export default async function CustomersPage({
           </tbody>
         </table>
       </div>
+      <ListPagination
+        path="/customers"
+        filters={{ q: search }}
+        page={page}
+        count={customers.length}
+        hasMore={hasMore}
+      />
     </section>
   );
 }

@@ -1,8 +1,11 @@
+import { documentLayoutFixture } from "./helpers/document-layout";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import nextEnv from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 
 nextEnv.loadEnvConfig(process.cwd());
+
+documentLayoutFixture("studio");
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
@@ -213,8 +216,8 @@ test("quote price basis authoritatively recalculates items and charges and label
     timeout: 20_000,
   });
   await page.emulateMedia({ media: "print" });
-  await expect(page.locator(".print-document")).toContainText(
-    "Prices are tax-inclusive.",
+  await expect(page.locator(".studio-document")).toContainText(
+    "Line prices include tax.",
   );
 });
 

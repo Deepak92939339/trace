@@ -109,11 +109,7 @@ export default async function ApprovalsPage() {
           }
 
           if (typeof r.afterMinor === "number") {
-            after = formatMinor(
-              r.afterMinor,
-              quote.currencyCode,
-              quote.locale,
-            );
+            after = formatMinor(r.afterMinor, quote.currencyCode, quote.locale);
           } else if (typeof r.afterText === "string") {
             after = r.afterText;
           }

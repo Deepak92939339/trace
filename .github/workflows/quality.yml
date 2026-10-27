@@ -35,6 +35,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run build
+      - run: node scripts/check-pdf-trace.mjs
       - run: npm run test:secrets
 
   pdf:
